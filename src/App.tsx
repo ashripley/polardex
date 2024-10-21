@@ -1,7 +1,12 @@
-import './App.css';
-
-function App() {
-  return <>Polardex</>;
+export function App() {
+  return (
+    <>
+      <>Polardex</>
+      <PolardexLogo />
+    </>
+  );
 }
 
-export default App;
+function PolardexLogo() {
+  return <></>;
+}
