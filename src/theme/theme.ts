@@ -20,7 +20,7 @@ export interface Theme {
   };
 }
 
-export const lightTheme: Theme = {
+export const theme: Theme = {
   bgColor: {
     bg1: '#ffffff',
     bg2: '#fbfbfc',
