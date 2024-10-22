@@ -1,7 +1,7 @@
 import { FontsDefinition } from '../fonts';
 
 export const fonts: FontsDefinition = {
-  primary: 'PatrickHandSC-Regular',
+  primary: 'Itim-Regular',
   weight: {
     ultraLight: 200,
     light: 300,

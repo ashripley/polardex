@@ -1,6 +1,11 @@
 import { ReactNode } from 'react';
 import { GalleryProvider } from './GalleryProvider';
+import { PageProvider } from './PageProvider';
 
 export function PolardexProviders({ children }: { children: ReactNode }) {
-  return <GalleryProvider>{children}</GalleryProvider>;
+  return (
+    <PageProvider>
+      <GalleryProvider>{children}</GalleryProvider>
+    </PageProvider>
+  );
 }
