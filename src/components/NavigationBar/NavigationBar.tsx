@@ -121,7 +121,7 @@ export function NavigationBar() {
   );
 }
 
-function PolardexLogo({ color }: { color: string }) {
+export function PolardexLogo({ color }: { color: string }) {
   return (
     <svg
       version='1.1'
