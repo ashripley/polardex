@@ -17,6 +17,12 @@ export interface Theme {
     f1: string;
     f2: string;
     f3: string;
+    f4: string;
+    a1: string;
+    a2: string;
+    a3: string;
+    a4: string;
+    a5: string;
   };
 }
 
@@ -39,5 +45,11 @@ export const theme: Theme = {
     f1: '#8fbcbb',
     f2: '#88c0d0',
     f3: '#81a1c1',
+    f4: '#5e81ac',
+    a1: '#bf616a',
+    a2: '#d08770',
+    a3: '#ebcb8b',
+    a4: '#a3be8c',
+    a5: '#b48ead',
   },
 };

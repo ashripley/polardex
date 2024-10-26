@@ -1,6 +1,6 @@
 import styled, { useTheme } from 'styled-components';
 import { ButtonContainer, SectionText, SectionWrapper } from './sectionStyles';
-import { Button, PolardexLogo } from '../../../components';
+import { Button, CardCollection } from '../../../components';
 
 const Container = styled.section`
   position: relative;
@@ -22,15 +22,6 @@ const Content = styled.div`
   }
 `;
 
-const ImageContainer = styled.div`
-  width: 100%;
-  order: 0;
-
-  @media (min-width: 56.25em) {
-    order: 1;
-  }
-`;
-
 const TextContainer = styled.div`
   text-align: start;
   color: ${({ theme }) => theme.textColor.t1};
@@ -47,9 +38,7 @@ export function WelcomeSection() {
     <Container>
       <SectionWrapper>
         <Content>
-          <ImageContainer>
-            <PolardexLogo color={theme.textColor.t1} />
-          </ImageContainer>
+          <CardCollection />
           <TextContainer>
             <HeaderContainer>
               <SectionText>Polardex.</SectionText>
