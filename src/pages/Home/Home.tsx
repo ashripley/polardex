@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { WelcomeSection } from './sections';
+import { DetailSection, StudioSection, WelcomeSection } from './sections';
 
 const Main = styled.main`
   background-color: ${({ theme }) => theme.bgColor.bg1};
@@ -10,6 +10,8 @@ export function Home() {
   return (
     <Main>
       <WelcomeSection />
+      <DetailSection />
+      <StudioSection />
     </Main>
   );
 }

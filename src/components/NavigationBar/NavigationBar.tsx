@@ -9,7 +9,7 @@ const NavigationHeader = styled.header`
   top: 0px;
   height: 5em;
   width: 100%;
-  z-index: 3;
+  z-index: 5;
   transition: height 250ms ease-in-out, box-shadow 250ms ease-in-out;
   user-select: none;
 `;

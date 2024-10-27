@@ -1,5 +1,5 @@
 import styled, { useTheme } from 'styled-components';
-import { DisplayCard } from './DisplayCard';
+import { Card } from '../Card';
 
 const ImageContainer = styled.div`
   width: 8em;
@@ -38,9 +38,12 @@ export function CardCollection() {
 
   return (
     <ImageContainer>
-      <DisplayCard
+      <Card
         title={'Bulbasaur'}
+        display
         bg={theme.miscColor.f1}
+        height={300}
+        width={200}
         imageUrl='https://img.pokemondb.net/sprites/home/normal/bulbasaur.png'
         style={{
           marginLeft: -200,
@@ -52,9 +55,12 @@ export function CardCollection() {
             'rgba(0, 0, 0, 0.16) 0px 10px 36px 0px, rgba(0, 0, 0, 0.06) 0px 0px 0px 1px',
         }}
       />
-      <DisplayCard
+      <Card
         title={'Squirtle'}
+        display
         bg={theme.miscColor.f1}
+        height={300}
+        width={200}
         imageUrl='https://img.pokemondb.net/sprites/home/normal/squirtle.png'
         style={{
           transform: 'rotate(0deg)',
@@ -64,9 +70,12 @@ export function CardCollection() {
             'rgba(0, 0, 0, 0.16) 0px 10px 36px 0px, rgba(0, 0, 0, 0.06) 0px 0px 0px 1px',
         }}
       />
-      <DisplayCard
+      <Card
         title={'Charmander'}
+        display
         bg={theme.miscColor.f1}
+        height={300}
+        width={200}
         imageUrl='https://img.pokemondb.net/sprites/home/normal/charmander.png'
         style={{
           marginRight: -200,

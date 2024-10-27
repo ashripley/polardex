@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import { pxToRem } from '../helpers';
 import { CSSProperties } from 'react';
 
@@ -7,14 +7,21 @@ interface CardProps {
   bg: string;
   imageUrl: string;
   style?: CSSProperties;
+  titleSize?: string;
   height?: number;
   width?: number;
+  image?: {
+    height: string;
+    width: string;
+  };
+  imageRadius?: string;
+  display: boolean;
 }
 
 const Container = styled.div<{ height: number; width: number; bg: string }>`
   height: ${({ height }) => `${height}px`};
   width: ${({ width }) => `${width}px`};
-  border-radius: ${pxToRem('md')};
+  border-radius: ${pxToRem('sm')};
   background-color: ${({ bg }) => bg};
   display: flex;
   flex-direction: column;
@@ -54,8 +61,8 @@ const Footer = styled.div`
   border-bottom-left-radius: 1.5em;
 `;
 
-export const Title = styled.h1`
-  font-size: 0.8rem;
+export const Title = styled.h1<{ titleSize: string }>`
+  font-size: ${({ titleSize }) => titleSize};
   font-weight: 500;
   color: ${({ theme }) => theme.bgColor.bg1};
   text-align: start;
@@ -65,11 +72,11 @@ export const Title = styled.h1`
   padding-left: 1em;
 `;
 
-const ImageContainer = styled.div`
+const ImageContainer = styled.div<{ imageRadius: string }>`
   height: 50%;
   width: 100%;
   background-color: ${({ theme }) => theme.bgColor.bg1};
-  border-radius: 1em;
+  border-radius: ${({ imageRadius }) => imageRadius};
   display: flex;
   justify-content: center;
   align-items: center;
@@ -81,9 +88,13 @@ const Info = styled.div`
   border-radius: 1em;
 `;
 
-const Image = styled.img`
-  width: 5em;
-  height: 5em;
+const Image = styled.img<{ height: string; width: string }>`
+  ${({ width, height }) => {
+    return css`
+      height: ${height};
+      width: ${width};
+    `;
+  }}
 `;
 
 const Line = styled.div`
@@ -111,32 +122,43 @@ export function Card({
   height = 550,
   width = 350,
   title,
+  titleSize = '0.8em',
   bg,
+  imageRadius = '1em',
   imageUrl,
+  image = {
+    height: '5em',
+    width: '5em',
+  },
+  display = false,
 }: CardProps) {
   return (
     <Container height={height} width={width} style={style} bg={bg}>
       <Header>
-        <Title>{title}</Title>
+        <Title titleSize={titleSize}>{title}</Title>
         <Avatar />
       </Header>
       <Content>
-        <ImageContainer>
-          <Image src={imageUrl} width='5em' height='5em' />
+        <ImageContainer imageRadius={imageRadius}>
+          <Image src={imageUrl} height={image.height} width={image.width} />
         </ImageContainer>
-        <Info>
-          <Line />
-          <Line />
-          <Line />
-          <Line />
-          <Line />
-        </Info>
+        {display && (
+          <Info>
+            <Line />
+            <Line />
+            <Line />
+            <Line />
+            <Line />
+          </Info>
+        )}
       </Content>
-      <Footer>
-        <FooterLine />
-        <FooterLine />
-        <FooterLine />
-      </Footer>
+      {display && (
+        <Footer>
+          <FooterLine />
+          <FooterLine />
+          <FooterLine />
+        </Footer>
+      )}
     </Container>
   );
 }
