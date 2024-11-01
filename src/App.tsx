@@ -1,7 +1,7 @@
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import styled, { ThemeProvider } from 'styled-components';
 import { theme } from './theme';
-import { Home } from './pages';
+import { Gallery, Home } from './pages';
 import { NavigationBar, PageFooter } from './components';
 
 const Container = styled.div``;
@@ -22,9 +22,7 @@ export function App() {
           <NavigationBar />
           <Routes>
             <Route path='/' element={<Home />} />
-            {/* <Route path='/gallery' element={<Gallery />} />
-              <Route path='/studio' element={<Studio />} />
-              <Route path='/dashboard' element={<Dashboard />} /> */}
+            <Route path='/gallery' element={<Gallery />} />
           </Routes>
           <Footer>
             <PageFooter />

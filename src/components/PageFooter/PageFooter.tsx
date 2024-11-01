@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import { PolarCodeLogo } from '../PolarCodeLogo';
 
-const Container = styled.div`
+const Container = styled.section`
   width: 100%;
   margin: 0px auto;
   padding: 2.5em 1.5em;

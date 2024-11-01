@@ -54,6 +54,16 @@ const HeaderContainer = styled.div`
   justify-content: center;
 `;
 
+const Rhydon = styled(Card)``;
+
+const Charizard = styled(Card)``;
+
+const Blastoise = styled(Card)``;
+
+const Cloyster = styled(Card)``;
+
+const Vileplume = styled(Card)``;
+
 export function StudioSection() {
   const theme = useTheme();
 
@@ -62,7 +72,7 @@ export function StudioSection() {
       <SectionWrapper>
         <Content>
           <ImageContainer>
-            <Card
+            <Rhydon
               title={'Rhydon'}
               display
               bg={theme.miscColor.a2}
@@ -81,7 +91,7 @@ export function StudioSection() {
               titleSize='1.2em'
             />
             <div style={{ height: 150 }} />
-            <Card
+            <Charizard
               title={'Charizard'}
               display
               bg={theme.miscColor.a1}
@@ -98,7 +108,7 @@ export function StudioSection() {
               image={{ width: '10em', height: '10em' }}
               titleSize='1.2em'
             />
-            <Card
+            <Blastoise
               title={'Blastoise'}
               display
               bg={theme.miscColor.f3}
@@ -109,14 +119,14 @@ export function StudioSection() {
                 boxShadow:
                   'rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px',
                 transform:
-                  'perspective(2000px) rotate(90deg) rotateX(180deg) rotateY(230deg) translateX(-70px) translateZ(100px)',
+                  'perspective(2500px) rotate(90deg) rotateX(180deg) rotateY(230deg) translateX(-70px) translateZ(100px)',
               }}
               height={650}
               width={400}
               image={{ width: '10em', height: '10em' }}
               titleSize='1.2em'
             />
-            <Card
+            <Cloyster
               title={'Cloyster'}
               display
               bg={theme.miscColor.f2}
@@ -127,14 +137,14 @@ export function StudioSection() {
                 boxShadow:
                   'rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px',
                 transform:
-                  'perspective(2500px) rotate(90deg) rotateX(180deg) rotateY(230deg) translateX(-60px) translateZ(150px)',
+                  'perspective(3500px) rotate(90deg) rotateX(180deg) rotateY(230deg) translateX(-60px) translateZ(150px)',
               }}
               height={650}
               width={400}
               image={{ width: '10em', height: '10em' }}
               titleSize='1.2em'
             />
-            <Card
+            <Vileplume
               title={'Vileplume'}
               display
               bg={theme.miscColor.f1}
@@ -145,7 +155,7 @@ export function StudioSection() {
                 boxShadow:
                   'rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px',
                 transform:
-                  'perspective(4000px) rotate(90deg) rotateX(180deg) rotateY(225deg) translateZ(200px)',
+                  'perspective(4500px) rotate(90deg) rotateX(180deg) rotateY(225deg) translateZ(200px)',
               }}
               height={650}
               width={400}
