@@ -9,8 +9,10 @@ const Container = styled.div``;
 const Footer = styled.footer``;
 
 const ContainerSpace = styled.div`
-  height: 5em;
-  position: relative;
+  scroll-margin-top: 64px;
+  contain: none;
+  /* height: 5em;
+  position: relative; */
 `;
 
 export function App() {
@@ -18,8 +20,8 @@ export function App() {
     <Router>
       <ThemeProvider theme={theme}>
         <Container>
-          <ContainerSpace />
           <NavigationBar />
+          <ContainerSpace />
           <Routes>
             <Route path='/' element={<Home />} />
             <Route path='/gallery' element={<Gallery />} />

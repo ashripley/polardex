@@ -23,13 +23,14 @@ const Content = styled.div`
 `;
 
 const TextContainer = styled.div`
+  width: 100%;
   text-align: start;
   color: ${({ theme }) => theme.textColor.t1};
 `;
 
-const HeaderContainer = styled.div`
-  display: flex;
-  flex-flow: wrap;
+const StyledSectionText = styled(SectionText)`
+  width: max-content;
+  text-align: center;
 `;
 
 export function WelcomeSection() {
@@ -40,13 +41,9 @@ export function WelcomeSection() {
         <Content>
           <CardCollection />
           <TextContainer>
-            <HeaderContainer>
-              <SectionText>Polardex.</SectionText>
-              <div style={{ width: '0.5em' }} />
-              <SectionText style={{ color: theme.textColor.t2 }}>
-                Store your nostalgia.
-              </SectionText>
-            </HeaderContainer>
+            <StyledSectionText style={{ color: theme.textColor.t1 }}>
+              Store your nostalgia.
+            </StyledSectionText>
             <ButtonContainer>
               {/* <Link to={'/'}> */}
               <Button buttonType='primary'>Get Started</Button>

@@ -64,6 +64,22 @@ const Cloyster = styled(Card)``;
 
 const Vileplume = styled(Card)``;
 
+const StyledSectionText = styled(SectionText)`
+  width: max-content;
+  text-align: center;
+  background-color: rgb(255, 178, 62);
+  background-image: linear-gradient(
+    268.67deg,
+    #b48ead 3.43%,
+    #b48ead 15.69%,
+    #bf616a 55.54%,
+    #bf616a 99%
+  );
+  background-size: 100%;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+`;
+
 export function StudioSection() {
   const theme = useTheme();
 
@@ -167,9 +183,9 @@ export function StudioSection() {
             <HeaderContainer>
               <SectionText>Studio.</SectionText>
               <div style={{ width: '0.5em' }} />
-              <SectionText style={{ color: theme.textColor.t2 }}>
-                Your own personal canvas.
-              </SectionText>
+              <StyledSectionText style={{ color: theme.textColor.t2 }}>
+                Your personal canvas.
+              </StyledSectionText>
             </HeaderContainer>
             <Paragraph>
               Bring your cards to life. Take the cards in your hand and
