@@ -1,10 +1,26 @@
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { Link } from 'react-router-dom';
 import { usePage } from '../../providers';
+import { useEffect, useState } from 'react';
+
+const bounce = keyframes`
+  0% {
+    transform: translateY(-100%);
+  }
+  50% {
+    transform: translateY(10%);
+  }
+  75% {
+    transform: translateY(-5%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+`;
 
 const RootContainer = styled.div`
   position: sticky;
-  z-index: 2;
+  z-index: 5;
   top: 0;
   right: 0;
   left: 0;
@@ -17,12 +33,10 @@ const RootContainer = styled.div`
     transparent calc(100% - 0px)
   );
   backdrop-filter: blur(8px);
-  pointer-events: none;
   background: transparent;
 `;
 
 const NavigationContainer = styled.div`
-  max-width: 75em;
   padding: unset;
   z-index: 3;
   position: sticky;
@@ -31,7 +45,12 @@ const NavigationContainer = styled.div`
   right: 0;
   margin-inline: auto;
   width: 100%;
-  padding-inline: 1rem;
+  padding-inline: 1.5rem;
+
+  @media (min-width: 75em) {
+    max-width: 75em;
+    padding: unset;
+  }
 `;
 
 const NavigationWrapper = styled.div`
@@ -42,7 +61,7 @@ const NavigationWrapper = styled.div`
 
 const NavigationHeader = styled.header`
   flex: 1 1;
-  justify-content: flex-start;
+  justify-content: space-between;
   gap: 3rem;
   height: 3rem;
   display: flex;
@@ -87,6 +106,7 @@ const LogoTitle = styled.span`
   background-size: 100%;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+  letter-spacing: 0.05rem;
 `;
 
 const List = styled.li`
@@ -112,8 +132,32 @@ const StyledButton = styled.button`
   text-align: center;
 `;
 
+const ImageWrapper = styled.span<{ isVisible: boolean }>`
+  display: inline-block;
+  position: relative;
+  width: 10rem;
+  transform: ${({ isVisible }) =>
+    isVisible ? 'translateY(0)' : 'translateY(100%)'};
+  transition: transform 1s ease-in-out;
+  animation: ${bounce} 1s ease-out;
+`;
+
+const StyledImage = styled.img`
+  position: absolute;
+  left: 2px;
+  top: -100px;
+  transform: rotateZ(180deg);
+  height: 10rem;
+  width: 10rem;
+  filter: drop-shadow(0 1px 1px hsl(210deg 40% 6% / 0.2))
+    drop-shadow(0 1px 1px hsl(210deg 40% 6% / 0.2));
+`;
+
 export function NavigationBar() {
   const page = usePage();
+  const [isVisible, setIsVisible] = useState<boolean>(false);
+
+  useEffect(() => setIsVisible(true), []);
 
   return (
     <RootContainer>
@@ -126,6 +170,9 @@ export function NavigationBar() {
               style={{ display: 'flex' }}
             >
               <LogoTitle>POLARDEX</LogoTitle>
+              <ImageWrapper isVisible={isVisible}>
+                <StyledImage src='https://img.pokemondb.net/sprites/home/normal/dragonite.png' />
+              </ImageWrapper>
             </StyledLink>
             <NavContainer>
               <NavList>

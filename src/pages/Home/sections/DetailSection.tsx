@@ -1,4 +1,4 @@
-import styled, { useTheme } from 'styled-components';
+import styled, { keyframes, useTheme } from 'styled-components';
 import { SectionParagraph, SectionText, SectionWrapper } from './sectionStyles';
 import { Card } from '../../../components';
 
@@ -35,6 +35,23 @@ const Paragraph = styled(SectionParagraph)`
   color: ${({ theme }) => theme.textColor.t1};
 `;
 
+const shuffle = keyframes`
+  0%, 100% { transform: rotate(0deg) translate(0, 0); }
+  25% { transform: rotate(5deg) translate(5px, -5px); }
+  50% { transform: rotate(-5deg) translate(-5px, 5px); }
+  75% { transform: rotate(3deg) translate(3px, -3px); }
+`;
+
+const ShuffleWrapper = styled.div`
+  animation: ${shuffle} 2s ease-in-out infinite;
+`;
+
+const ShuffleContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+`;
+
 export function DetailSection() {
   const theme = useTheme();
 
@@ -44,13 +61,13 @@ export function DetailSection() {
         <Content>
           <ImageContainer>
             <Card
-              title={'Dragonite'}
+              title={'Clefairy'}
               display
               bg={theme.miscColor.f1}
-              imageUrl='https://img.pokemondb.net/sprites/home/normal/dragonite.png'
+              imageUrl='https://img.pokemondb.net/sprites/home/normal/clefairy.png'
               style={{
                 zIndex: 1,
-                backgroundColor: theme.miscColor.f3,
+                backgroundColor: theme.miscColor.a5,
                 boxShadow:
                   'rgba(0, 0, 0, 0.16) 0px 10px 36px 0px, rgba(0, 0, 0, 0.06) 0px 0px 0px 1px',
               }}
@@ -61,7 +78,12 @@ export function DetailSection() {
             />
           </ImageContainer>
           <TextContainer>
-            <SectionText>Your own collection.</SectionText>
+            <ShuffleContainer>
+              <SectionText>Your own </SectionText>
+              <ShuffleWrapper>
+                <SectionText>Collection.</SectionText>
+              </ShuffleWrapper>
+            </ShuffleContainer>
             <Paragraph>
               A dedicated space to organize, showcase, and grow your Pokémon
               card collection. Whether you’re a long-time collector or just

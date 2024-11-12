@@ -7,6 +7,7 @@ import {
 } from './sectionStyles';
 import { Button, Card } from '../../../components';
 import { Link } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
 
 const Container = styled.section`
   transition: background-color 400ms ease-in-out;
@@ -82,9 +83,29 @@ const StyledSectionText = styled(SectionText)`
 
 export function StudioSection() {
   const theme = useTheme();
+  const [isVisible, setIsVisible] = useState<boolean>(false);
+  const sectionRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => setIsVisible(true), 1000);
+          observer.disconnect(); // Stop observing once it's in view
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <Container>
+    <Container ref={sectionRef}>
       <SectionWrapper>
         <Content>
           <ImageContainer>
@@ -96,10 +117,12 @@ export function StudioSection() {
               style={{
                 zIndex: 1,
                 marginRight: -400,
-                transform:
-                  'perspective(1000px) rotate(90deg) rotateX(180deg) rotateY(230deg) translateX(-100px) translateZ(10px)',
+                transform: !isVisible
+                  ? 'none'
+                  : 'perspective(1000px) rotate(90deg) rotateX(180deg) rotateY(230deg) translateX(-100px) translateZ(10px)',
                 boxShadow:
                   'rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px',
+                transition: 'all ease-in-out 1s',
               }}
               height={650}
               width={400}
@@ -116,8 +139,10 @@ export function StudioSection() {
                 zIndex: 1,
                 boxShadow:
                   'rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px',
-                transform:
-                  'perspective(1500px) rotate(90deg) rotateX(180deg) rotateY(230deg) translateX(-80px) translateZ(50px)',
+                transform: !isVisible
+                  ? 'none'
+                  : 'perspective(1500px) rotate(90deg) rotateX(180deg) rotateY(230deg) translateX(-80px) translateZ(50px)',
+                transition: 'all ease-in-out 1s',
               }}
               height={650}
               width={400}
@@ -134,8 +159,10 @@ export function StudioSection() {
                 marginLeft: -400,
                 boxShadow:
                   'rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px',
-                transform:
-                  'perspective(2500px) rotate(90deg) rotateX(180deg) rotateY(230deg) translateX(-70px) translateZ(100px)',
+                transform: !isVisible
+                  ? 'none'
+                  : 'perspective(2500px) rotate(90deg) rotateX(180deg) rotateY(230deg) translateX(-70px) translateZ(100px)',
+                transition: 'all ease-in-out 1s',
               }}
               height={650}
               width={400}
@@ -152,8 +179,10 @@ export function StudioSection() {
                 marginLeft: -400,
                 boxShadow:
                   'rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px',
-                transform:
-                  'perspective(3500px) rotate(90deg) rotateX(180deg) rotateY(230deg) translateX(-60px) translateZ(150px)',
+                transform: !isVisible
+                  ? 'none'
+                  : 'perspective(3500px) rotate(90deg) rotateX(180deg) rotateY(230deg) translateX(-60px) translateZ(150px)',
+                transition: 'all ease-in-out 1s',
               }}
               height={650}
               width={400}
@@ -170,8 +199,10 @@ export function StudioSection() {
                 marginLeft: -400,
                 boxShadow:
                   'rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px',
-                transform:
-                  'perspective(4500px) rotate(90deg) rotateX(180deg) rotateY(225deg) translateZ(200px)',
+                transform: !isVisible
+                  ? 'none'
+                  : 'perspective(4500px) rotate(90deg) rotateX(180deg) rotateY(225deg) translateZ(200px)',
+                transition: 'all ease-in-out 1s',
               }}
               height={650}
               width={400}

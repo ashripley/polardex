@@ -99,6 +99,7 @@ const Image = styled.img<{ height: string; width: string }>`
 
 const Line = styled.div`
   height: 2px;
+  border-radius: 1rem;
   background-color: ${({ theme }) => theme.bgColor.bg1};
   margin: 10px 0;
   width: 100%;

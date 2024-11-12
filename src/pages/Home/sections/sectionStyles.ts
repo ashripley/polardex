@@ -28,7 +28,7 @@ export const SectionParagraph = styled.p`
 export const SectionWrapper = styled.div`
   padding: 2.5em 1.5em;
   width: 100%;
-  margin: 0 auto;
+  margin-inline: auto;
 
   @media (min-width: 75em) {
     max-width: 75em;
