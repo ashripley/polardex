@@ -1,6 +1,35 @@
-import styled, { useTheme } from 'styled-components';
+import styled, { keyframes, useTheme } from 'styled-components';
 import { ButtonContainer, SectionText, SectionWrapper } from './sectionStyles';
 import { Button, CardCollection } from '../../../components';
+
+const fuzzyShake = keyframes`
+  0% {
+    transform: translateX(0);
+  }
+  10% {
+    transform: translateX(-3px);
+  }
+  20% {
+    transform: translateX(3px);
+  }
+  30% {
+    transform: translateX(-2px);
+  }
+  40% {
+    transform: translateX(2px);
+  }
+  50% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(0);
+  }
+`;
+
+const NostalgiaText = styled.span`
+  display: inline-block;
+  animation: ${fuzzyShake} 3s both infinite;
+`;
 
 const Container = styled.section`
   position: relative;
@@ -23,6 +52,8 @@ const Content = styled.div`
 `;
 
 const TextContainer = styled.div`
+  display: flex;
+  flex-direction: column;
   width: 100%;
   text-align: start;
   color: ${({ theme }) => theme.textColor.t1};
@@ -42,7 +73,7 @@ export function WelcomeSection() {
           <CardCollection />
           <TextContainer>
             <StyledSectionText style={{ color: theme.textColor.t1 }}>
-              Store your nostalgia.
+              Store your <NostalgiaText>nostalgia.</NostalgiaText>
             </StyledSectionText>
             <ButtonContainer>
               {/* <Link to={'/'}> */}

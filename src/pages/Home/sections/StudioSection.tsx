@@ -1,4 +1,4 @@
-import styled, { useTheme } from 'styled-components';
+import styled, { keyframes, useTheme } from 'styled-components';
 import {
   ButtonContainer,
   SectionParagraph,
@@ -80,6 +80,8 @@ const StyledSectionText = styled(SectionText)`
   background-size: 100%;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+
+  margin-bottom: 0;
 `;
 
 const AnimatedWrapper = styled.div`
@@ -91,10 +93,6 @@ const AnimatedWrapper = styled.div`
 const StudioSpanContainer = styled.div`
   display: flex;
   gap: 0.5rem;
-`;
-
-const StyledUnderlineImage = styled.img`
-  width: 25rem;
 `;
 
 export function StudioSection() {
@@ -235,13 +233,12 @@ export function StudioSection() {
                   <span>
                     <StudioSpanContainer>
                       <span>Your</span>
-                      <em>personal</em>
+                      <span>
+                        <em>personal</em>
+                        <LineSVG />
+                      </span>
                       <span>canvas.</span>
                     </StudioSpanContainer>
-                    <StyledUnderlineImage
-                      alt='underline'
-                      src='https://css-for-js.dev/long-underline.png'
-                    />
                   </span>
                 </StyledSectionText>
               </AnimatedWrapper>
@@ -261,5 +258,37 @@ export function StudioSection() {
         </Content>
       </SectionWrapper>
     </Container>
+  );
+}
+
+const dash = keyframes`
+from {
+  stroke-dashoffset: 1;
+}
+to {
+  stroke-dashoffset: 0;
+}
+
+`;
+
+const StyledPath = styled.path`
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: ${dash} 2s linear alternate infinite;
+`;
+
+function LineSVG() {
+  const theme = useTheme();
+  return (
+    <svg viewBox='0 0 480 120' style={{ marginTop: -30 }}>
+      <StyledPath
+        className='path'
+        fill='none'
+        stroke={theme.miscColor.a4}
+        strokeWidth='8'
+        d='M10,100 L30,80 L50,100 L70,90 L90,110 L110,90 L130,100 L150,80 L170,100 L190,90 L210,110 L230,90 L250,100 L270,80 L290,100 L310,90 L330,110 L350,90 L370,100 L390,80 L410,100 L430,90 L450,110 L470,90'
+        pathLength='1'
+      />
+    </svg>
   );
 }
