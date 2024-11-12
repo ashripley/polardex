@@ -66,19 +66,35 @@ const Cloyster = styled(Card)``;
 const Vileplume = styled(Card)``;
 
 const StyledSectionText = styled(SectionText)`
-  width: max-content;
+  max-width: fit-content;
+  display: inline-block;
   text-align: center;
   background-color: rgb(255, 178, 62);
   background-image: linear-gradient(
     268.67deg,
-    #b48ead 3.43%,
-    #b48ead 15.69%,
-    #bf616a 55.54%,
-    #bf616a 99%
+    rgb(180 142 173 / 0.4) 3.43%,
+    rgb(180 142 173 / 0.6) 15.69%,
+    rgb(180 142 173 / 0.8) 55.54%,
+    rgb(180 142 173 / 1) 99%
   );
   background-size: 100%;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+`;
+
+const AnimatedWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+`;
+
+const StudioSpanContainer = styled.div`
+  display: flex;
+  gap: 0.5rem;
+`;
+
+const StyledUnderlineImage = styled.img`
+  width: 25rem;
 `;
 
 export function StudioSection() {
@@ -214,9 +230,21 @@ export function StudioSection() {
             <HeaderContainer>
               <SectionText>Studio.</SectionText>
               <div style={{ width: '0.5em' }} />
-              <StyledSectionText style={{ color: theme.textColor.t2 }}>
-                Your personal canvas.
-              </StyledSectionText>
+              <AnimatedWrapper>
+                <StyledSectionText>
+                  <span>
+                    <StudioSpanContainer>
+                      <span>Your</span>
+                      <em>personal</em>
+                      <span>canvas.</span>
+                    </StudioSpanContainer>
+                    <StyledUnderlineImage
+                      alt='underline'
+                      src='https://css-for-js.dev/long-underline.png'
+                    />
+                  </span>
+                </StyledSectionText>
+              </AnimatedWrapper>
             </HeaderContainer>
             <Paragraph>
               Bring your cards to life. Take the cards in your hand and

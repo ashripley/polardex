@@ -81,7 +81,7 @@ export function DetailSection() {
             <ShuffleContainer>
               <SectionText>Your own </SectionText>
               <ShuffleWrapper>
-                <SectionText>Collection.</SectionText>
+                <SectionText>collection.</SectionText>
               </ShuffleWrapper>
             </ShuffleContainer>
             <Paragraph>

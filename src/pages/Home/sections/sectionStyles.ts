@@ -8,7 +8,7 @@ export const ButtonContainer = styled.div`
   color: ${({ theme }) => theme.textColor.t1};
 `;
 
-export const SectionText = styled.h1`
+export const SectionText = styled.span`
   font-size: 2.56578em;
   margin-top: 0px;
   font-weight: 700;
