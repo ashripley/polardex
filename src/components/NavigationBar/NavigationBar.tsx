@@ -176,9 +176,15 @@ export function NavigationBar() {
             </StyledLink>
             <NavContainer>
               <NavList>
-                <List onClick={() => page.setCurrent('gallery')}>
-                  <StyledButton>Gallery</StyledButton>
-                </List>
+                <StyledLink
+                  to={'/gallery'}
+                  onClick={() => page.setCurrent('gallery')}
+                  style={{ display: 'flex' }}
+                >
+                  <List>
+                    <StyledButton>Gallery</StyledButton>
+                  </List>
+                </StyledLink>
                 <List onClick={() => page.setCurrent('studio')}>
                   <StyledButton>Studio</StyledButton>
                 </List>

@@ -11,8 +11,6 @@ const Footer = styled.footer``;
 const ContainerSpace = styled.div`
   scroll-margin-top: 64px;
   contain: none;
-  /* height: 5em;
-  position: relative; */
 `;
 
 export function App() {
