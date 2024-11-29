@@ -1,34 +1,9 @@
-import styled, { keyframes, useTheme } from 'styled-components';
+import styled, { useTheme } from 'styled-components';
 import { ButtonContainer, SectionText, SectionWrapper } from './sectionStyles';
 import { Button, CardCollection } from '../../../components';
 
-const fuzzyShake = keyframes`
-  0% {
-    transform: translateX(0);
-  }
-  10% {
-    transform: translateX(-3px);
-  }
-  20% {
-    transform: translateX(3px);
-  }
-  30% {
-    transform: translateX(-2px);
-  }
-  40% {
-    transform: translateX(2px);
-  }
-  50% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(0);
-  }
-`;
-
 const NostalgiaText = styled.span`
   display: inline-block;
-  animation: ${fuzzyShake} 3s both infinite;
 `;
 
 const Container = styled.section`
