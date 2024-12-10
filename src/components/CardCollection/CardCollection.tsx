@@ -1,5 +1,5 @@
 import styled, { useTheme } from 'styled-components';
-import { Card } from '../Card';
+import { DisplayCard } from '../DisplayCard';
 
 const ImageContainer = styled.div`
   width: 8em;
@@ -30,7 +30,7 @@ export function CardCollection() {
   return (
     <ImageContainer>
       {/* <BreatheWrapper> */}
-      <Card
+      <DisplayCard
         title={'Bulbasaur'}
         display
         bg={theme.miscColor.f1}
@@ -49,7 +49,7 @@ export function CardCollection() {
       />
       {/* </BreatheWrapper>
       <BreatheWrapper> */}
-      <Card
+      <DisplayCard
         title={'Squirtle'}
         display
         bg={theme.miscColor.f1}
@@ -66,7 +66,7 @@ export function CardCollection() {
       />
       {/* </BreatheWrapper>
       <BreatheWrapper> */}
-      <Card
+      <DisplayCard
         title={'Charmander'}
         display
         bg={theme.miscColor.f1}

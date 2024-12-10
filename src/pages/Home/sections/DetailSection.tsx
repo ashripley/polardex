@@ -1,6 +1,6 @@
 import styled, { keyframes, useTheme } from 'styled-components';
 import { SectionParagraph, SectionText, SectionWrapper } from './sectionStyles';
-import { Card } from '../../../components';
+import { DisplayCard } from '../../../components';
 
 const Container = styled.section`
   position: relative;
@@ -60,7 +60,7 @@ export function DetailSection() {
       <SectionWrapper>
         <Content>
           <ImageContainer>
-            <Card
+            <DisplayCard
               title={'Clefairy'}
               display
               bg={theme.miscColor.f1}

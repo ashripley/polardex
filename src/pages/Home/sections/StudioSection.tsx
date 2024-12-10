@@ -5,7 +5,7 @@ import {
   SectionText,
   SectionWrapper,
 } from './sectionStyles';
-import { Button, Card } from '../../../components';
+import { Button, DisplayCard } from '../../../components';
 import { Link } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 
@@ -55,15 +55,15 @@ const HeaderContainer = styled.div`
   justify-content: center;
 `;
 
-const Rhydon = styled(Card)``;
+const Rhydon = styled(DisplayCard)``;
 
-const Charizard = styled(Card)``;
+const Charizard = styled(DisplayCard)``;
 
-const Blastoise = styled(Card)``;
+const Blastoise = styled(DisplayCard)``;
 
-const Cloyster = styled(Card)``;
+const Cloyster = styled(DisplayCard)``;
 
-const Vileplume = styled(Card)``;
+const Vileplume = styled(DisplayCard)``;
 
 const StyledSectionText = styled(SectionText)`
   max-width: fit-content;
