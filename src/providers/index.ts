@@ -1,2 +1,3 @@
 export * from './PolardexProviders';
-export { usePage } from './PageProvider';
+export * from './GalleryProvider';
+export * from './PageProvider';

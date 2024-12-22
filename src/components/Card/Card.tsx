@@ -1,27 +1,8 @@
 import { IconSelector } from '@tabler/icons-react';
-import { useState } from 'react';
-import styled, { css, keyframes } from 'styled-components';
+import { useEffect, useState } from 'react';
+import styled, { css } from 'styled-components';
 import { CardModel } from './cardModel';
-
-const translateFrame = keyframes`
-  0% {
-    transform: translateY(100px);
-    opacity: 0;
-  }
-  100% {
-    transform: translateY(0);
-    opacity: 1;
-  }
-`;
-
-const fadeIn = keyframes`
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-`;
+import { fadeStyles } from '../animation';
 
 const Container = styled.div`
   display: flex;
@@ -29,9 +10,7 @@ const Container = styled.div`
   padding: 1em;
   border-radius: 1.5em;
   flex-wrap: wrap;
-  gap: 1em;
   justify-content: space-evenly;
-  width: 18rem;
   height: auto;
 `;
 
@@ -40,7 +19,7 @@ const Wrapper = styled.div`
   flex-direction: column;
   flex-basis: 250px;
   margin-inline: auto;
-  transition: all 0.5s ease-in-out;
+  transition: all 0.3s ease-in-out;
   overflow: hidden;
   box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
 `;
@@ -53,10 +32,9 @@ const InnerWrapper = styled.div`
   position: relative;
   justify-items: center;
   padding: 1rem;
-  gap: 1rem;
   filter: drop-shadow(0 0px 0px hsl(0deg 0% 0% / 0.1))
     drop-shadow(0 0px 1px hsl(0deg 0% 0% / 0.1));
-  transition: all ease-in-out 0.5s;
+  transition: all ease-in-out 0.3s;
 
   &::before {
     content: '';
@@ -98,6 +76,7 @@ const TitleContainer = styled.p`
   display: flex;
   flex-direction: column;
   text-align: center;
+  margin: 0.5rem 0;
 `;
 
 const Name = styled.span`
@@ -108,6 +87,7 @@ const Name = styled.span`
   text-overflow: ellipsis;
   white-space: nowrap;
   max-width: 100%;
+  text-transform: capitalize;
   color: ${({ theme }) => theme.textColor.t1};
 `;
 
@@ -118,6 +98,7 @@ const Type = styled.span`
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-transform: capitalize;
   max-width: 100%;
 `;
 
@@ -132,12 +113,12 @@ const BaseUl = styled.ul<{ expanded: boolean }>`
   min-width: 0;
   width: 100%;
   margin-top: ${({ expanded }) => (expanded ? '0.2rem' : '1rem')};
-  transition: all 0.5s ease-in-out;
+  transition: all 0.3s ease-in-out;
 
   & > li {
     font-weight: ${({ expanded }) => (expanded ? '400' : '700')};
     opacity: ${({ expanded }) => (expanded ? 1 : 0.7)};
-    transition: all 0.5s ease-in-out;
+    transition: all 0.3s ease-in-out;
   }
 `;
 
@@ -147,7 +128,7 @@ const StatUl = styled.ul<{ expanded: boolean }>`
   grid-template-rows: auto;
   justify-content: flex-start;
   font-weight: 500;
-  transition: height 0.5s ease-in-out;
+  transition: height 0.3s ease-in-out;
   height: ${({ expanded }) => (expanded ? '10rem' : 0)};
   overflow: hidden;
   flex-flow: column;
@@ -156,6 +137,8 @@ const StatUl = styled.ul<{ expanded: boolean }>`
   padding: 0;
   border-top: ${({ expanded, theme }) =>
     expanded ? `2px solid ${theme.bgColor.bg3}` : 'none'};
+
+  /* ${({ expanded }) => fadeStyles(expanded, 'grid')} */
 `;
 
 const List = styled.li`
@@ -167,13 +150,11 @@ const List = styled.li`
   color: ${({ theme }) => theme.textColor.t1};
 `;
 
-const StyledImage = styled.img`
+const StyledImage = styled.img<{ isOpen: boolean }>`
   padding: 0.8rem;
-  display: block;
   width: calc(100% - 8px);
   height: calc(100% - 8px);
-  animation: ${translateFrame} 0.8s cubic-bezier(0.17, 0.67, 0.51, 0.99),
-    ${fadeIn} 0.4s;
+  ${({ isOpen }) => fadeStyles(isOpen)};
 `;
 
 const DuplicateIdentifer = styled.div`
@@ -195,10 +176,10 @@ const DuplicateIdentifer = styled.div`
 const IdentifierText = styled.span`
   color: ${({ theme }) => theme.bgColor.bg3};
   display: block;
-  font-size: 1rem;
+  font-size: 0.9rem;
 `;
 
-const ResizeContainer = styled.div`
+const ResizeContainer = styled.div<{ expanded: boolean }>`
   display: flex;
   justify-content: center;
   align-items: center;
@@ -209,6 +190,13 @@ const ResizeContainer = styled.div`
   margin: 0.5rem;
   position: absolute;
   z-index: 5;
+  transition: all ease-in-out 0.3s;
+
+  ${({ expanded, theme }) =>
+    expanded &&
+    css`
+      background-color: ${theme.textColor.t2Hover};
+    `};
 
   &:hover {
     background-color: ${({ theme }) => theme.textColor.t2Hover};
@@ -229,22 +217,35 @@ const Label = styled(Type)`
 `;
 
 const Attribute = styled(Type)`
-  font-size: 1.1rem;
+  font-size: 1rem;
 `;
 
 export function Card(props: Partial<CardModel>) {
   const { pokemonData, attributes, setNumber, quantity } = props;
   const [expanded, setExpanded] = useState<boolean>(false);
+  const [isLoaded, setIsLoaded] = useState<boolean>(false);
+
+  useEffect(() => {
+    setIsLoaded(true);
+
+    return () => {
+      setIsLoaded(false);
+    };
+  }, []);
 
   return (
     <Container>
       <Wrapper>
         <InnerWrapper>
-          <ResizeContainer onClick={() => setExpanded(!expanded)}>
+          <ResizeContainer
+            onClick={() => setExpanded(!expanded)}
+            expanded={expanded}
+          >
             <ResizeIcon />
           </ResizeContainer>
           <ImageContainer expanded={false}>
             <StyledImage
+              isOpen={isLoaded}
               className='a9bdap5'
               src={`https://img.pokemondb.net/sprites/home/normal/${pokemonData?.name?.toLowerCase()}.png`}
             />
@@ -276,10 +277,12 @@ export function Card(props: Partial<CardModel>) {
               <Label>Condition:</Label>
               <Attribute>{attributes?.condition}</Attribute>
             </List>
-            <List>
-              <Label>Grading:</Label>
-              <Attribute>{attributes?.grading}</Attribute>
-            </List>
+            {attributes?.grading && (
+              <List>
+                <Label>Grading:</Label>
+                <Attribute>{attributes.grading}</Attribute>
+              </List>
+            )}
           </StatUl>
         </InnerWrapper>
       </Wrapper>

@@ -43,7 +43,7 @@ const shuffle = keyframes`
 `;
 
 const ShuffleWrapper = styled.div`
-  animation: ${shuffle} 2s ease-in-out infinite;
+  animation: ${shuffle} 2s ease-in-out alternate infinite;
 `;
 
 const ShuffleContainer = styled.div`

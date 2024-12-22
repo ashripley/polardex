@@ -19,7 +19,7 @@ export interface CardModel {
       second?: EvolutionDefinition;
       third?: EvolutionDefinition;
     };
-    type?: keyof TypesDefinition;
+    type?: string;
     imageUrl?: string;
     meta?: unknown;
   };

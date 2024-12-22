@@ -6,7 +6,7 @@ const ImageContainer = styled.div`
   order: 0;
   justify-content: center;
   display: flex;
-  transition: animation 0.5s ease;
+  transition: animation 0.3s ease;
 
   @media (min-width: 56.25em) {
     display: flex;
@@ -14,15 +14,6 @@ const ImageContainer = styled.div`
     width: 100%;
   }
 `;
-
-// const breathe = keyframes`
-//   0%, 100% { transform: scale(1); }
-//   50% { transform: scale(1.05); }
-// `;
-
-// const BreatheWrapper = styled.div`
-//   animation: ${breathe} 3s ease-in-out infinite;
-// `;
 
 export function CardCollection() {
   const theme = useTheme();

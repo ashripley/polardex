@@ -16,6 +16,8 @@ type GalleryProviderProps = {
 };
 
 export const GalleryProvider = ({ children }: GalleryProviderProps) => {
+  console.log('gallery provider');
+
   return (
     <GalleryContext.Provider value={{}}>{children}</GalleryContext.Provider>
   );

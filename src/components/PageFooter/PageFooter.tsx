@@ -45,7 +45,7 @@ const StudioTextContainer = styled.div`
   flex-direction: column;
   text-align: center;
   font-size: 0.8em;
-  transition: color 400ms ease-in-out;
+  transition: color 0.3s ease-in-out;
   margin-top: 1.125em;
   color: ${({ theme }) => theme.textColor.t2};
 
@@ -60,7 +60,7 @@ function HeartSVG() {
     height: '0.8em',
     verticalAlign: 'middle',
     fill: 'rgb(220, 170, 174)',
-    transition: 'fill 400ms ease-in-out',
+    transition: 'fill 0.3s ease-in-out',
   };
 
   return (

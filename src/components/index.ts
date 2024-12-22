@@ -5,3 +5,5 @@ export * from './DisplayCard';
 export * from './CardCollection';
 export * from './Input';
 export * from './Card';
+export * from './animation';
+export * from './LoadingSpinner';

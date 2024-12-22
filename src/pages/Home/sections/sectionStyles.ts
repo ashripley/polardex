@@ -13,14 +13,14 @@ export const SectionText = styled.span`
   margin-top: 0px;
   font-weight: 700;
   margin-bottom: 0.8em;
-  transition: color 400ms ease-in-out;
+  transition: color 0.3s ease-in-out;
 `;
 
 export const SectionParagraph = styled.p`
   margin-top: 0px;
   margin-bottom: 1em;
   font-size: 1.26562em;
-  transition: color 400ms ease-in-out;
+  transition: color 0.3s ease-in-out;
   color: ${({ theme }) => theme.textColor.t1};
   text-align: start;
 `;
