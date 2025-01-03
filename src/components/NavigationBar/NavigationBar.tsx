@@ -185,9 +185,15 @@ export function NavigationBar() {
                     <StyledButton>Gallery</StyledButton>
                   </List>
                 </StyledLink>
-                <List onClick={() => page.setCurrent('studio')}>
-                  <StyledButton>Studio</StyledButton>
-                </List>
+                <StyledLink
+                  to={'/studio'}
+                  onClick={() => page.setCurrent('studio')}
+                  style={{ display: 'flex' }}
+                >
+                  <List>
+                    <StyledButton>Studio</StyledButton>
+                  </List>
+                </StyledLink>
                 <List onClick={() => page.setCurrent('dashboard')}>
                   <StyledButton>Dashboard</StyledButton>
                 </List>

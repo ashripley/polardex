@@ -1,10 +1,14 @@
-import { IconSelector } from '@tabler/icons-react';
+import { IconPhotoScan, IconSelector } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 import styled, { css } from 'styled-components';
 import { CardModel } from './cardModel';
 import { fadeStyles } from '../animation';
 
-const Container = styled.div`
+type CardProps = Partial<CardModel> & {
+  isDemo?: boolean;
+};
+
+const Container = styled.div<{ isDemo: boolean | undefined }>`
   display: flex;
   flex-grow: 1;
   padding: 1em;
@@ -12,6 +16,12 @@ const Container = styled.div`
   flex-wrap: wrap;
   justify-content: space-evenly;
   height: auto;
+
+  ${({ isDemo }) =>
+    isDemo &&
+    css`
+      min-width: 18rem;
+    `}
 `;
 
 const Wrapper = styled.div`
@@ -157,6 +167,18 @@ const StyledImage = styled.img<{ isOpen: boolean }>`
   ${({ isOpen }) => fadeStyles(isOpen)};
 `;
 
+const StyledDemoImage = styled(IconPhotoScan)<{ isOpen: boolean }>`
+  padding: 0.8rem;
+  width: calc(100% - 8px);
+  height: calc(100% - 8px);
+
+  & {
+    color: ${({ theme }) => theme.textColor.t2};
+  }
+
+  ${({ isOpen }) => fadeStyles(isOpen)};
+`;
+
 const DuplicateIdentifer = styled.div`
   display: flex;
   justify-content: center;
@@ -220,8 +242,8 @@ const Attribute = styled(Type)`
   font-size: 1rem;
 `;
 
-export function Card(props: Partial<CardModel>) {
-  const { pokemonData, attributes, setNumber, quantity } = props;
+export function Card(props: CardProps) {
+  const { pokemonData, attributes, setNumber, quantity, isDemo } = props;
   const [expanded, setExpanded] = useState<boolean>(false);
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
 
@@ -234,7 +256,7 @@ export function Card(props: Partial<CardModel>) {
   }, []);
 
   return (
-    <Container>
+    <Container isDemo={isDemo}>
       <Wrapper>
         <InnerWrapper>
           <ResizeContainer
@@ -244,11 +266,15 @@ export function Card(props: Partial<CardModel>) {
             <ResizeIcon />
           </ResizeContainer>
           <ImageContainer expanded={false}>
-            <StyledImage
-              isOpen={isLoaded}
-              className='a9bdap5'
-              src={`https://img.pokemondb.net/sprites/home/normal/${pokemonData?.name?.toLowerCase()}.png`}
-            />
+            {isDemo ? (
+              <StyledDemoImage stroke={1} isOpen={isLoaded} />
+            ) : (
+              <StyledImage
+                isOpen={isLoaded}
+                className='a9bdap5'
+                src={`https://img.pokemondb.net/sprites/home/normal/${pokemonData?.name?.toLowerCase()}.png`}
+              />
+            )}
             {quantity && (
               <DuplicateIdentifer>
                 <IdentifierText>{quantity}</IdentifierText>

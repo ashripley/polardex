@@ -7,3 +7,5 @@ export * from './Input';
 export * from './Card';
 export * from './animation';
 export * from './LoadingSpinner';
+export * from './Attribute';
+export * from './Modal';

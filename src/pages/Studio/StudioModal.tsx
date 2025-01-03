@@ -1,0 +1,74 @@
+import styled from 'styled-components';
+import { Modal } from '../../components';
+import { IconX } from '@tabler/icons-react';
+
+interface StudioModalProps {
+  isOpen: boolean;
+  toggleModal: () => void;
+}
+
+const Container = styled.div`
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+`;
+
+const ModalHeader = styled.div`
+  display: flex;
+  justify-content: end;
+  padding: 0.5rem;
+  margin: 1rem;
+  border-radius: 0.5rem;
+  width: auto;
+  margin-left: auto;
+  transition: background-color 0.3s ease-in-out;
+
+  & > svg {
+    color: ${({ theme }) => theme.textColor.t1};
+  }
+
+  &:hover {
+    background-color: ${({ theme }) => theme.textColor.t1Hover};
+    cursor: pointer;
+  }
+`;
+
+const ContentContainer = styled.div`
+  display: flex;
+  flex: 1;
+  align-items: center;
+`;
+
+const LeftModalContent = styled.div`
+  display: flex;
+  flex: 1 1 auto;
+  justify-content: center;
+  margin: 0.5rem;
+  background-color: ${({ theme }) => theme.bgColor.bg3};
+`;
+
+const RightModalContent = styled.div`
+  display: flex;
+  justify-content: center;
+  flex: 1 1 auto;
+  background-color: ${({ theme }) => theme.bgColor.bg3};
+  margin: 0.5rem;
+`;
+
+export function StudioModal(props: StudioModalProps) {
+  const { isOpen, toggleModal } = props;
+
+  return (
+    <Modal isOpen={isOpen}>
+      <Container>
+        <ModalHeader onClick={toggleModal}>
+          <IconX stroke={2} />
+        </ModalHeader>
+        <ContentContainer>
+          <LeftModalContent>left</LeftModalContent>
+          <RightModalContent>right</RightModalContent>
+        </ContentContainer>
+      </Container>
+    </Modal>
+  );
+}

@@ -85,7 +85,7 @@ export function PageFooter() {
         </StudioHeader>
         <StudioContent>
           <StudioTextContainer>
-            <div>© 2022-2024 Polar Code Studio</div>
+            <div>© 2022-2025 Polar Code Studio</div>
             <div style={{ display: 'inline-flex', alignItems: 'center' }}>
               <div style={{ marginRight: 5 }}>Made with</div>
               <HeartSVG />

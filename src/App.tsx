@@ -3,6 +3,7 @@ import styled, { ThemeProvider } from 'styled-components';
 import { theme } from './theme';
 import { Gallery, Home } from './pages';
 import { NavigationBar, PageFooter } from './components';
+import { Studio } from './pages/Studio';
 
 const Container = styled.div``;
 
@@ -23,6 +24,7 @@ export function App() {
           <Routes>
             <Route path='/' element={<Home />} />
             <Route path='/gallery' element={<Gallery />} />
+            <Route path='/studio' element={<Studio />} />
           </Routes>
           <Footer>
             <PageFooter />
