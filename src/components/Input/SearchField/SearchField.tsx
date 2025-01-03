@@ -33,7 +33,12 @@ interface InputOptions {
   hasClearButton?: boolean;
 }
 
-const StyledInput = styled.input<InputOptions>``;
+const StyledInput = styled.input<InputOptions>`
+  border: ${({ theme }) => `2px solid ${theme.bgColor.bg3}`};
+  border-radius: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  margin-top: 0.5rem;
+`;
 
 export const SearchField = forwardRef<
   HTMLInputElement,

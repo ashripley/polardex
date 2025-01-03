@@ -9,3 +9,4 @@ export * from './animation';
 export * from './LoadingSpinner';
 export * from './Attribute';
 export * from './Modal';
+export * from './StudioCard';

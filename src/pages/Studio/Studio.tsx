@@ -61,8 +61,10 @@ const ShuffleWrapper = styled.div`
 
 export function Studio() {
   const [modalOpen, setModalOpen] = useState<boolean>(false);
+  const [actionType, setActionType] = useState<string>('');
 
-  const onAddOpen = () => {
+  const onAddOpen = (type: string) => {
+    setActionType(type);
     setModalOpen(true);
   };
 
@@ -76,7 +78,7 @@ export function Studio() {
         <SectionWrapper>
           <Container>
             <Action>
-              <Button buttonType='secondary' onClick={onAddOpen}>
+              <Button buttonType='secondary' onClick={() => onAddOpen('add')}>
                 Add
               </Button>
               <Card
@@ -97,7 +99,12 @@ export function Studio() {
               />
             </Action>
             <Action>
-              <Button buttonType='secondary'>Modify</Button>
+              <Button
+                buttonType='secondary'
+                onClick={() => onAddOpen('modify')}
+              >
+                Modify
+              </Button>
               <ShuffleWrapper>
                 <ImageWrapper isVisible={true}>
                   <StyledImage src='https://img.pokemondb.net/sprites/home/normal/hitmonlee.png' />
@@ -122,10 +129,19 @@ export function Studio() {
               </div>
             </Action>
             <Action>
-              <Button buttonType='secondary'>Attribute</Button>
+              <Button
+                buttonType='secondary'
+                onClick={() => onAddOpen('attribute')}
+              >
+                Attribute
+              </Button>
               <Attribute />
             </Action>
-            <StudioModal isOpen={modalOpen} toggleModal={toggleModal} />
+            <StudioModal
+              isOpen={modalOpen}
+              toggleModal={toggleModal}
+              actionType={actionType}
+            />
           </Container>
         </SectionWrapper>
       </section>

@@ -13,7 +13,6 @@ export const SectionText = styled.span`
   margin-top: 0px;
   font-weight: 700;
   margin-bottom: 0.8em;
-  transition: color 0.3s ease-in-out;
 `;
 
 export const SectionParagraph = styled.p`

@@ -1,0 +1,293 @@
+import { IconPhotoScan } from '@tabler/icons-react';
+import styled from 'styled-components';
+import { Card } from '../Card';
+import { SearchField } from '../Input';
+
+type StudioCardProps = Partial<Parameters<typeof Card>[0]> & {
+  isDemo?: boolean;
+};
+
+const Container = styled.div`
+  flex-grow: 1;
+  padding: 1em;
+  border-radius: 1.5em;
+  height: auto;
+  min-width: 18rem;
+`;
+
+const Wrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex-basis: 250px;
+  margin-inline: auto;
+  transition: all 0.3s ease-in-out;
+  overflow: hidden;
+  box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+`;
+
+const InnerWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  border-radius: 0.5rem;
+  background: ${({ theme }) => theme.bgColor.bg1};
+  position: relative;
+  justify-items: center;
+  padding: 1rem;
+  filter: drop-shadow(0 0px 0px hsl(0deg 0% 0% / 0.1))
+    drop-shadow(0 0px 1px hsl(0deg 0% 0% / 0.1));
+  transition: all ease-in-out 0.3s;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 130px;
+    border-radius: 0.5rem 0.5rem 0 0;
+    background: ${({ theme }) => theme.bgColor.bg3};
+  }
+`;
+
+const ImageContainer = styled.div`
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background-color: ${({ theme }) => theme.bgColor.bg1};
+  overflow: visible;
+  justify-content: flex-end;
+  border: 3px solid ${({ theme }) => theme.bgColor.bg3};
+  margin-inline: auto;
+`;
+
+const TitleContainer = styled.p`
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  margin: 0.5rem 0;
+`;
+
+// const Name = styled.span`
+//   display: block;
+//   font-size: 1.2rem;
+//   font-weight: 700;
+//   overflow: hidden;
+//   text-overflow: ellipsis;
+//   white-space: nowrap;
+//   max-width: 100%;
+//   text-transform: capitalize;
+//   color: ${({ theme }) => theme.textColor.t1};
+// `;
+
+const Type = styled.span`
+  display: block;
+  color: ${({ theme }) => theme.textColor.t1};
+  font-size: 1rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-transform: capitalize;
+  max-width: 100%;
+`;
+
+const BaseUl = styled.ul<{ expanded: boolean }>`
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  font-weight: 700;
+  gap: ${({ expanded }) => (expanded ? '3rem' : '1rem')};
+  padding: 0;
+  color: ${({ theme }) => theme.textColor.t1};
+  min-width: 0;
+  width: 100%;
+  transition: all 0.3s ease-in-out;
+
+  & > li {
+    font-weight: ${({ expanded }) => (expanded ? '400' : '700')};
+    opacity: ${({ expanded }) => (expanded ? 1 : 0.7)};
+    transition: all 0.3s ease-in-out;
+  }
+
+  & > input {
+    width: 33%;
+    font-weight: 400;
+  }
+`;
+
+const StatUl = styled.ul`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto;
+  justify-content: flex-start;
+  font-weight: 500;
+  transition: height 0.3s ease-in-out;
+  overflow: hidden;
+  flex-flow: column;
+  place-items: start;
+  place-items: center;
+  padding: 0;
+  border-top: ${({ theme }) => `2px solid ${theme.bgColor.bg3}`};
+`;
+
+const List = styled.li`
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+  font-size: 1rem;
+  padding: 0.5rem;
+  color: ${({ theme }) => theme.textColor.t1};
+`;
+
+const StyledImage = styled.img`
+  padding: 0.8rem;
+  width: calc(100% - 8px);
+  height: calc(100% - 8px);
+`;
+
+const StyledDemoImage = styled(IconPhotoScan)`
+  padding: 0.8rem;
+  width: calc(100% - 8px);
+  height: calc(100% - 8px);
+
+  & {
+    color: ${({ theme }) => theme.textColor.t2};
+  }
+`;
+
+const DuplicateIdentifer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: ${({ theme }) => theme.textColor.t2};
+  height: 1.5rem;
+  width: 1.5rem;
+  border-radius: 50%;
+  top: 0;
+  right: 0;
+  margin: 0.5rem;
+  position: absolute;
+  z-index: 5;
+  box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+`;
+
+const IdentifierText = styled.span`
+  color: ${({ theme }) => theme.bgColor.bg3};
+  display: block;
+  font-size: 0.9rem;
+`;
+
+const Label = styled(Type)`
+  font-size: 1rem;
+  opacity: 0.7;
+`;
+
+// const Attribute = styled(Type)`
+//   font-size: 1rem;
+// `;
+
+export function StudioCard(props: StudioCardProps) {
+  const { pokemonData, attributes, quantity, isDemo } = props;
+
+  return (
+    <Container>
+      <Wrapper>
+        <InnerWrapper>
+          <ImageContainer>
+            {isDemo ? (
+              <StyledDemoImage stroke={1} />
+            ) : (
+              <StyledImage
+                className='a9bdap5'
+                src={`https://img.pokemondb.net/sprites/home/normal/${pokemonData?.name?.toLowerCase()}.png`}
+              />
+            )}
+            {quantity && (
+              <DuplicateIdentifer>
+                <IdentifierText>{quantity}</IdentifierText>
+              </DuplicateIdentifer>
+            )}
+          </ImageContainer>
+          <TitleContainer>
+            <SearchField
+              active
+              onClear={() => {}}
+              onSubmit={() => {}}
+              placeholder='name'
+            />
+            <SearchField
+              active
+              onClear={() => {}}
+              onSubmit={() => {}}
+              placeholder='type'
+            />
+            <BaseUl expanded={false}>
+              <SearchField
+                active
+                onClear={() => {}}
+                onSubmit={() => {}}
+                placeholder='Id'
+              />
+              <SearchField
+                active
+                onClear={() => {}}
+                onSubmit={() => {}}
+                placeholder='Year'
+              />
+              <SearchField
+                active
+                onClear={() => {}}
+                onSubmit={() => {}}
+                placeholder='0/0'
+              />
+            </BaseUl>
+          </TitleContainer>
+          <StatUl>
+            <List>
+              <Label>Set:</Label>
+              <SearchField
+                active
+                onClear={() => {}}
+                onSubmit={() => {}}
+                placeholder='Set'
+              />
+            </List>
+            <List>
+              <Label>Type:</Label>
+              <SearchField
+                active
+                onClear={() => {}}
+                onSubmit={() => {}}
+                placeholder='Type'
+              />
+            </List>
+            <List>
+              <Label>Condition:</Label>
+              <SearchField
+                active
+                onClear={() => {}}
+                onSubmit={() => {}}
+                placeholder='Condition'
+              />
+            </List>
+            {attributes?.grading && (
+              <List>
+                <Label>Grading:</Label>
+                <SearchField
+                  active
+                  onClear={() => {}}
+                  onSubmit={() => {}}
+                  placeholder='Grading'
+                />
+              </List>
+            )}
+          </StatUl>
+        </InnerWrapper>
+      </Wrapper>
+    </Container>
+  );
+}

@@ -10,11 +10,11 @@ const Container = styled.div<{ isOpen: boolean }>`
   display: flex;
   margin: auto;
   width: 80dvw;
-  height: 80dvh;
+  height: 70dvh;
   position: absolute;
   border-radius: 0.5rem;
   box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
-  background-color: ${({ theme }) => theme.bgColor.bg1};
+  background-color: ${({ theme }) => theme.bgColor.bg2};
 
   ${({ isOpen }) => fadeStyles(isOpen, 'flex')};
 `;

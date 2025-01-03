@@ -1,9 +1,12 @@
 import styled from 'styled-components';
-import { Modal } from '../../components';
+import { Modal } from '../../../components';
 import { IconX } from '@tabler/icons-react';
+import { StudioModalDialog } from './StudioModalDialog';
+import { StudioModalCanvas } from './StudioModalCanvas';
 
 interface StudioModalProps {
   isOpen: boolean;
+  actionType: string;
   toggleModal: () => void;
 }
 
@@ -39,24 +42,15 @@ const ContentContainer = styled.div`
   align-items: center;
 `;
 
-const LeftModalContent = styled.div`
+const Content = styled.div`
   display: flex;
   flex: 1 1 auto;
   justify-content: center;
-  margin: 0.5rem;
-  background-color: ${({ theme }) => theme.bgColor.bg3};
-`;
-
-const RightModalContent = styled.div`
-  display: flex;
-  justify-content: center;
-  flex: 1 1 auto;
-  background-color: ${({ theme }) => theme.bgColor.bg3};
-  margin: 0.5rem;
+  margin: 1rem;
 `;
 
 export function StudioModal(props: StudioModalProps) {
-  const { isOpen, toggleModal } = props;
+  const { isOpen, toggleModal, actionType } = props;
 
   return (
     <Modal isOpen={isOpen}>
@@ -65,9 +59,16 @@ export function StudioModal(props: StudioModalProps) {
           <IconX stroke={2} />
         </ModalHeader>
         <ContentContainer>
-          <LeftModalContent>left</LeftModalContent>
-          <RightModalContent>right</RightModalContent>
+          <Content>
+            <StudioModalDialog type={actionType} />
+          </Content>
+          <Content>
+            <StudioModalCanvas />
+          </Content>
         </ContentContainer>
+        <div>
+          <div style={{ height: '5rem' }}></div>
+        </div>
       </Container>
     </Modal>
   );
