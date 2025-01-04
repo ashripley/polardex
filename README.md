@@ -20,7 +20,7 @@
   <img width="250" alt="Screenshot 2024-02-05 at 3 08 51 pm" src="https://img.pokemondb.net/sprites/home/normal/dragonite.png">
 
 
-  <h1 align="center">chardb</h1>
+  <h1 align="center">polardex</h1>
   <h4 align="center">Store your nostalgia, built with <a href="http://reactjs.com](https://react.dev" target="_blank">React</a>.</h4>
 </div>
 
