@@ -6,12 +6,12 @@ import { getFirestore } from 'firebase/firestore';
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: 'AIzaSyDoVT1rOtNIs4gb3n19tcpD0vnABkxbhrU',
-  authDomain: 'chardbv2.firebaseapp.com',
-  projectId: 'chardbv2',
-  storageBucket: 'chardbv2.appspot.com',
-  messagingSenderId: '1082570112207',
-  appId: '1:1082570112207:web:7e658440313df63a890bba',
+  apiKey: 'AIzaSyAvolx_iWjJjYVgi4cf9q1fgOs-_lQiE8g',
+  authDomain: 'polardex-prod.firebaseapp.com',
+  projectId: 'polardex-prod',
+  storageBucket: 'polardex-prod.firebasestorage.app',
+  messagingSenderId: '475965315646',
+  appId: '1:475965315646:web:60a279d7e747c2575d4f6f',
 };
 
 // Initialize Firebase
