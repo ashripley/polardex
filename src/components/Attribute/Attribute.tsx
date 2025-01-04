@@ -4,7 +4,9 @@ import { AttributeModel } from '../../api/fetch';
 import { useEffect, useState } from 'react';
 import { fadeStyles } from '../animation';
 
-type AttributeProps = Partial<AttributeModel>;
+type AttributeProps = Partial<AttributeModel> & {
+  inOverview: boolean;
+};
 
 const Container = styled.div`
   display: flex;
@@ -158,7 +160,7 @@ const ShuffleWrapper = styled.div`
 `;
 
 export function Attribute(props: AttributeProps) {
-  const { name, type } = props;
+  const { name, type, inOverview } = props;
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
 
   useEffect(() => {
@@ -171,11 +173,13 @@ export function Attribute(props: AttributeProps) {
 
   return (
     <Container>
-      <ShuffleWrapper>
-        <ImageWrapper isVisible={isLoaded}>
-          <StyledImage src='https://img.pokemondb.net/sprites/home/normal/hitmonchan.png' />
-        </ImageWrapper>
-      </ShuffleWrapper>
+      {inOverview && (
+        <ShuffleWrapper>
+          <ImageWrapper isVisible={isLoaded}>
+            <StyledImage src='https://img.pokemondb.net/sprites/home/normal/hitmonchan.png' />
+          </ImageWrapper>
+        </ShuffleWrapper>
+      )}
       <Wrapper>
         <InnerWrapper>
           <ImageContainer expanded={false}>

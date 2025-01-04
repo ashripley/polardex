@@ -1,6 +1,7 @@
-import styled, { keyframes, useTheme } from 'styled-components';
+import styled, { css, keyframes, useTheme } from 'styled-components';
 import { SectionParagraph, SectionText, SectionWrapper } from './sectionStyles';
 import { DisplayCard } from '../../../components';
+import { isMobile } from '../../../utils';
 
 const Container = styled.section`
   position: relative;
@@ -21,9 +22,16 @@ const Content = styled.div`
   }
 `;
 
-const ImageContainer = styled.div`
+const ImageContainer = styled.div<{ isMobile: boolean }>`
   width: 100%;
   order: 0;
+
+  ${({ isMobile }) =>
+    isMobile &&
+    css`
+      display: flex;
+      justify-content: center;
+    `}
 `;
 
 const TextContainer = styled.div`
@@ -31,8 +39,9 @@ const TextContainer = styled.div`
   color: ${({ theme }) => theme.textColor.t1};
 `;
 
-const Paragraph = styled(SectionParagraph)`
+const Paragraph = styled(SectionParagraph)<{ isMobile: boolean }>`
   color: ${({ theme }) => theme.textColor.t1};
+  text-align: ${({ isMobile }) => (isMobile ? 'center' : 'start')};
 `;
 
 const shuffle = keyframes`
@@ -46,10 +55,16 @@ const ShuffleWrapper = styled.div`
   animation: ${shuffle} 2s ease-in-out alternate infinite;
 `;
 
-const ShuffleContainer = styled.div`
+const ShuffleContainer = styled.div<{ isMobile: boolean }>`
   display: flex;
   flex-direction: row;
   gap: 0.5rem;
+
+  ${({ isMobile }) =>
+    isMobile &&
+    css`
+      justify-content: center;
+    `}
 `;
 
 export function DetailSection() {
@@ -59,7 +74,7 @@ export function DetailSection() {
     <Container>
       <SectionWrapper>
         <Content>
-          <ImageContainer>
+          <ImageContainer isMobile={isMobile}>
             <DisplayCard
               title={'Clefairy'}
               display
@@ -71,20 +86,24 @@ export function DetailSection() {
                 boxShadow:
                   'rgba(0, 0, 0, 0.16) 0px 10px 36px 0px, rgba(0, 0, 0, 0.06) 0px 0px 0px 1px',
               }}
-              height={650}
-              width={400}
+              height={isMobile ? 550 : 650}
+              width={isMobile ? 300 : 400}
               image={{ width: '10em', height: '10em' }}
               titleSize='1.2em'
             />
           </ImageContainer>
           <TextContainer>
-            <ShuffleContainer>
-              <SectionText>Your own </SectionText>
+            <ShuffleContainer isMobile={isMobile}>
+              <SectionText style={{ fontSize: isMobile ? '2rem' : '2.5rem' }}>
+                Your own{' '}
+              </SectionText>
               <ShuffleWrapper>
-                <SectionText>collection.</SectionText>
+                <SectionText style={{ fontSize: isMobile ? '2rem' : '2.5rem' }}>
+                  collection.
+                </SectionText>
               </ShuffleWrapper>
             </ShuffleContainer>
-            <Paragraph>
+            <Paragraph isMobile={isMobile}>
               A dedicated space to organize, showcase, and grow your Pokémon
               card collection. Whether you’re a long-time collector or just
               starting, Polardex offers easy tools to catalog your cards, track

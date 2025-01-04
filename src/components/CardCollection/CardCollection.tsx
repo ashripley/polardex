@@ -1,5 +1,6 @@
 import styled, { useTheme } from 'styled-components';
 import { DisplayCard } from '../DisplayCard';
+import { isMobile } from '../../utils';
 
 const ImageContainer = styled.div`
   width: 8em;
@@ -20,13 +21,17 @@ export function CardCollection() {
 
   return (
     <ImageContainer>
-      {/* <BreatheWrapper> */}
       <DisplayCard
         title={'Bulbasaur'}
         display
         bg={theme.miscColor.f1}
-        height={300}
-        width={200}
+        height={isMobile ? 225 : 300}
+        width={isMobile ? 150 : 200}
+        image={{
+          height: isMobile ? '3rem' : '5rem',
+          width: isMobile ? '3rem' : '5rem',
+        }}
+        imageRadius={isMobile ? '0.5rem' : '1rem'}
         imageUrl='https://img.pokemondb.net/sprites/home/normal/bulbasaur.png'
         style={{
           marginLeft: -200,
@@ -36,16 +41,20 @@ export function CardCollection() {
           backgroundColor: theme.miscColor.a4,
           filter:
             'drop-shadow(0 1px 1px hsl(210deg 40% 6% / 0.4)) drop-shadow(0 1px 1px hsl(210deg 40% 6% / 0.4))',
+          borderRadius: isMobile ? '1rem' : '1.2rem',
         }}
       />
-      {/* </BreatheWrapper>
-      <BreatheWrapper> */}
       <DisplayCard
         title={'Squirtle'}
         display
         bg={theme.miscColor.f1}
-        height={300}
-        width={200}
+        height={isMobile ? 225 : 300}
+        width={isMobile ? 150 : 200}
+        image={{
+          height: isMobile ? '3rem' : '5rem',
+          width: isMobile ? '3rem' : '5rem',
+        }}
+        imageRadius={isMobile ? '0.5rem' : '1rem'}
         imageUrl='https://img.pokemondb.net/sprites/home/normal/squirtle.png'
         style={{
           transform: 'rotate(0deg)',
@@ -53,16 +62,20 @@ export function CardCollection() {
           backgroundColor: theme.miscColor.f4,
           filter:
             'drop-shadow(0 1px 1px hsl(210deg 40% 6% / 0.4)) drop-shadow(0 1px 1px hsl(210deg 40% 6% / 0.4))',
+          borderRadius: isMobile ? '1rem' : '1.2rem',
         }}
       />
-      {/* </BreatheWrapper>
-      <BreatheWrapper> */}
       <DisplayCard
         title={'Charmander'}
         display
         bg={theme.miscColor.f1}
-        height={300}
-        width={200}
+        height={isMobile ? 225 : 300}
+        width={isMobile ? 150 : 200}
+        image={{
+          height: isMobile ? '3rem' : '5rem',
+          width: isMobile ? '3rem' : '5rem',
+        }}
+        imageRadius={isMobile ? '0.5rem' : '1rem'}
         imageUrl='https://img.pokemondb.net/sprites/home/normal/charmander.png'
         style={{
           marginRight: -200,
@@ -72,9 +85,9 @@ export function CardCollection() {
           backgroundColor: theme.miscColor.a2,
           filter:
             'drop-shadow(0 1px 1px hsl(210deg 40% 6% / 0.4)) drop-shadow(0 1px 1px hsl(210deg 40% 6% / 0.4))',
+          borderRadius: isMobile ? '1rem' : '1.2rem',
         }}
       />
-      {/* </BreatheWrapper> */}
     </ImageContainer>
   );
 }

@@ -2,6 +2,7 @@ import styled, { keyframes } from 'styled-components';
 import { Link } from 'react-router-dom';
 import { usePage } from '../../providers';
 import { useEffect, useState } from 'react';
+import { isMobile } from '../../utils';
 
 const bounce = keyframes`
   0% {
@@ -174,31 +175,30 @@ export function NavigationBar() {
                 <StyledImage src='https://img.pokemondb.net/sprites/home/normal/dragonite.png' />
               </ImageWrapper>
             </StyledLink>
-            <NavContainer>
-              <NavList>
-                <StyledLink
-                  to={'/gallery'}
-                  onClick={() => page.setCurrent('gallery')}
-                  style={{ display: 'flex' }}
-                >
-                  <List>
-                    <StyledButton>Gallery</StyledButton>
-                  </List>
-                </StyledLink>
-                <StyledLink
-                  to={'/studio'}
-                  onClick={() => page.setCurrent('studio')}
-                  style={{ display: 'flex' }}
-                >
-                  <List>
-                    <StyledButton>Studio</StyledButton>
-                  </List>
-                </StyledLink>
-                <List onClick={() => page.setCurrent('dashboard')}>
-                  <StyledButton>Dashboard</StyledButton>
-                </List>
-              </NavList>
-            </NavContainer>
+            {!isMobile && (
+              <NavContainer>
+                <NavList>
+                  <StyledLink
+                    to={'/gallery'}
+                    onClick={() => page.setCurrent('gallery')}
+                    style={{ display: 'flex' }}
+                  >
+                    <List>
+                      <StyledButton>Gallery</StyledButton>
+                    </List>
+                  </StyledLink>
+                  <StyledLink
+                    to={'/studio'}
+                    onClick={() => page.setCurrent('studio')}
+                    style={{ display: 'flex' }}
+                  >
+                    <List>
+                      <StyledButton>Studio</StyledButton>
+                    </List>
+                  </StyledLink>
+                </NavList>
+              </NavContainer>
+            )}
           </NavigationHeader>
         </NavigationWrapper>
       </NavigationContainer>

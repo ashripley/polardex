@@ -1,9 +1,8 @@
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import styled, { ThemeProvider } from 'styled-components';
 import { theme } from './theme';
-import { Gallery, Home } from './pages';
+import { Gallery, Home, Studio } from './pages';
 import { NavigationBar, PageFooter } from './components';
-import { Studio } from './pages/Studio';
 
 const Container = styled.div``;
 

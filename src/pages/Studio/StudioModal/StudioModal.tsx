@@ -63,7 +63,7 @@ export function StudioModal(props: StudioModalProps) {
             <StudioModalDialog type={actionType} />
           </Content>
           <Content>
-            <StudioModalCanvas />
+            <StudioModalCanvas type={actionType} />
           </Content>
         </ContentContainer>
         <div>

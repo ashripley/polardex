@@ -1,10 +1,9 @@
 import styled, { useTheme } from 'styled-components';
 import { ButtonContainer, SectionText, SectionWrapper } from './sectionStyles';
 import { Button, CardCollection } from '../../../components';
-
-const NostalgiaText = styled.span`
-  display: inline-block;
-`;
+import { isMobile } from '../../../utils';
+import { Link } from 'react-router-dom';
+import { usePage } from '../../../providers';
 
 const Container = styled.section`
   position: relative;
@@ -39,21 +38,44 @@ const StyledSectionText = styled(SectionText)`
   text-align: center;
 `;
 
+const StyledLink = styled(Link)`
+  display: inline-flex;
+  font-size: 1rem;
+  padding: 0;
+  text-decoration: none;
+  -webkit-text-decoration: none;
+`;
+
 export function WelcomeSection() {
   const theme = useTheme();
+  const page = usePage();
+
   return (
     <Container>
       <SectionWrapper>
         <Content>
           <CardCollection />
-          <TextContainer>
-            <StyledSectionText style={{ color: theme.textColor.t1 }}>
-              Store your <NostalgiaText>nostalgia.</NostalgiaText>
+          <TextContainer
+            style={{
+              ...(isMobile && { alignItems: 'center' }),
+            }}
+          >
+            <StyledSectionText
+              style={{
+                color: theme.textColor.t1,
+                fontSize: isMobile ? '2rem' : '2.5rem',
+              }}
+            >
+              Store your nostalgia.
             </StyledSectionText>
-            <ButtonContainer>
-              {/* <Link to={'/'}> */}
-              <Button buttonType='primary'>Get Started</Button>
-              {/* </Link> */}
+            <ButtonContainer isMobile={isMobile}>
+              <StyledLink
+                to={'/gallery'}
+                onClick={() => page.setCurrent('gallery')}
+                style={{ display: 'flex' }}
+              >
+                <Button buttonType='primary'>Gallery</Button>
+              </StyledLink>
             </ButtonContainer>
           </TextContainer>
         </Content>

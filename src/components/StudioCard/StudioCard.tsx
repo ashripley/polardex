@@ -2,6 +2,7 @@ import { IconPhotoScan } from '@tabler/icons-react';
 import styled from 'styled-components';
 import { Card } from '../Card';
 import { SearchField } from '../Input';
+import { useState } from 'react';
 
 type StudioCardProps = Partial<Parameters<typeof Card>[0]> & {
   isDemo?: boolean;
@@ -191,7 +192,19 @@ const Label = styled(Type)`
 // `;
 
 export function StudioCard(props: StudioCardProps) {
+  const [card, setCard] = useState<Partial<Parameters<typeof Card>[0]>>({});
+
+  console.log({ card });
+
   const { pokemonData, attributes, quantity, isDemo } = props;
+
+  const onCardChange = (field: string, payload: string) => {
+    const update = {
+      [field]: payload,
+    };
+
+    setCard({ ...card, ...update });
+  };
 
   return (
     <Container>
@@ -217,31 +230,36 @@ export function StudioCard(props: StudioCardProps) {
               active
               onClear={() => {}}
               onSubmit={() => {}}
-              placeholder='name'
+              onChange={(val) => onCardChange('name', val)}
+              placeholder='Name'
             />
             <SearchField
               active
               onClear={() => {}}
               onSubmit={() => {}}
-              placeholder='type'
+              onChange={(val) => onCardChange('type', val)}
+              placeholder='Type'
             />
             <BaseUl expanded={false}>
               <SearchField
                 active
                 onClear={() => {}}
                 onSubmit={() => {}}
-                placeholder='Id'
+                onChange={(val) => onCardChange('id', val)}
+                placeholder='#'
               />
               <SearchField
                 active
                 onClear={() => {}}
                 onSubmit={() => {}}
+                onChange={(val) => onCardChange('year', val)}
                 placeholder='Year'
               />
               <SearchField
                 active
                 onClear={() => {}}
                 onSubmit={() => {}}
+                onChange={(val) => onCardChange('setNumber', val)}
                 placeholder='0/0'
               />
             </BaseUl>
@@ -253,6 +271,7 @@ export function StudioCard(props: StudioCardProps) {
                 active
                 onClear={() => {}}
                 onSubmit={() => {}}
+                onChange={(val) => onCardChange('set', val)}
                 placeholder='Set'
               />
             </List>
@@ -262,7 +281,8 @@ export function StudioCard(props: StudioCardProps) {
                 active
                 onClear={() => {}}
                 onSubmit={() => {}}
-                placeholder='Type'
+                onChange={(val) => onCardChange('cardType', val)}
+                placeholder='Card Type'
               />
             </List>
             <List>
@@ -271,6 +291,7 @@ export function StudioCard(props: StudioCardProps) {
                 active
                 onClear={() => {}}
                 onSubmit={() => {}}
+                onChange={(val) => onCardChange('condition', val)}
                 placeholder='Condition'
               />
             </List>
@@ -281,6 +302,7 @@ export function StudioCard(props: StudioCardProps) {
                   active
                   onClear={() => {}}
                   onSubmit={() => {}}
+                  onChange={(val) => onCardChange('grading', val)}
                   placeholder='Grading'
                 />
               </List>

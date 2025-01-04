@@ -1,4 +1,4 @@
-import styled, { keyframes, useTheme } from 'styled-components';
+import styled, { css, keyframes, useTheme } from 'styled-components';
 import {
   ButtonContainer,
   SectionParagraph,
@@ -8,6 +8,7 @@ import {
 import { Button, DisplayCard } from '../../../components';
 import { Link } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
+import { isMobile } from '../../../utils';
 
 const Container = styled.section`
   transition: background-color 400ms ease-in-out;
@@ -28,11 +29,17 @@ const Content = styled.div`
   }
 `;
 
-const ImageContainer = styled.div`
+const ImageContainer = styled.div<{ isMobile: boolean }>`
   width: 100%;
   order: 1;
   display: flex;
   justify-content: center;
+
+  ${({ isMobile }) =>
+    isMobile &&
+    css`
+      margin-top: 3rem;
+    `}
 `;
 
 const TextContainer = styled.div`
@@ -90,9 +97,10 @@ const AnimatedWrapper = styled.div`
   gap: 0.5rem;
 `;
 
-const StudioSpanContainer = styled.div`
+const StudioSpanContainer = styled.div<{ isMobile: boolean }>`
   display: flex;
   gap: 0.5rem;
+  font-size: ${({ isMobile }) => (isMobile ? '2rem' : '2.5rem')};
 `;
 
 export function StudioSection() {
@@ -122,7 +130,7 @@ export function StudioSection() {
     <Container ref={sectionRef}>
       <SectionWrapper>
         <Content>
-          <ImageContainer>
+          <ImageContainer isMobile={isMobile}>
             <Rhydon
               title={'Rhydon'}
               display
@@ -130,17 +138,21 @@ export function StudioSection() {
               imageUrl='https://img.pokemondb.net/sprites/home/normal/rhydon.png'
               style={{
                 zIndex: 1,
-                marginRight: -400,
+                marginRight: isMobile ? -200 : -400,
                 transform: !isVisible
                   ? 'none'
                   : 'perspective(1000px) rotate(90deg) rotateX(180deg) rotateY(230deg) translateX(-100px) translateZ(10px)',
                 boxShadow:
                   'rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px',
                 transition: 'all ease-in-out 1s',
+                borderRadius: isMobile ? '1rem' : '1.5rem',
               }}
-              height={650}
-              width={400}
-              image={{ width: '10em', height: '10em' }}
+              height={isMobile ? 300 : 650}
+              width={isMobile ? 200 : 400}
+              image={{
+                width: isMobile ? '5rem' : '10em',
+                height: isMobile ? '5rem' : '10em',
+              }}
               titleSize='1.2em'
             />
             <div style={{ height: 150 }} />
@@ -157,10 +169,14 @@ export function StudioSection() {
                   ? 'none'
                   : 'perspective(1500px) rotate(90deg) rotateX(180deg) rotateY(230deg) translateX(-80px) translateZ(50px)',
                 transition: 'all ease-in-out 1s',
+                borderRadius: isMobile ? '1rem' : '1.5rem',
               }}
-              height={650}
-              width={400}
-              image={{ width: '10em', height: '10em' }}
+              height={isMobile ? 300 : 650}
+              width={isMobile ? 200 : 400}
+              image={{
+                width: isMobile ? '5rem' : '10em',
+                height: isMobile ? '5rem' : '10em',
+              }}
               titleSize='1.2em'
             />
             <Blastoise
@@ -170,17 +186,21 @@ export function StudioSection() {
               imageUrl='https://img.pokemondb.net/sprites/home/normal/blastoise.png'
               style={{
                 zIndex: 1,
-                marginLeft: -400,
+                marginLeft: isMobile ? -200 : -400,
                 boxShadow:
                   'rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px',
                 transform: !isVisible
                   ? 'none'
                   : 'perspective(2500px) rotate(90deg) rotateX(180deg) rotateY(230deg) translateX(-70px) translateZ(100px)',
                 transition: 'all ease-in-out 1s',
+                borderRadius: isMobile ? '1rem' : '1.5rem',
               }}
-              height={650}
-              width={400}
-              image={{ width: '10em', height: '10em' }}
+              height={isMobile ? 300 : 650}
+              width={isMobile ? 200 : 400}
+              image={{
+                width: isMobile ? '5rem' : '10em',
+                height: isMobile ? '5rem' : '10em',
+              }}
               titleSize='1.2em'
             />
             <Cloyster
@@ -190,17 +210,21 @@ export function StudioSection() {
               imageUrl='https://img.pokemondb.net/sprites/home/normal/cloyster.png'
               style={{
                 zIndex: 1,
-                marginLeft: -400,
+                marginLeft: isMobile ? -200 : -400,
                 boxShadow:
                   'rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px',
                 transform: !isVisible
                   ? 'none'
                   : 'perspective(3500px) rotate(90deg) rotateX(180deg) rotateY(230deg) translateX(-60px) translateZ(150px)',
                 transition: 'all ease-in-out 1s',
+                borderRadius: isMobile ? '1rem' : '1.5rem',
               }}
-              height={650}
-              width={400}
-              image={{ width: '10em', height: '10em' }}
+              height={isMobile ? 300 : 650}
+              width={isMobile ? 200 : 400}
+              image={{
+                width: isMobile ? '5rem' : '10em',
+                height: isMobile ? '5rem' : '10em',
+              }}
               titleSize='1.2em'
             />
             <Vileplume
@@ -210,17 +234,21 @@ export function StudioSection() {
               imageUrl='https://img.pokemondb.net/sprites/home/normal/vileplume.png'
               style={{
                 zIndex: 1,
-                marginLeft: -400,
+                marginLeft: isMobile ? -200 : -400,
                 boxShadow:
                   'rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px',
                 transform: !isVisible
                   ? 'none'
                   : 'perspective(4500px) rotate(90deg) rotateX(180deg) rotateY(225deg) translateZ(200px)',
                 transition: 'all ease-in-out 1s',
+                borderRadius: isMobile ? '1rem' : '1.5rem',
               }}
-              height={650}
-              width={400}
-              image={{ width: '10em', height: '10em' }}
+              height={isMobile ? 300 : 650}
+              width={isMobile ? 200 : 400}
+              image={{
+                width: isMobile ? '5rem' : '10em',
+                height: isMobile ? '5rem' : '10em',
+              }}
               titleSize='1.2em'
             />
           </ImageContainer>
@@ -231,7 +259,7 @@ export function StudioSection() {
               <AnimatedWrapper>
                 <StyledSectionText>
                   <span>
-                    <StudioSpanContainer>
+                    <StudioSpanContainer isMobile={isMobile}>
                       <span>Your</span>
                       <span>
                         <em>personal</em>
@@ -243,6 +271,11 @@ export function StudioSection() {
                 </StyledSectionText>
               </AnimatedWrapper>
             </HeaderContainer>
+            {isMobile && (
+              <StyledSectionText style={{ fontSize: '1rem', margin: '0.5rem' }}>
+                *** Only Available on Desktop ***
+              </StyledSectionText>
+            )}
             <Paragraph>
               Bring your cards to life. Take the cards in your hand and
               customize them like never before, from unique illustrations to
@@ -251,7 +284,9 @@ export function StudioSection() {
             </Paragraph>
             <Buttons>
               <Link to={'/studio'}>
-                <Button buttonType='secondary'>Studio</Button>
+                <Button buttonType='secondary' disabled={isMobile}>
+                  Studio
+                </Button>
               </Link>
             </Buttons>
           </TextContainer>

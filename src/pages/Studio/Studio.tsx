@@ -113,9 +113,9 @@ export function Studio() {
               <div style={{ marginTop: '-40px' }}>
                 <Card
                   pokemonData={{
-                    name: 'Charizard',
+                    name: 'Articuno',
                     id: '#009',
-                    type: 'Fire',
+                    type: 'Ice',
                   }}
                   attributes={{
                     cardType: 'Holo',
@@ -135,7 +135,7 @@ export function Studio() {
               >
                 Attribute
               </Button>
-              <Attribute />
+              <Attribute inOverview={!modalOpen} />
             </Action>
             <StudioModal
               isOpen={modalOpen}

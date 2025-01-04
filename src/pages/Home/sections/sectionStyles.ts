@@ -1,15 +1,21 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import { pxToRem } from '../../../components/helpers';
 
-export const ButtonContainer = styled.div`
+export const ButtonContainer = styled.div<{ isMobile?: boolean }>`
   display: flex;
   gap: ${pxToRem('xxs')};
   text-align: start;
   color: ${({ theme }) => theme.textColor.t1};
+
+  ${({ isMobile }) =>
+    isMobile &&
+    css`
+      justify-content: center;
+    `}
 `;
 
 export const SectionText = styled.span`
-  font-size: 2.56578em;
+  font-size: 2.5em;
   margin-top: 0px;
   font-weight: 700;
   margin-bottom: 0.8em;
