@@ -16,17 +16,27 @@ const ContainerSpace = styled.div`
 
 export function App() {
   useEffect(() => {
-    // Wait until the window has fully loaded
-    const onLoadHandler = () => {
-      // Make the body visible after everything has loaded
-      document.body.style.visibility = 'visible';
+    // Function to handle visibility toggle
+    const handleVisibility = () => {
+      document.body.style.visibility = 'hidden';
+
+      // Check document readiness
+      if (document.readyState === 'complete') {
+        document.body.style.visibility = 'visible';
+      } else {
+        window.addEventListener('load', () => {
+          document.body.style.visibility = 'visible';
+        });
+      }
     };
 
-    window.addEventListener('load', onLoadHandler);
+    handleVisibility();
 
-    // Cleanup the event listener when component unmounts
+    // Cleanup
     return () => {
-      window.removeEventListener('load', onLoadHandler);
+      window.removeEventListener('load', () => {
+        document.body.style.visibility = 'visible';
+      });
     };
   }, []);
 
