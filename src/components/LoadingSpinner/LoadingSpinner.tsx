@@ -6,12 +6,10 @@ const bounce = keyframes`
   from {
     opacity: 0;
     scale: 0.5;
-    /* transform: translateY(0px); */
   }
   to {
     opacity: 1;
     scale: 1;
-    /* transform: translateY(-40px); */
   }
 `;
 
@@ -43,10 +41,6 @@ export const LoadingSpinner = () => {
 
   useEffect(() => {
     setMounted(true);
-
-    return () => {
-      setMounted(false);
-    };
   }, []);
 
   return (

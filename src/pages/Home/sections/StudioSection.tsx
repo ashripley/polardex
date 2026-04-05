@@ -14,7 +14,7 @@ const Container = styled.section`
   transition: background-color 400ms ease-in-out;
   position: relative;
   top: 0px;
-  background-color: ${({ theme }) => theme.bgColor.bg3};
+  background-color: ${({ theme }) => theme.color.surface.muted};
 `;
 
 const Content = styled.div`
@@ -43,7 +43,7 @@ const ImageContainer = styled.div<{ isMobile: boolean }>`
 `;
 
 const TextContainer = styled.div`
-  color: ${({ theme }) => theme.textColor.t1};
+  color: ${({ theme }) => theme.color.text.primary};
   text-align: center;
 `;
 
@@ -61,16 +61,6 @@ const HeaderContainer = styled.div`
   flex-flow: wrap;
   justify-content: center;
 `;
-
-const Rhydon = styled(DisplayCard)``;
-
-const Charizard = styled(DisplayCard)``;
-
-const Blastoise = styled(DisplayCard)``;
-
-const Cloyster = styled(DisplayCard)``;
-
-const Vileplume = styled(DisplayCard)``;
 
 const StyledSectionText = styled(SectionText)`
   max-width: fit-content;
@@ -131,21 +121,20 @@ export function StudioSection() {
       <SectionWrapper>
         <Content>
           <ImageContainer isMobile={isMobile}>
-            <Rhydon
+            <DisplayCard
               title={'Rhydon'}
               display
-              bg={theme.miscColor.a2}
+              bg={theme.color.aurora.orange}
               imageUrl='https://img.pokemondb.net/sprites/home/normal/rhydon.png'
               style={{
-                zIndex: 1,
+                zIndex: theme.zIndex.raised,
                 marginRight: isMobile ? -200 : -400,
                 transform: !isVisible
                   ? 'none'
                   : 'perspective(1000px) rotate(90deg) rotateX(180deg) rotateY(230deg) translateX(-100px) translateZ(10px)',
-                boxShadow:
-                  'rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px',
-                transition: 'all ease-in-out 1s',
-                borderRadius: isMobile ? '1rem' : '1.5rem',
+                boxShadow: theme.shadow.md,
+                transition: theme.transition.slow,
+                borderRadius: isMobile ? theme.radius.lg : theme.radius.xl,
               }}
               height={isMobile ? 300 : 650}
               width={isMobile ? 200 : 400}
@@ -156,20 +145,19 @@ export function StudioSection() {
               titleSize='1.2em'
             />
             <div style={{ height: 150 }} />
-            <Charizard
+            <DisplayCard
               title={'Charizard'}
               display
-              bg={theme.miscColor.a1}
+              bg={theme.color.aurora.red}
               imageUrl='https://img.pokemondb.net/sprites/home/normal/charizard.png'
               style={{
-                zIndex: 1,
-                boxShadow:
-                  'rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px',
+                zIndex: theme.zIndex.raised,
+                boxShadow: theme.shadow.md,
                 transform: !isVisible
                   ? 'none'
                   : 'perspective(1500px) rotate(90deg) rotateX(180deg) rotateY(230deg) translateX(-80px) translateZ(50px)',
-                transition: 'all ease-in-out 1s',
-                borderRadius: isMobile ? '1rem' : '1.5rem',
+                transition: theme.transition.slow,
+                borderRadius: isMobile ? theme.radius.lg : theme.radius.xl,
               }}
               height={isMobile ? 300 : 650}
               width={isMobile ? 200 : 400}
@@ -179,21 +167,20 @@ export function StudioSection() {
               }}
               titleSize='1.2em'
             />
-            <Blastoise
+            <DisplayCard
               title={'Blastoise'}
               display
-              bg={theme.miscColor.f3}
+              bg={theme.color.frost.blue}
               imageUrl='https://img.pokemondb.net/sprites/home/normal/blastoise.png'
               style={{
-                zIndex: 1,
+                zIndex: theme.zIndex.raised,
                 marginLeft: isMobile ? -200 : -400,
-                boxShadow:
-                  'rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px',
+                boxShadow: theme.shadow.md,
                 transform: !isVisible
                   ? 'none'
                   : 'perspective(2500px) rotate(90deg) rotateX(180deg) rotateY(230deg) translateX(-70px) translateZ(100px)',
-                transition: 'all ease-in-out 1s',
-                borderRadius: isMobile ? '1rem' : '1.5rem',
+                transition: theme.transition.slow,
+                borderRadius: isMobile ? theme.radius.lg : theme.radius.xl,
               }}
               height={isMobile ? 300 : 650}
               width={isMobile ? 200 : 400}
@@ -203,21 +190,20 @@ export function StudioSection() {
               }}
               titleSize='1.2em'
             />
-            <Cloyster
+            <DisplayCard
               title={'Cloyster'}
               display
-              bg={theme.miscColor.f2}
+              bg={theme.color.frost.sky}
               imageUrl='https://img.pokemondb.net/sprites/home/normal/cloyster.png'
               style={{
-                zIndex: 1,
+                zIndex: theme.zIndex.raised,
                 marginLeft: isMobile ? -200 : -400,
-                boxShadow:
-                  'rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px',
+                boxShadow: theme.shadow.md,
                 transform: !isVisible
                   ? 'none'
                   : 'perspective(3500px) rotate(90deg) rotateX(180deg) rotateY(230deg) translateX(-60px) translateZ(150px)',
-                transition: 'all ease-in-out 1s',
-                borderRadius: isMobile ? '1rem' : '1.5rem',
+                transition: theme.transition.slow,
+                borderRadius: isMobile ? theme.radius.lg : theme.radius.xl,
               }}
               height={isMobile ? 300 : 650}
               width={isMobile ? 200 : 400}
@@ -227,21 +213,20 @@ export function StudioSection() {
               }}
               titleSize='1.2em'
             />
-            <Vileplume
+            <DisplayCard
               title={'Vileplume'}
               display
-              bg={theme.miscColor.f1}
+              bg={theme.color.frost.teal}
               imageUrl='https://img.pokemondb.net/sprites/home/normal/vileplume.png'
               style={{
-                zIndex: 1,
+                zIndex: theme.zIndex.raised,
                 marginLeft: isMobile ? -200 : -400,
-                boxShadow:
-                  'rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px',
+                boxShadow: theme.shadow.md,
                 transform: !isVisible
                   ? 'none'
                   : 'perspective(4500px) rotate(90deg) rotateX(180deg) rotateY(225deg) translateZ(200px)',
-                transition: 'all ease-in-out 1s',
-                borderRadius: isMobile ? '1rem' : '1.5rem',
+                transition: theme.transition.slow,
+                borderRadius: isMobile ? theme.radius.lg : theme.radius.xl,
               }}
               height={isMobile ? 300 : 650}
               width={isMobile ? 200 : 400}
@@ -319,7 +304,7 @@ function LineSVG() {
       <StyledPath
         className='path'
         fill='none'
-        stroke={theme.miscColor.a4}
+        stroke={theme.color.aurora.green}
         strokeWidth='8'
         d='M10,100 L30,80 L50,100 L70,90 L90,110 L110,90 L130,100 L150,80 L170,100 L190,90 L210,110 L230,90 L250,100 L270,80 L290,100 L310,90 L330,110 L350,90 L370,100 L390,80 L410,100 L430,90 L450,110 L470,90'
         pathLength='1'

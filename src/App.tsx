@@ -16,28 +16,17 @@ const ContainerSpace = styled.div`
 
 export function App() {
   useEffect(() => {
-    // Function to handle visibility toggle
-    const handleVisibility = () => {
+    const handleLoad = () => {
+      document.body.style.visibility = 'visible';
+    };
+
+    if (document.readyState === 'complete') {
+      document.body.style.visibility = 'visible';
+    } else {
       document.body.style.visibility = 'hidden';
-
-      // Check document readiness
-      if (document.readyState === 'complete') {
-        document.body.style.visibility = 'visible';
-      } else {
-        window.addEventListener('load', () => {
-          document.body.style.visibility = 'visible';
-        });
-      }
-    };
-
-    handleVisibility();
-
-    // Cleanup
-    return () => {
-      window.removeEventListener('load', () => {
-        document.body.style.visibility = 'visible';
-      });
-    };
+      window.addEventListener('load', handleLoad);
+      return () => window.removeEventListener('load', handleLoad);
+    }
   }, []);
 
   return (

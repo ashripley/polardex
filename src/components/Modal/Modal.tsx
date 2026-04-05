@@ -13,15 +13,14 @@ const Container = styled.div<{ isOpen: boolean }>`
   height: 70dvh;
   position: absolute;
   border-radius: 0.5rem;
-  box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
-  background-color: ${({ theme }) => theme.bgColor.bg2};
+  box-shadow: ${({ theme }) => theme.shadow.sm};
+  background-color: ${({ theme }) => theme.color.surface.subtle};
 
   ${({ isOpen }) => fadeStyles(isOpen, 'flex')};
 `;
 
 export function Modal(props: PropsWithChildren<ModalProps>) {
   const { isOpen, children } = props;
-  console.log({ isOpen });
 
   return <Container isOpen={isOpen}>{children}</Container>;
 }

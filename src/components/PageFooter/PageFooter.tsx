@@ -34,7 +34,7 @@ const StudioHeader = styled.div`
   box-sizing: inherit;
 
   path {
-    fill: ${({ theme }) => theme.textColor.t1};
+    fill: ${({ theme }) => theme.color.text.primary};
   }
 `;
 
@@ -47,7 +47,7 @@ const StudioTextContainer = styled.div`
   font-size: 0.8em;
   transition: color 0.3s ease-in-out;
   margin-top: 1.125em;
-  color: ${({ theme }) => theme.textColor.t2};
+  color: ${({ theme }) => theme.color.text.secondary};
 
   @media (min-width: 56.25em) {
     display: block;

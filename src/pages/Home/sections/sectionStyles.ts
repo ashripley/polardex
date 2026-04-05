@@ -5,7 +5,7 @@ export const ButtonContainer = styled.div<{ isMobile?: boolean }>`
   display: flex;
   gap: ${pxToRem('xxs')};
   text-align: start;
-  color: ${({ theme }) => theme.textColor.t1};
+  color: ${({ theme }) => theme.color.text.primary};
 
   ${({ isMobile }) =>
     isMobile &&
@@ -26,7 +26,7 @@ export const SectionParagraph = styled.p`
   margin-bottom: 1em;
   font-size: 1.26562em;
   transition: color 0.3s ease-in-out;
-  color: ${({ theme }) => theme.textColor.t1};
+  color: ${({ theme }) => theme.color.text.primary};
   text-align: start;
 `;
 

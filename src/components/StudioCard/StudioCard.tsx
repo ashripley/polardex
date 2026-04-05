@@ -23,14 +23,14 @@ const Wrapper = styled.div`
   margin-inline: auto;
   transition: all 0.3s ease-in-out;
   overflow: hidden;
-  box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+  box-shadow: ${({ theme }) => theme.shadow.sm};
 `;
 
 const InnerWrapper = styled.div`
   display: flex;
   flex-direction: column;
   border-radius: 0.5rem;
-  background: ${({ theme }) => theme.bgColor.bg1};
+  background: ${({ theme }) => theme.color.surface.base};
   position: relative;
   justify-items: center;
   padding: 1rem;
@@ -46,7 +46,7 @@ const InnerWrapper = styled.div`
     right: 0;
     height: 130px;
     border-radius: 0.5rem 0.5rem 0 0;
-    background: ${({ theme }) => theme.bgColor.bg3};
+    background: ${({ theme }) => theme.color.surface.muted};
   }
 `;
 
@@ -58,10 +58,10 @@ const ImageContainer = styled.div`
   width: 150px;
   height: 150px;
   border-radius: 50%;
-  background-color: ${({ theme }) => theme.bgColor.bg1};
+  background-color: ${({ theme }) => theme.color.surface.base};
   overflow: visible;
   justify-content: flex-end;
-  border: 3px solid ${({ theme }) => theme.bgColor.bg3};
+  border: 3px solid ${({ theme }) => theme.color.surface.muted};
   margin-inline: auto;
 `;
 
@@ -73,21 +73,9 @@ const TitleContainer = styled.p`
   margin: 0.5rem 0;
 `;
 
-// const Name = styled.span`
-//   display: block;
-//   font-size: 1.2rem;
-//   font-weight: 700;
-//   overflow: hidden;
-//   text-overflow: ellipsis;
-//   white-space: nowrap;
-//   max-width: 100%;
-//   text-transform: capitalize;
-//   color: ${({ theme }) => theme.textColor.t1};
-// `;
-
 const Type = styled.span`
   display: block;
-  color: ${({ theme }) => theme.textColor.t1};
+  color: ${({ theme }) => theme.color.text.primary};
   font-size: 1rem;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -103,7 +91,7 @@ const BaseUl = styled.ul<{ expanded: boolean }>`
   font-weight: 700;
   gap: ${({ expanded }) => (expanded ? '3rem' : '1rem')};
   padding: 0;
-  color: ${({ theme }) => theme.textColor.t1};
+  color: ${({ theme }) => theme.color.text.primary};
   min-width: 0;
   width: 100%;
   transition: all 0.3s ease-in-out;
@@ -132,7 +120,7 @@ const StatUl = styled.ul`
   place-items: start;
   place-items: center;
   padding: 0;
-  border-top: ${({ theme }) => `2px solid ${theme.bgColor.bg3}`};
+  border-top: ${({ theme }) => `2px solid ${theme.color.surface.muted}`};
 `;
 
 const List = styled.li`
@@ -141,7 +129,7 @@ const List = styled.li`
   align-items: center;
   font-size: 1rem;
   padding: 0.5rem;
-  color: ${({ theme }) => theme.textColor.t1};
+  color: ${({ theme }) => theme.color.text.primary};
 `;
 
 const StyledImage = styled.img`
@@ -156,7 +144,7 @@ const StyledDemoImage = styled(IconPhotoScan)`
   height: calc(100% - 8px);
 
   & {
-    color: ${({ theme }) => theme.textColor.t2};
+    color: ${({ theme }) => theme.color.text.secondary};
   }
 `;
 
@@ -164,7 +152,7 @@ const DuplicateIdentifer = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: ${({ theme }) => theme.textColor.t2};
+  background-color: ${({ theme }) => theme.color.text.secondary};
   height: 1.5rem;
   width: 1.5rem;
   border-radius: 50%;
@@ -173,11 +161,11 @@ const DuplicateIdentifer = styled.div`
   margin: 0.5rem;
   position: absolute;
   z-index: 5;
-  box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+  box-shadow: ${({ theme }) => theme.shadow.sm};
 `;
 
 const IdentifierText = styled.span`
-  color: ${({ theme }) => theme.bgColor.bg3};
+  color: ${({ theme }) => theme.color.surface.muted};
   display: block;
   font-size: 0.9rem;
 `;
@@ -187,14 +175,8 @@ const Label = styled(Type)`
   opacity: 0.7;
 `;
 
-// const Attribute = styled(Type)`
-//   font-size: 1rem;
-// `;
-
 export function StudioCard(props: StudioCardProps) {
   const [card, setCard] = useState<Partial<Parameters<typeof Card>[0]>>({});
-
-  console.log({ card });
 
   const { pokemonData, attributes, quantity, isDemo } = props;
 

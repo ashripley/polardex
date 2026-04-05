@@ -64,7 +64,7 @@ const Footer = styled.div`
 export const Title = styled.h1<{ titleSize: string }>`
   font-size: ${({ titleSize }) => titleSize};
   font-weight: 500;
-  color: ${({ theme }) => theme.bgColor.bg1};
+  color: ${({ theme }) => theme.color.surface.base};
   text-align: start;
   display: flex;
   justify-content: flex-start;
@@ -75,7 +75,7 @@ export const Title = styled.h1<{ titleSize: string }>`
 const ImageContainer = styled.div<{ imageRadius: string }>`
   height: 50%;
   width: 100%;
-  background-color: ${({ theme }) => theme.bgColor.bg1};
+  background-color: ${({ theme }) => theme.color.surface.base};
   border-radius: ${({ imageRadius }) => imageRadius};
   display: flex;
   justify-content: center;
@@ -100,7 +100,7 @@ const Image = styled.img<{ height: string; width: string }>`
 const Line = styled.div`
   height: 2px;
   border-radius: 1rem;
-  background-color: ${({ theme }) => theme.bgColor.bg1};
+  background-color: ${({ theme }) => theme.color.surface.base};
   margin: 10px 0;
   width: 100%;
   margin: 10px auto;
@@ -113,7 +113,7 @@ const FooterLine = styled(Line)`
 const Avatar = styled.div`
   height: 1em;
   width: 1em;
-  background-color: ${({ theme }) => theme.bgColor.bg1};
+  background-color: ${({ theme }) => theme.color.surface.base};
   border-radius: 100%;
   margin-right: 0.5em;
 `;

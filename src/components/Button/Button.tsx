@@ -67,14 +67,14 @@ const newButtonStyles = css`
 
 export const PrimaryButton = styled(StyledButton)`
   ${newButtonStyles}
-  background: none ${({ theme }) => theme.textColor.t3};
+  background: none ${({ theme }) => theme.color.text.tertiary};
   margin-left: 0;
-  color: ${({ theme }) => theme.textColor.t1};
+  color: ${({ theme }) => theme.color.text.primary};
   border: none;
 
   @media not all and (hover: none) {
     &:hover {
-      background-color: ${({ theme }) => theme.miscColor.f2};
+      background-color: ${({ theme }) => theme.color.frost.sky};
       cursor: pointer;
     }
   }
@@ -82,7 +82,7 @@ export const PrimaryButton = styled(StyledButton)`
 
 export const SecondaryButton = styled(StyledButton)`
   ${newButtonStyles}
-  color: ${({ theme }) => theme.textColor.t1};
+  color: ${({ theme }) => theme.color.text.primary};
 
   @media not all and (hover: none) {
     &:hover {

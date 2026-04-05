@@ -12,7 +12,7 @@ const Container = styled.div<{ isDemo: boolean | undefined }>`
   display: flex;
   flex-grow: 1;
   padding: 1em;
-  border-radius: 1.5em;
+  border-radius: ${({ theme }) => theme.radius.xl};
   flex-wrap: wrap;
   justify-content: space-evenly;
   height: auto;
@@ -29,22 +29,22 @@ const Wrapper = styled.div`
   flex-direction: column;
   flex-basis: 250px;
   margin-inline: auto;
-  transition: all 0.3s ease-in-out;
+  transition: ${({ theme }) => theme.transition.normal};
   overflow: hidden;
-  box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+  box-shadow: ${({ theme }) => theme.shadow.sm};
 `;
 
 const InnerWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  border-radius: 0.5rem;
-  background: ${({ theme }) => theme.bgColor.bg1};
+  border-radius: ${({ theme }) => theme.radius.md};
+  background: ${({ theme }) => theme.color.surface.base};
   position: relative;
   justify-items: center;
-  padding: 1rem;
+  padding: ${({ theme }) => theme.space[4]};
   filter: drop-shadow(0 0px 0px hsl(0deg 0% 0% / 0.1))
     drop-shadow(0 0px 1px hsl(0deg 0% 0% / 0.1));
-  transition: all ease-in-out 0.3s;
+  transition: ${({ theme }) => theme.transition.normal};
 
   &::before {
     content: '';
@@ -53,8 +53,8 @@ const InnerWrapper = styled.div`
     left: 0;
     right: 0;
     height: 130px;
-    border-radius: 0.5rem 0.5rem 0 0;
-    background: ${({ theme }) => theme.bgColor.bg3};
+    border-radius: ${({ theme }) => theme.radius.md} ${({ theme }) => theme.radius.md} 0 0;
+    background: ${({ theme }) => theme.color.surface.muted};
   }
 `;
 
@@ -65,17 +65,17 @@ const ImageContainer = styled.div<{ expanded: boolean }>`
   align-items: center;
   width: 150px;
   height: 150px;
-  border-radius: 50%;
-  background-color: ${({ theme }) => theme.bgColor.bg1};
+  border-radius: ${({ theme }) => theme.radius.full};
+  background-color: ${({ theme }) => theme.color.surface.base};
   overflow: visible;
   justify-content: flex-end;
-  border: 3px solid ${({ theme }) => theme.bgColor.bg3};
+  border: 3px solid ${({ theme }) => theme.color.surface.muted};
   margin-inline: auto;
 
   ${({ expanded }) =>
     expanded &&
     css`
-      outline: 6px solid ${({ theme }) => theme.bgColor.bg3};
+      outline: 6px solid ${({ theme }) => theme.color.surface.muted};
       transform: translateY(-24px);
       z-index: 2;
     `}
@@ -86,25 +86,25 @@ const TitleContainer = styled.p`
   display: flex;
   flex-direction: column;
   text-align: center;
-  margin: 0.5rem 0;
+  margin: ${({ theme }) => theme.space[2]} 0;
 `;
 
 const Name = styled.span`
   display: block;
-  font-size: 1.2rem;
-  font-weight: 700;
+  font-size: ${({ theme }) => theme.typography.size.lg};
+  font-weight: ${({ theme }) => theme.typography.weight.bold};
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   max-width: 100%;
   text-transform: capitalize;
-  color: ${({ theme }) => theme.textColor.t1};
+  color: ${({ theme }) => theme.color.text.primary};
 `;
 
 const Type = styled.span`
   display: block;
-  color: ${({ theme }) => theme.textColor.t1};
-  font-size: 1rem;
+  color: ${({ theme }) => theme.color.text.primary};
+  font-size: ${({ theme }) => theme.typography.size.md};
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -116,19 +116,19 @@ const BaseUl = styled.ul<{ expanded: boolean }>`
   display: flex;
   align-items: center;
   justify-content: space-evenly;
-  font-weight: 700;
+  font-weight: ${({ theme }) => theme.typography.weight.bold};
   gap: ${({ expanded }) => (expanded ? '3rem' : '1rem')};
   padding: 0;
-  color: ${({ theme }) => theme.textColor.t1};
+  color: ${({ theme }) => theme.color.text.primary};
   min-width: 0;
   width: 100%;
   margin-top: ${({ expanded }) => (expanded ? '0.2rem' : '1rem')};
-  transition: all 0.3s ease-in-out;
+  transition: ${({ theme }) => theme.transition.normal};
 
   & > li {
-    font-weight: ${({ expanded }) => (expanded ? '400' : '700')};
+    font-weight: ${({ expanded, theme }) => (expanded ? theme.typography.weight.regular : theme.typography.weight.bold)};
     opacity: ${({ expanded }) => (expanded ? 1 : 0.7)};
-    transition: all 0.3s ease-in-out;
+    transition: ${({ theme }) => theme.transition.normal};
   }
 `;
 
@@ -137,7 +137,7 @@ const StatUl = styled.ul<{ expanded: boolean }>`
   grid-template-columns: 1fr 1fr;
   grid-template-rows: auto;
   justify-content: flex-start;
-  font-weight: 500;
+  font-weight: ${({ theme }) => theme.typography.weight.medium};
   transition: height 0.3s ease-in-out;
   height: ${({ expanded }) => (expanded ? '10rem' : 0)};
   overflow: hidden;
@@ -146,34 +146,32 @@ const StatUl = styled.ul<{ expanded: boolean }>`
   place-items: center;
   padding: 0;
   border-top: ${({ expanded, theme }) =>
-    expanded ? `2px solid ${theme.bgColor.bg3}` : 'none'};
-
-  /* ${({ expanded }) => fadeStyles(expanded, 'grid')} */
+    expanded ? `2px solid ${theme.color.surface.muted}` : 'none'};
 `;
 
 const List = styled.li`
   display: flex;
   flex-flow: column;
   align-items: center;
-  font-size: 1rem;
-  padding: 0.5rem;
-  color: ${({ theme }) => theme.textColor.t1};
+  font-size: ${({ theme }) => theme.typography.size.md};
+  padding: ${({ theme }) => theme.space[2]};
+  color: ${({ theme }) => theme.color.text.primary};
 `;
 
 const StyledImage = styled.img<{ isOpen: boolean }>`
-  padding: 0.8rem;
+  padding: ${({ theme }) => theme.space[3]};
   width: calc(100% - 8px);
   height: calc(100% - 8px);
   ${({ isOpen }) => fadeStyles(isOpen)};
 `;
 
 const StyledDemoImage = styled(IconPhotoScan)<{ isOpen: boolean }>`
-  padding: 0.8rem;
+  padding: ${({ theme }) => theme.space[3]};
   width: calc(100% - 8px);
   height: calc(100% - 8px);
 
   & {
-    color: ${({ theme }) => theme.textColor.t2};
+    color: ${({ theme }) => theme.color.text.secondary};
   }
 
   ${({ isOpen }) => fadeStyles(isOpen)};
@@ -183,20 +181,20 @@ const DuplicateIdentifer = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: ${({ theme }) => theme.textColor.t2};
+  background-color: ${({ theme }) => theme.color.text.secondary};
   height: 1.5rem;
   width: 1.5rem;
-  border-radius: 50%;
+  border-radius: ${({ theme }) => theme.radius.full};
   top: 0;
   right: 0;
-  margin: 0.5rem;
+  margin: ${({ theme }) => theme.space[2]};
   position: absolute;
-  z-index: 5;
-  box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+  z-index: ${({ theme }) => theme.zIndex.sticky};
+  box-shadow: ${({ theme }) => theme.shadow.sm};
 `;
 
 const IdentifierText = styled.span`
-  color: ${({ theme }) => theme.bgColor.bg3};
+  color: ${({ theme }) => theme.color.surface.muted};
   display: block;
   font-size: 0.9rem;
 `;
@@ -205,23 +203,23 @@ const ResizeContainer = styled.div<{ expanded: boolean }>`
   display: flex;
   justify-content: center;
   align-items: center;
-  border-radius: 0.5rem;
-  padding: 0.5rem;
+  border-radius: ${({ theme }) => theme.radius.md};
+  padding: ${({ theme }) => theme.space[2]};
   top: 0;
   right: 0;
-  margin: 0.5rem;
+  margin: ${({ theme }) => theme.space[2]};
   position: absolute;
-  z-index: 5;
-  transition: all ease-in-out 0.3s;
+  z-index: ${({ theme }) => theme.zIndex.sticky};
+  transition: ${({ theme }) => theme.transition.normal};
 
   ${({ expanded, theme }) =>
     expanded &&
     css`
-      background-color: ${theme.textColor.t2Hover};
+      background-color: ${theme.color.text.secondaryHover};
     `};
 
   &:hover {
-    background-color: ${({ theme }) => theme.textColor.t2Hover};
+    background-color: ${({ theme }) => theme.color.text.secondaryHover};
     cursor: pointer;
   }
 `;
@@ -229,17 +227,17 @@ const ResizeContainer = styled.div<{ expanded: boolean }>`
 const ResizeIcon = styled(IconSelector)`
   width: 1.5rem;
   height: 1.5rem;
-  stroke: ${({ theme }) => theme.textColor.t1};
+  stroke: ${({ theme }) => theme.color.text.primary};
   stroke-width: 1.5;
 `;
 
 const Label = styled(Type)`
-  font-size: 1rem;
+  font-size: ${({ theme }) => theme.typography.size.md};
   opacity: 0.7;
 `;
 
 const Attribute = styled(Type)`
-  font-size: 1rem;
+  font-size: ${({ theme }) => theme.typography.size.md};
 `;
 
 export function Card(props: CardProps) {
@@ -249,10 +247,6 @@ export function Card(props: CardProps) {
 
   useEffect(() => {
     setIsLoaded(true);
-
-    return () => {
-      setIsLoaded(false);
-    };
   }, []);
 
   return (

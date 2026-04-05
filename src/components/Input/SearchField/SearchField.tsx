@@ -34,7 +34,7 @@ interface InputOptions {
 }
 
 const StyledInput = styled.input<InputOptions>`
-  border: ${({ theme }) => `2px solid ${theme.bgColor.bg3}`};
+  border: ${({ theme }) => `2px solid ${theme.color.surface.muted}`};
   border-radius: 0.5rem;
   padding: 0.25rem 0.5rem;
   margin-top: 0.5rem;

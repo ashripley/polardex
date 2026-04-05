@@ -5,7 +5,7 @@ import { useGetAttributesQuery, useGetCardsQuery } from '../../api';
 import { useEffect, useState } from 'react';
 
 const Main = styled.main`
-  background-color: ${({ theme }) => theme.bgColor.bg3};
+  background-color: ${({ theme }) => theme.color.surface.muted};
   box-sizing: inherit;
 `;
 

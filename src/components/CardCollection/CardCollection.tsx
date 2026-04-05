@@ -24,68 +24,65 @@ export function CardCollection() {
       <DisplayCard
         title={'Bulbasaur'}
         display
-        bg={theme.miscColor.f1}
+        bg={theme.color.frost.teal}
         height={isMobile ? 225 : 300}
         width={isMobile ? 150 : 200}
         image={{
           height: isMobile ? '3rem' : '5rem',
           width: isMobile ? '3rem' : '5rem',
         }}
-        imageRadius={isMobile ? '0.5rem' : '1rem'}
+        imageRadius={isMobile ? theme.radius.md : theme.radius.lg}
         imageUrl='https://img.pokemondb.net/sprites/home/normal/bulbasaur.png'
         style={{
           marginLeft: -200,
           transform:
             'perspective(500px) rotateX(15deg) rotateY(15deg) translateX(75px) translateY(30px) rotate(-10deg)',
-          zIndex: 1,
-          backgroundColor: theme.miscColor.a4,
-          filter:
-            'drop-shadow(0 1px 1px hsl(210deg 40% 6% / 0.4)) drop-shadow(0 1px 1px hsl(210deg 40% 6% / 0.4))',
-          borderRadius: isMobile ? '1rem' : '1.2rem',
+          zIndex: theme.zIndex.raised,
+          backgroundColor: theme.color.aurora.green,
+          filter: theme.dropShadow.md,
+          borderRadius: isMobile ? theme.radius.lg : '1.2rem',
         }}
       />
       <DisplayCard
         title={'Squirtle'}
         display
-        bg={theme.miscColor.f1}
+        bg={theme.color.frost.teal}
         height={isMobile ? 225 : 300}
         width={isMobile ? 150 : 200}
         image={{
           height: isMobile ? '3rem' : '5rem',
           width: isMobile ? '3rem' : '5rem',
         }}
-        imageRadius={isMobile ? '0.5rem' : '1rem'}
+        imageRadius={isMobile ? theme.radius.md : theme.radius.lg}
         imageUrl='https://img.pokemondb.net/sprites/home/normal/squirtle.png'
         style={{
           transform: 'rotate(0deg)',
-          zIndex: 3,
-          backgroundColor: theme.miscColor.f4,
-          filter:
-            'drop-shadow(0 1px 1px hsl(210deg 40% 6% / 0.4)) drop-shadow(0 1px 1px hsl(210deg 40% 6% / 0.4))',
-          borderRadius: isMobile ? '1rem' : '1.2rem',
+          zIndex: theme.zIndex.dropdown,
+          backgroundColor: theme.color.frost.deep,
+          filter: theme.dropShadow.md,
+          borderRadius: isMobile ? theme.radius.lg : '1.2rem',
         }}
       />
       <DisplayCard
         title={'Charmander'}
         display
-        bg={theme.miscColor.f1}
+        bg={theme.color.frost.teal}
         height={isMobile ? 225 : 300}
         width={isMobile ? 150 : 200}
         image={{
           height: isMobile ? '3rem' : '5rem',
           width: isMobile ? '3rem' : '5rem',
         }}
-        imageRadius={isMobile ? '0.5rem' : '1rem'}
+        imageRadius={isMobile ? theme.radius.md : theme.radius.lg}
         imageUrl='https://img.pokemondb.net/sprites/home/normal/charmander.png'
         style={{
           marginRight: -200,
           transform:
             'perspective(500px) rotateX(15deg) rotateY(-15deg) translateX(-75px) translateY(30px) rotate(10deg)',
-          zIndex: 1,
-          backgroundColor: theme.miscColor.a2,
-          filter:
-            'drop-shadow(0 1px 1px hsl(210deg 40% 6% / 0.4)) drop-shadow(0 1px 1px hsl(210deg 40% 6% / 0.4))',
-          borderRadius: isMobile ? '1rem' : '1.2rem',
+          zIndex: theme.zIndex.raised,
+          backgroundColor: theme.color.aurora.orange,
+          filter: theme.dropShadow.md,
+          borderRadius: isMobile ? theme.radius.lg : '1.2rem',
         }}
       />
     </ImageContainer>

@@ -27,11 +27,11 @@ const ModalHeader = styled.div`
   transition: background-color 0.3s ease-in-out;
 
   & > svg {
-    color: ${({ theme }) => theme.textColor.t1};
+    color: ${({ theme }) => theme.color.text.primary};
   }
 
   &:hover {
-    background-color: ${({ theme }) => theme.textColor.t1Hover};
+    background-color: ${({ theme }) => theme.color.text.primaryHover};
     cursor: pointer;
   }
 `;

@@ -23,8 +23,6 @@ export const PageProvider = ({ children }: PageProviderProps) => {
   const [page, setPage] = useState<string>('home');
 
   function togglePage(currentPage: string) {
-    console.log({ currentPage });
-
     setPage(currentPage);
   }
 

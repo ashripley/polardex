@@ -9,7 +9,7 @@ const Container = styled.section`
   position: relative;
   display: flex;
   flex-grow: 1;
-  background-color: ${({ theme }) => theme.bgColor.bg3};
+  background-color: ${({ theme }) => theme.color.surface.muted};
 `;
 
 const Content = styled.div`
@@ -30,7 +30,7 @@ const TextContainer = styled.div`
   flex-direction: column;
   width: 100%;
   text-align: start;
-  color: ${({ theme }) => theme.textColor.t1};
+  color: ${({ theme }) => theme.color.text.primary};
 `;
 
 const StyledSectionText = styled(SectionText)`
@@ -62,7 +62,7 @@ export function WelcomeSection() {
           >
             <StyledSectionText
               style={{
-                color: theme.textColor.t1,
+                color: theme.color.text.primary,
                 fontSize: isMobile ? '2rem' : '2.5rem',
               }}
             >
@@ -80,7 +80,6 @@ export function WelcomeSection() {
           </TextContainer>
         </Content>
       </SectionWrapper>
-      {/* <WelcomeDivider /> */}
     </Container>
   );
 }

@@ -6,7 +6,7 @@ import { isMobile } from '../../../utils';
 const Container = styled.section`
   position: relative;
   top: 0px;
-  background-color: ${({ theme }) => theme.bgColor.bg3};
+  background-color: ${({ theme }) => theme.color.surface.muted};
 `;
 
 const Content = styled.div`
@@ -36,11 +36,11 @@ const ImageContainer = styled.div<{ isMobile: boolean }>`
 
 const TextContainer = styled.div`
   text-align: start;
-  color: ${({ theme }) => theme.textColor.t1};
+  color: ${({ theme }) => theme.color.text.primary};
 `;
 
 const Paragraph = styled(SectionParagraph)<{ isMobile: boolean }>`
-  color: ${({ theme }) => theme.textColor.t1};
+  color: ${({ theme }) => theme.color.text.primary};
   text-align: ${({ isMobile }) => (isMobile ? 'center' : 'start')};
 `;
 
@@ -78,13 +78,12 @@ export function DetailSection() {
             <DisplayCard
               title={'Clefairy'}
               display
-              bg={theme.miscColor.f1}
+              bg={theme.color.frost.teal}
               imageUrl='https://img.pokemondb.net/sprites/home/normal/clefairy.png'
               style={{
-                zIndex: 1,
-                backgroundColor: theme.miscColor.a5,
-                boxShadow:
-                  'rgba(0, 0, 0, 0.16) 0px 10px 36px 0px, rgba(0, 0, 0, 0.06) 0px 0px 0px 1px',
+                zIndex: theme.zIndex.raised,
+                backgroundColor: theme.color.aurora.purple,
+                boxShadow: theme.shadow.lg,
               }}
               height={isMobile ? 550 : 650}
               width={isMobile ? 300 : 400}

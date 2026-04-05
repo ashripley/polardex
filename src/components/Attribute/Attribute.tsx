@@ -26,7 +26,7 @@ const Wrapper = styled.div`
   margin-inline: auto;
   transition: all 0.3s ease-in-out;
   overflow: hidden;
-  box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+  box-shadow: ${({ theme }) => theme.shadow.sm};
   margin-top: 32px;
 `;
 
@@ -34,7 +34,7 @@ const InnerWrapper = styled.div`
   display: flex;
   flex-direction: column;
   border-radius: 0.5rem;
-  background: ${({ theme }) => theme.bgColor.bg1};
+  background: ${({ theme }) => theme.color.surface.base};
   position: relative;
   justify-items: center;
   padding: 1rem;
@@ -50,7 +50,7 @@ const InnerWrapper = styled.div`
     right: 0;
     height: 130px;
     border-radius: 0.5rem 0.5rem 0 0;
-    background: ${({ theme }) => theme.bgColor.bg3};
+    background: ${({ theme }) => theme.color.surface.muted};
   }
 `;
 
@@ -62,16 +62,16 @@ const ImageContainer = styled.div<{ expanded: boolean }>`
   width: 150px;
   height: 150px;
   border-radius: 50%;
-  background-color: ${({ theme }) => theme.bgColor.bg1};
+  background-color: ${({ theme }) => theme.color.surface.base};
   overflow: visible;
   justify-content: flex-end;
-  border: 3px solid ${({ theme }) => theme.bgColor.bg3};
+  border: 3px solid ${({ theme }) => theme.color.surface.muted};
   margin-inline: auto;
 
   ${({ expanded }) =>
     expanded &&
     css`
-      outline: 6px solid ${({ theme }) => theme.bgColor.bg3};
+      outline: 6px solid ${({ theme }) => theme.color.surface.muted};
       transform: translateY(-24px);
       z-index: 2;
     `}
@@ -94,12 +94,12 @@ const Name = styled.span`
   white-space: nowrap;
   max-width: 100%;
   text-transform: capitalize;
-  color: ${({ theme }) => theme.textColor.t1};
+  color: ${({ theme }) => theme.color.text.primary};
 `;
 
 const Type = styled.span`
   display: block;
-  color: ${({ theme }) => theme.textColor.t1};
+  color: ${({ theme }) => theme.color.text.primary};
   font-size: 1rem;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -114,7 +114,7 @@ const StyledDemoImage = styled(IconGridScan)<{ isOpen: boolean }>`
   height: calc(100% - 8px);
 
   & {
-    color: ${({ theme }) => theme.textColor.t2};
+    color: ${({ theme }) => theme.color.text.secondary};
   }
 
   ${({ isOpen }) => fadeStyles(isOpen)};
@@ -127,8 +127,7 @@ const StyledImage = styled.img`
   top: -60px;
   height: 10rem;
   width: 10rem;
-  filter: drop-shadow(0 1px 1px hsl(210deg 40% 6% / 0.2))
-    drop-shadow(0 1px 1px hsl(210deg 40% 6% / 0.2));
+  filter: ${({ theme }) => theme.dropShadow.sm};
 `;
 
 const ImageWrapper = styled.span<{ isVisible: boolean }>`
@@ -165,10 +164,6 @@ export function Attribute(props: AttributeProps) {
 
   useEffect(() => {
     setIsLoaded(true);
-
-    return () => {
-      setIsLoaded(false);
-    };
   }, []);
 
   return (

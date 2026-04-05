@@ -12,7 +12,7 @@ const Container = styled.div`
 `;
 
 const CommonSpan = styled.span`
-  color: ${({ theme }) => theme.textColor.t1};
+  color: ${({ theme }) => theme.color.text.primary};
 `;
 
 const Header = styled(CommonSpan)`
