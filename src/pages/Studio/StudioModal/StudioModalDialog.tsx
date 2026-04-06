@@ -16,8 +16,8 @@ const CommonSpan = styled.span`
 `;
 
 const Header = styled(CommonSpan)`
-  font-size: 2.5em;
-  font-weight: 700;
+  font-size: ${({ theme }) => theme.typography.size.xxxl};
+  font-weight: ${({ theme }) => theme.typography.weight.bold};
   margin-bottom: 1em;
   margin-bottom: auto;
 `;

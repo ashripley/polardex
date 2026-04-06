@@ -46,17 +46,18 @@ const StyledImage = styled.img`
     drop-shadow(0 1px 1px hsl(210deg 40% 6% / 0.2));
 `;
 
-const ImageWrapper = styled.span<{ isVisible: boolean }>`
+const ImageWrapper = styled.span`
   display: inline-block;
   position: relative;
   width: 10rem;
-  transform: ${({ isVisible }) =>
-    isVisible ? 'translateY(0)' : 'translateY(100%)'};
-  transition: transform 1s ease-in-out;
 `;
 
 const ShuffleWrapper = styled.div`
   animation: ${shuffle} 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
+`;
+
+const CardOffset = styled.div`
+  margin-top: -40px;
 `;
 
 export function Studio() {
@@ -106,11 +107,11 @@ export function Studio() {
                 Modify
               </Button>
               <ShuffleWrapper>
-                <ImageWrapper isVisible={true}>
+                <ImageWrapper>
                   <StyledImage src='https://img.pokemondb.net/sprites/home/normal/hitmonlee.png' />
                 </ImageWrapper>
               </ShuffleWrapper>
-              <div style={{ marginTop: '-40px' }}>
+              <CardOffset>
                 <Card
                   pokemonData={{
                     name: 'Articuno',
@@ -126,7 +127,7 @@ export function Studio() {
                   }}
                   setNumber={'12/102'}
                 />
-              </div>
+              </CardOffset>
             </Action>
             <Action>
               <Button
@@ -139,7 +140,7 @@ export function Studio() {
             </Action>
             <StudioModal
               isOpen={modalOpen}
-              toggleModal={toggleModal}
+              onClose={toggleModal}
               actionType={actionType}
             />
           </Container>

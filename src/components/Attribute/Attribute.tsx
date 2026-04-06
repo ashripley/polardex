@@ -1,8 +1,13 @@
 import { IconGridScan } from '@tabler/icons-react';
-import styled, { css, keyframes } from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { AttributeModel } from '../../api/fetch';
-import { useEffect, useState } from 'react';
-import { fadeStyles } from '../animation';
+import { motion } from 'motion/react';
+import {
+  BaseCardWrapper,
+  BaseCardInnerWrapper,
+  BaseCardImageContainer,
+  BaseCardTitleContainer,
+} from '../BaseCard';
 
 type AttributeProps = Partial<AttributeModel> & {
   inOverview: boolean;
@@ -19,76 +24,20 @@ const Container = styled.div`
   width: 18rem;
 `;
 
-const Wrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  flex-basis: 250px;
-  margin-inline: auto;
-  transition: all 0.3s ease-in-out;
-  overflow: hidden;
-  box-shadow: ${({ theme }) => theme.shadow.sm};
-  margin-top: 32px;
+const Wrapper = styled(BaseCardWrapper)`
+  margin-top: ${({ theme }) => theme.space[8]};
 `;
 
-const InnerWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  border-radius: 0.5rem;
-  background: ${({ theme }) => theme.color.surface.base};
-  position: relative;
-  justify-items: center;
-  padding: 1rem;
-  filter: drop-shadow(0 0px 0px hsl(0deg 0% 0% / 0.1))
-    drop-shadow(0 0px 1px hsl(0deg 0% 0% / 0.1));
-  transition: all ease-in-out 0.3s;
+const InnerWrapper = styled(BaseCardInnerWrapper)``;
 
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 130px;
-    border-radius: 0.5rem 0.5rem 0 0;
-    background: ${({ theme }) => theme.color.surface.muted};
-  }
-`;
+const ImageContainer = styled(BaseCardImageContainer)``;
 
-const ImageContainer = styled.div<{ expanded: boolean }>`
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  background-color: ${({ theme }) => theme.color.surface.base};
-  overflow: visible;
-  justify-content: flex-end;
-  border: 3px solid ${({ theme }) => theme.color.surface.muted};
-  margin-inline: auto;
-
-  ${({ expanded }) =>
-    expanded &&
-    css`
-      outline: 6px solid ${({ theme }) => theme.color.surface.muted};
-      transform: translateY(-24px);
-      z-index: 2;
-    `}
-`;
-
-const TitleContainer = styled.p`
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  text-align: center;
-  margin: 0.5rem 0;
-`;
+const TitleContainer = styled(BaseCardTitleContainer)``;
 
 const Name = styled.span`
   display: block;
-  font-size: 1.2rem;
-  font-weight: 700;
+  font-size: ${({ theme }) => theme.typography.size.lg};
+  font-weight: ${({ theme }) => theme.typography.weight.bold};
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -100,7 +49,7 @@ const Name = styled.span`
 const Type = styled.span`
   display: block;
   color: ${({ theme }) => theme.color.text.primary};
-  font-size: 1rem;
+  font-size: ${({ theme }) => theme.typography.size.md};
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -108,7 +57,7 @@ const Type = styled.span`
   max-width: 100%;
 `;
 
-const StyledDemoImage = styled(IconGridScan)<{ isOpen: boolean }>`
+const StyledDemoImage = styled(motion(IconGridScan))`
   padding: 0.8rem;
   width: calc(100% - 8px);
   height: calc(100% - 8px);
@@ -116,8 +65,6 @@ const StyledDemoImage = styled(IconGridScan)<{ isOpen: boolean }>`
   & {
     color: ${({ theme }) => theme.color.text.secondary};
   }
-
-  ${({ isOpen }) => fadeStyles(isOpen)};
 `;
 
 const StyledImage = styled.img`
@@ -130,13 +77,10 @@ const StyledImage = styled.img`
   filter: ${({ theme }) => theme.dropShadow.sm};
 `;
 
-const ImageWrapper = styled.span<{ isVisible: boolean }>`
+const ImageWrapper = styled.span`
   display: inline-block;
   position: relative;
   width: 10rem;
-  transform: ${({ isVisible }) =>
-    isVisible ? 'translateY(0)' : 'translateY(100%)'};
-  transition: transform 1s ease-in-out;
 `;
 
 const shuffle = keyframes`
@@ -160,17 +104,12 @@ const ShuffleWrapper = styled.div`
 
 export function Attribute(props: AttributeProps) {
   const { name, type, inOverview } = props;
-  const [isLoaded, setIsLoaded] = useState<boolean>(false);
-
-  useEffect(() => {
-    setIsLoaded(true);
-  }, []);
 
   return (
     <Container>
       {inOverview && (
         <ShuffleWrapper>
-          <ImageWrapper isVisible={isLoaded}>
+          <ImageWrapper>
             <StyledImage src='https://img.pokemondb.net/sprites/home/normal/hitmonchan.png' />
           </ImageWrapper>
         </ShuffleWrapper>
@@ -178,7 +117,12 @@ export function Attribute(props: AttributeProps) {
       <Wrapper>
         <InnerWrapper>
           <ImageContainer expanded={false}>
-            <StyledDemoImage stroke={1} isOpen={isLoaded} />
+            <StyledDemoImage
+              stroke={1}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+            />
           </ImageContainer>
           <TitleContainer>
             <Name>{name ?? 'Attribute'}</Name>

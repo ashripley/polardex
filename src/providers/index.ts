@@ -1,2 +1,2 @@
 export * from './PolardexProviders';
-export * from './PageProvider';
+export * from './ThemeProvider';

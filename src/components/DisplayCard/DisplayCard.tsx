@@ -1,5 +1,4 @@
 import styled, { css } from 'styled-components';
-import { pxToRem } from '../helpers';
 import { CSSProperties } from 'react';
 
 interface CardProps {
@@ -21,7 +20,7 @@ interface CardProps {
 const Container = styled.div<{ height: number; width: number; bg: string }>`
   height: ${({ height }) => `${height}px`};
   width: ${({ width }) => `${width}px`};
-  border-radius: ${pxToRem('sm')};
+  border-radius: ${({ theme }) => theme.radius.md};
   background-color: ${({ bg }) => bg};
   display: flex;
   flex-direction: column;

@@ -1,3 +1,5 @@
-export const isMobile = window.matchMedia(
-  'only screen and (max-width: 760px)'
-).matches;
+import { useMediaQuery } from '../hooks';
+
+export function useIsMobile(): boolean {
+  return useMediaQuery('(max-width: 760px)');
+}

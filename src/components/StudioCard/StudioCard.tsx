@@ -3,6 +3,12 @@ import styled from 'styled-components';
 import { Card } from '../Card';
 import { SearchField } from '../Input';
 import { useState } from 'react';
+import {
+  BaseCardWrapper,
+  BaseCardInnerWrapper,
+  BaseCardImageContainer,
+  BaseCardTitleContainer,
+} from '../BaseCard';
 
 type StudioCardProps = Partial<Parameters<typeof Card>[0]> & {
   isDemo?: boolean;
@@ -16,67 +22,18 @@ const Container = styled.div`
   min-width: 18rem;
 `;
 
-const Wrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  flex-basis: 250px;
-  margin-inline: auto;
-  transition: all 0.3s ease-in-out;
-  overflow: hidden;
-  box-shadow: ${({ theme }) => theme.shadow.sm};
-`;
+const Wrapper = styled(BaseCardWrapper)``;
 
-const InnerWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  border-radius: 0.5rem;
-  background: ${({ theme }) => theme.color.surface.base};
-  position: relative;
-  justify-items: center;
-  padding: 1rem;
-  filter: drop-shadow(0 0px 0px hsl(0deg 0% 0% / 0.1))
-    drop-shadow(0 0px 1px hsl(0deg 0% 0% / 0.1));
-  transition: all ease-in-out 0.3s;
+const InnerWrapper = styled(BaseCardInnerWrapper)``;
 
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 130px;
-    border-radius: 0.5rem 0.5rem 0 0;
-    background: ${({ theme }) => theme.color.surface.muted};
-  }
-`;
+const ImageContainer = styled(BaseCardImageContainer)``;
 
-const ImageContainer = styled.div`
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  background-color: ${({ theme }) => theme.color.surface.base};
-  overflow: visible;
-  justify-content: flex-end;
-  border: 3px solid ${({ theme }) => theme.color.surface.muted};
-  margin-inline: auto;
-`;
-
-const TitleContainer = styled.p`
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  text-align: center;
-  margin: 0.5rem 0;
-`;
+const TitleContainer = styled(BaseCardTitleContainer)``;
 
 const Type = styled.span`
   display: block;
   color: ${({ theme }) => theme.color.text.primary};
-  font-size: 1rem;
+  font-size: ${({ theme }) => theme.typography.size.md};
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -127,8 +84,8 @@ const List = styled.li`
   display: flex;
   flex-flow: column;
   align-items: center;
-  font-size: 1rem;
-  padding: 0.5rem;
+  font-size: ${({ theme }) => theme.typography.size.md};
+  padding: ${({ theme }) => theme.space[2]};
   color: ${({ theme }) => theme.color.text.primary};
 `;
 
@@ -171,7 +128,7 @@ const IdentifierText = styled.span`
 `;
 
 const Label = styled(Type)`
-  font-size: 1rem;
+  font-size: ${({ theme }) => theme.typography.size.md};
   opacity: 0.7;
 `;
 

@@ -1,94 +1,92 @@
 import styled, { css } from 'styled-components';
 import { ButtonHTMLAttributes } from 'react';
-import { pxToRem } from '../helpers';
+import { motion } from 'motion/react';
 
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
   buttonType: 'primary' | 'secondary';
 };
 
-const buttonStyles = css<Props>`
+const baseStyles = css`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-family: inherit;
-  letter-spacing: ${pxToRem('xxxxs')};
-  color: rgb(282, 282, 282);
-  background-image: none;
-  background-clip: padding-box;
-  display: block;
-  border-radius: ${pxToRem('xxxs')};
-  padding: 0.5rem;
-  box-sizing: border-box;
+  font-size: ${({ theme }) => theme.typography.size.md};
+  font-weight: ${({ theme }) => theme.typography.weight.medium};
+  letter-spacing: ${({ theme }) => theme.typography.letterSpacing.wide};
+  border-radius: ${({ theme }) => theme.radius.md};
+  padding: ${({ theme }) => `${theme.space[2]} ${theme.space[4]}`};
   min-width: 100px;
   border: none;
-  background-color: rgb(282, 282, 282, 0.3);
-  flex-shrink: 0;
+  cursor: pointer;
+  transition: background-color ${({ theme }) => theme.transition.fast},
+    border-color ${({ theme }) => theme.transition.fast},
+    color ${({ theme }) => theme.transition.fast};
+  white-space: nowrap;
+  user-select: none;
+  line-height: ${({ theme }) => theme.typography.lineHeight.normal};
+  text-decoration: none;
 
-  &::placeholder {
-    color: rgb(282 282 282);
+  &:focus-visible {
+    outline: 2px solid ${({ theme }) => theme.color.frost.blue};
+    outline-offset: 2px;
   }
 
-  &:focus {
-    outline: none;
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
   }
 `;
 
-export const StyledButton = styled.button<Props>`
-  ${buttonStyles}
+const PrimaryBase = styled(motion.button).withConfig({
+  shouldForwardProp: (prop) => prop !== 'buttonType',
+})<Props>`
+  ${baseStyles}
+  background-color: ${({ theme }) => theme.color.text.tertiary};
+  color: ${({ theme }) => theme.color.text.primary};
+
+  @media not all and (hover: none) {
+    &:hover:not(:disabled) {
+      background-color: ${({ theme }) => theme.color.frost.sky};
+      color: ${({ theme }) => theme.color.surface.base};
+    }
+  }
 `;
 
-export function Button(props: Props) {
-  const { buttonType } = props;
-  return buttonType === 'primary' ? (
-    <PrimaryButton {...props} />
-  ) : buttonType === 'secondary' ? (
-    <SecondaryButton {...props} />
-  ) : (
-    <StyledButton {...props} />
-  );
+const SecondaryBase = styled(motion.button).withConfig({
+  shouldForwardProp: (prop) => prop !== 'buttonType',
+})<Props>`
+  ${baseStyles}
+  background: transparent;
+  color: ${({ theme }) => theme.color.text.primary};
+  border: 1px solid ${({ theme }) => theme.color.text.primary};
+
+  @media not all and (hover: none) {
+    &:hover:not(:disabled) {
+      border-color: ${({ theme }) => theme.color.frost.blue};
+      color: ${({ theme }) => theme.color.frost.blue};
+    }
+  }
+`;
+
+const motionProps = {
+  whileTap: { scale: 0.97 },
+  transition: { type: 'spring' as const, stiffness: 400, damping: 25 },
+};
+
+export function PrimaryButton(props: Props) {
+  return <PrimaryBase {...motionProps} {...props} />;
 }
 
-const newButtonStyles = css`
-  display: inline-flex;
-  -webkit-box-align: center;
-  align-items: center;
-  font-size: inherit;
-  text-align: center;
-  text-decoration: none;
-  vertical-align: middle;
-  white-space: nowrap;
-  border-radius: 0.5em;
-  background: none;
-  padding: 0.375em 0.75em;
-  user-select: none;
-  line-height: 1.15;
-  justify-content: center;
-  transition: background-color 200ms ease-in, border-color 200ms ease-in,
-    box-shadow 200ms ease-in, color 200ms ease-in;
-  border: 0.0625em solid rgb(76, 86, 106);
-`;
+export function SecondaryButton(props: Props) {
+  return <SecondaryBase {...motionProps} {...props} />;
+}
 
-export const PrimaryButton = styled(StyledButton)`
-  ${newButtonStyles}
-  background: none ${({ theme }) => theme.color.text.tertiary};
-  margin-left: 0;
-  color: ${({ theme }) => theme.color.text.primary};
-  border: none;
-
-  @media not all and (hover: none) {
-    &:hover {
-      background-color: ${({ theme }) => theme.color.frost.sky};
-      cursor: pointer;
-    }
-  }
-`;
-
-export const SecondaryButton = styled(StyledButton)`
-  ${newButtonStyles}
-  color: ${({ theme }) => theme.color.text.primary};
-
-  @media not all and (hover: none) {
-    &:hover {
-      border-color: rgb(115, 151, 186);
-      color: rgb(115, 151, 186);
-      cursor: pointer;
-    }
-  }
-`;
+export function Button(props: Props) {
+  return props.buttonType === 'primary' ? (
+    <PrimaryButton {...props} />
+  ) : (
+    <SecondaryButton {...props} />
+  );
+}

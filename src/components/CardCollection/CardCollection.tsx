@@ -1,6 +1,6 @@
 import styled, { useTheme } from 'styled-components';
 import { DisplayCard } from '../DisplayCard';
-import { isMobile } from '../../utils';
+import { useIsMobile } from '../../utils';
 
 const ImageContainer = styled.div`
   width: 8em;
@@ -18,6 +18,7 @@ const ImageContainer = styled.div`
 
 export function CardCollection() {
   const theme = useTheme();
+  const isMobile = useIsMobile();
 
   return (
     <ImageContainer>

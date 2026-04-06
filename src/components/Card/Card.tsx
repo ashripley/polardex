@@ -1,8 +1,14 @@
 import { IconPhotoScan, IconSelector } from '@tabler/icons-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import styled, { css } from 'styled-components';
 import { CardModel } from './cardModel';
-import { fadeStyles } from '../animation';
+import { motion } from 'motion/react';
+import {
+  BaseCardWrapper,
+  BaseCardInnerWrapper,
+  BaseCardImageContainer,
+  BaseCardTitleContainer,
+} from '../BaseCard';
 
 type CardProps = Partial<CardModel> & {
   isDemo?: boolean;
@@ -24,70 +30,13 @@ const Container = styled.div<{ isDemo: boolean | undefined }>`
     `}
 `;
 
-const Wrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  flex-basis: 250px;
-  margin-inline: auto;
-  transition: ${({ theme }) => theme.transition.normal};
-  overflow: hidden;
-  box-shadow: ${({ theme }) => theme.shadow.sm};
-`;
+const Wrapper = styled(BaseCardWrapper)``;
 
-const InnerWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  border-radius: ${({ theme }) => theme.radius.md};
-  background: ${({ theme }) => theme.color.surface.base};
-  position: relative;
-  justify-items: center;
-  padding: ${({ theme }) => theme.space[4]};
-  filter: drop-shadow(0 0px 0px hsl(0deg 0% 0% / 0.1))
-    drop-shadow(0 0px 1px hsl(0deg 0% 0% / 0.1));
-  transition: ${({ theme }) => theme.transition.normal};
+const InnerWrapper = styled(BaseCardInnerWrapper)``;
 
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 130px;
-    border-radius: ${({ theme }) => theme.radius.md} ${({ theme }) => theme.radius.md} 0 0;
-    background: ${({ theme }) => theme.color.surface.muted};
-  }
-`;
+const ImageContainer = styled(BaseCardImageContainer)``;
 
-const ImageContainer = styled.div<{ expanded: boolean }>`
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 150px;
-  height: 150px;
-  border-radius: ${({ theme }) => theme.radius.full};
-  background-color: ${({ theme }) => theme.color.surface.base};
-  overflow: visible;
-  justify-content: flex-end;
-  border: 3px solid ${({ theme }) => theme.color.surface.muted};
-  margin-inline: auto;
-
-  ${({ expanded }) =>
-    expanded &&
-    css`
-      outline: 6px solid ${({ theme }) => theme.color.surface.muted};
-      transform: translateY(-24px);
-      z-index: 2;
-    `}
-`;
-
-const TitleContainer = styled.p`
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  text-align: center;
-  margin: ${({ theme }) => theme.space[2]} 0;
-`;
+const TitleContainer = styled(BaseCardTitleContainer)``;
 
 const Name = styled.span`
   display: block;
@@ -158,14 +107,13 @@ const List = styled.li`
   color: ${({ theme }) => theme.color.text.primary};
 `;
 
-const StyledImage = styled.img<{ isOpen: boolean }>`
+const StyledImage = styled(motion.img)`
   padding: ${({ theme }) => theme.space[3]};
   width: calc(100% - 8px);
   height: calc(100% - 8px);
-  ${({ isOpen }) => fadeStyles(isOpen)};
 `;
 
-const StyledDemoImage = styled(IconPhotoScan)<{ isOpen: boolean }>`
+const StyledDemoImage = styled(motion(IconPhotoScan))`
   padding: ${({ theme }) => theme.space[3]};
   width: calc(100% - 8px);
   height: calc(100% - 8px);
@@ -173,17 +121,16 @@ const StyledDemoImage = styled(IconPhotoScan)<{ isOpen: boolean }>`
   & {
     color: ${({ theme }) => theme.color.text.secondary};
   }
-
-  ${({ isOpen }) => fadeStyles(isOpen)};
 `;
 
 const DuplicateIdentifer = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: ${({ theme }) => theme.color.text.secondary};
-  height: 1.5rem;
-  width: 1.5rem;
+  background-color: ${({ theme }) => theme.color.frost.blue};
+  min-width: 1.35rem;
+  height: 1.35rem;
+  padding: 0 ${({ theme }) => theme.space[1]};
   border-radius: ${({ theme }) => theme.radius.full};
   top: 0;
   right: 0;
@@ -194,9 +141,11 @@ const DuplicateIdentifer = styled.div`
 `;
 
 const IdentifierText = styled.span`
-  color: ${({ theme }) => theme.color.surface.muted};
+  color: #ffffff;
   display: block;
-  font-size: 0.9rem;
+  font-size: ${({ theme }) => theme.typography.size.xs};
+  font-weight: ${({ theme }) => theme.typography.weight.bold};
+  line-height: 1;
 `;
 
 const ResizeContainer = styled.div<{ expanded: boolean }>`
@@ -240,18 +189,22 @@ const Attribute = styled(Type)`
   font-size: ${({ theme }) => theme.typography.size.md};
 `;
 
+const fadeIn = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  transition: { duration: 0.3 },
+};
+
 export function Card(props: CardProps) {
   const { pokemonData, attributes, setNumber, quantity, isDemo } = props;
   const [expanded, setExpanded] = useState<boolean>(false);
-  const [isLoaded, setIsLoaded] = useState<boolean>(false);
-
-  useEffect(() => {
-    setIsLoaded(true);
-  }, []);
 
   return (
     <Container isDemo={isDemo}>
-      <Wrapper>
+      <Wrapper
+        whileHover={{ y: -4 }}
+        transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+      >
         <InnerWrapper>
           <ResizeContainer
             onClick={() => setExpanded(!expanded)}
@@ -261,12 +214,12 @@ export function Card(props: CardProps) {
           </ResizeContainer>
           <ImageContainer expanded={false}>
             {isDemo ? (
-              <StyledDemoImage stroke={1} isOpen={isLoaded} />
+              <StyledDemoImage stroke={1} {...fadeIn} />
             ) : (
               <StyledImage
-                isOpen={isLoaded}
                 className='a9bdap5'
                 src={`https://img.pokemondb.net/sprites/home/normal/${pokemonData?.name?.toLowerCase()}.png`}
+                {...fadeIn}
               />
             )}
             {quantity && (

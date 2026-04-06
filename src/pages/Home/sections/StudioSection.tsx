@@ -7,8 +7,9 @@ import {
 } from './sectionStyles';
 import { Button, DisplayCard } from '../../../components';
 import { Link } from 'react-router-dom';
-import { useEffect, useRef, useState } from 'react';
-import { isMobile } from '../../../utils';
+import { useRef } from 'react';
+import { useIsMobile } from '../../../utils';
+import { useInView } from 'motion/react';
 
 const Container = styled.section`
   transition: background-color 400ms ease-in-out;
@@ -95,26 +96,9 @@ const StudioSpanContainer = styled.div<{ isMobile: boolean }>`
 
 export function StudioSection() {
   const theme = useTheme();
-  const [isVisible, setIsVisible] = useState<boolean>(false);
+  const isMobile = useIsMobile();
   const sectionRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setTimeout(() => setIsVisible(true), 1000);
-          observer.disconnect(); // Stop observing once it's in view
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, []);
+  const isVisible = useInView(sectionRef, { once: true, amount: 0.1, margin: '0px 0px -100px 0px' });
 
   return (
     <Container ref={sectionRef}>

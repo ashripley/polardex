@@ -1,15 +1,15 @@
 import styled, { useTheme } from 'styled-components';
 import { ButtonContainer, SectionText, SectionWrapper } from './sectionStyles';
 import { Button, CardCollection } from '../../../components';
-import { isMobile } from '../../../utils';
+import { useIsMobile } from '../../../utils';
 import { Link } from 'react-router-dom';
-import { usePage } from '../../../providers';
 
 const Container = styled.section`
   position: relative;
   display: flex;
   flex-grow: 1;
   background-color: ${({ theme }) => theme.color.surface.muted};
+  transition: background-color 200ms ease;
 `;
 
 const Content = styled.div`
@@ -48,7 +48,7 @@ const StyledLink = styled(Link)`
 
 export function WelcomeSection() {
   const theme = useTheme();
-  const page = usePage();
+  const isMobile = useIsMobile();
 
   return (
     <Container>
@@ -63,17 +63,13 @@ export function WelcomeSection() {
             <StyledSectionText
               style={{
                 color: theme.color.text.primary,
-                fontSize: isMobile ? '2rem' : '2.5rem',
+                fontSize: isMobile ? theme.typography.size.xxl : theme.typography.size.xxxl,
               }}
             >
               Store your nostalgia.
             </StyledSectionText>
             <ButtonContainer isMobile={isMobile}>
-              <StyledLink
-                to={'/gallery'}
-                onClick={() => page.setCurrent('gallery')}
-                style={{ display: 'flex' }}
-              >
+              <StyledLink to={'/gallery'} style={{ display: 'flex' }}>
                 <Button buttonType='primary'>Gallery</Button>
               </StyledLink>
             </ButtonContainer>

@@ -50,5 +50,5 @@ export function StudioModalCanvas({ type }: StudioModalCanvasProps) {
     return <Attribute inOverview={false} />;
   }
 
-  return;
+  return null;
 }

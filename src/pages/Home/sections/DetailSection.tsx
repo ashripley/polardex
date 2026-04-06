@@ -1,12 +1,13 @@
 import styled, { css, keyframes, useTheme } from 'styled-components';
 import { SectionParagraph, SectionText, SectionWrapper } from './sectionStyles';
 import { DisplayCard } from '../../../components';
-import { isMobile } from '../../../utils';
+import { useIsMobile } from '../../../utils';
 
 const Container = styled.section`
   position: relative;
   top: 0px;
   background-color: ${({ theme }) => theme.color.surface.muted};
+  transition: background-color 200ms ease;
 `;
 
 const Content = styled.div`
@@ -69,6 +70,7 @@ const ShuffleContainer = styled.div<{ isMobile: boolean }>`
 
 export function DetailSection() {
   const theme = useTheme();
+  const isMobile = useIsMobile();
 
   return (
     <Container>
@@ -93,11 +95,11 @@ export function DetailSection() {
           </ImageContainer>
           <TextContainer>
             <ShuffleContainer isMobile={isMobile}>
-              <SectionText style={{ fontSize: isMobile ? '2rem' : '2.5rem' }}>
+              <SectionText style={{ fontSize: isMobile ? theme.typography.size.xxl : theme.typography.size.xxxl }}>
                 Your own{' '}
               </SectionText>
               <ShuffleWrapper>
-                <SectionText style={{ fontSize: isMobile ? '2rem' : '2.5rem' }}>
+                <SectionText style={{ fontSize: isMobile ? theme.typography.size.xxl : theme.typography.size.xxxl }}>
                   collection.
                 </SectionText>
               </ShuffleWrapper>

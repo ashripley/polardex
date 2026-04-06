@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
-import { PageProvider } from './PageProvider';
+import { ThemeProvider } from './ThemeProvider';
 
 export function PolardexProviders({ children }: { children: ReactNode }) {
-  return <PageProvider>{children}</PageProvider>;
+  return <ThemeProvider>{children}</ThemeProvider>;
 }

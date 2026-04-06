@@ -1,9 +1,8 @@
 import styled, { css } from 'styled-components';
-import { pxToRem } from '../../../components/helpers';
 
 export const ButtonContainer = styled.div<{ isMobile?: boolean }>`
   display: flex;
-  gap: ${pxToRem('xxs')};
+  gap: ${({ theme }) => theme.space[2]};
   text-align: start;
   color: ${({ theme }) => theme.color.text.primary};
 
@@ -15,23 +14,23 @@ export const ButtonContainer = styled.div<{ isMobile?: boolean }>`
 `;
 
 export const SectionText = styled.span`
-  font-size: 2.5em;
+  font-size: ${({ theme }) => theme.typography.size.xxxl};
   margin-top: 0px;
-  font-weight: 700;
+  font-weight: ${({ theme }) => theme.typography.weight.bold};
   margin-bottom: 0.8em;
 `;
 
 export const SectionParagraph = styled.p`
   margin-top: 0px;
   margin-bottom: 1em;
-  font-size: 1.26562em;
-  transition: color 0.3s ease-in-out;
+  font-size: ${({ theme }) => theme.typography.size.lg};
+  transition: ${({ theme }) => theme.transition.normal};
   color: ${({ theme }) => theme.color.text.primary};
   text-align: start;
 `;
 
 export const SectionWrapper = styled.div`
-  padding: 2.5em 1.5em;
+  padding: ${({ theme }) => `${theme.space[10]} ${theme.space[6]}`};
   width: 100%;
   margin-inline: auto;
 
@@ -41,7 +40,7 @@ export const SectionWrapper = styled.div`
   }
 
   @media (min-width: 56.25em) {
-    padding-top: 5em;
-    padding-bottom: 5em;
+    padding-top: ${({ theme }) => theme.space[20]};
+    padding-bottom: ${({ theme }) => theme.space[20]};
   }
 `;

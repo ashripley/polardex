@@ -4,6 +4,12 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: #f2f4f8;
+  color-scheme: light dark;
+}
+
+:root[data-theme="dark"] {
+  background-color: #2e3440;
+  color-scheme: dark;
 }
 
 /* 1. Use a more-intuitive box-sizing model */
@@ -62,7 +68,6 @@ body {
   font-size: 1rem;
   font-weight: 400;
   scroll-behavior: smooth;
-  background-color: #f2f4f8;
 }
 
 /* h1 {

@@ -131,7 +131,7 @@ export interface Theme {
   }
 }
 
-export const theme: Theme = {
+export const lightTheme: Theme = {
   color: {
     surface: {
       base: '#ffffff',
@@ -251,3 +251,32 @@ export const theme: Theme = {
     lg: '75em',
   },
 };
+
+export const darkTheme: Theme = {
+  ...lightTheme,
+  color: {
+    surface: {
+      base: '#2e3440',
+      subtle: '#3b4252',
+      muted: '#434c5e',
+      footer: '#242831',
+    },
+    text: {
+      primary: '#eceff4',
+      secondary: '#d8dee9',
+      tertiary: '#4c566a',
+      primaryHover: 'rgba(76, 86, 106, 0.5)',
+      secondaryHover: 'rgba(76, 86, 106, 0.8)',
+    },
+    frost: lightTheme.color.frost,
+    aurora: lightTheme.color.aurora,
+  },
+  shadow: {
+    none: 'none',
+    sm: 'rgba(0, 0, 0, 0.4) 0px 8px 24px',
+    md: 'rgba(0, 0, 0, 0.5) 0px 1px 2px 0px, rgba(0, 0, 0, 0.3) 0px 2px 6px 2px',
+    lg: 'rgba(0, 0, 0, 0.5) 0px 10px 36px 0px, rgba(0, 0, 0, 0.06) 0px 0px 0px 1px',
+  },
+};
+
+export const theme = lightTheme; // backward compat

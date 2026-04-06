@@ -7,7 +7,7 @@ import { StudioModalCanvas } from './StudioModalCanvas';
 interface StudioModalProps {
   isOpen: boolean;
   actionType: string;
-  toggleModal: () => void;
+  onClose: () => void;
 }
 
 const Container = styled.div`
@@ -18,13 +18,13 @@ const Container = styled.div`
 
 const ModalHeader = styled.div`
   display: flex;
-  justify-content: end;
-  padding: 0.5rem;
-  margin: 1rem;
-  border-radius: 0.5rem;
-  width: auto;
+  justify-content: flex-end;
+  padding: ${({ theme }) => theme.space[2]};
+  margin: ${({ theme }) => theme.space[4]};
+  border-radius: ${({ theme }) => theme.radius.md};
+  width: fit-content;
   margin-left: auto;
-  transition: background-color 0.3s ease-in-out;
+  transition: ${({ theme }) => theme.transition.fast};
 
   & > svg {
     color: ${({ theme }) => theme.color.text.primary};
@@ -40,22 +40,23 @@ const ContentContainer = styled.div`
   display: flex;
   flex: 1;
   align-items: center;
+  overflow: hidden;
 `;
 
 const Content = styled.div`
   display: flex;
   flex: 1 1 auto;
   justify-content: center;
-  margin: 1rem;
+  margin: ${({ theme }) => theme.space[4]};
 `;
 
 export function StudioModal(props: StudioModalProps) {
-  const { isOpen, toggleModal, actionType } = props;
+  const { isOpen, onClose, actionType } = props;
 
   return (
-    <Modal isOpen={isOpen}>
+    <Modal isOpen={isOpen} onClose={onClose}>
       <Container>
-        <ModalHeader onClick={toggleModal}>
+        <ModalHeader onClick={onClose} role='button' aria-label='Close'>
           <IconX stroke={2} />
         </ModalHeader>
         <ContentContainer>
@@ -66,9 +67,6 @@ export function StudioModal(props: StudioModalProps) {
             <StudioModalCanvas type={actionType} />
           </Content>
         </ContentContainer>
-        <div>
-          <div style={{ height: '5rem' }}></div>
-        </div>
       </Container>
     </Modal>
   );

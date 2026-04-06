@@ -3,17 +3,18 @@ import { PolarCodeLogo } from '../PolarCodeLogo';
 
 const Container = styled.section`
   width: 100%;
-  margin: 0px auto;
-  padding: 2.5em 1.5em;
+  background-color: ${({ theme }) => theme.color.surface.footer};
+  border-top: 1px solid ${({ theme }) => theme.color.surface.muted};
+  transition: background-color 200ms ease, border-color 200ms ease;
+`;
 
-  @media (min-width: 75em) {
-    max-width: 75em;
-    padding: unset;
-  }
+const Inner = styled.div`
+  max-width: ${({ theme }) => theme.breakpoint.lg};
+  margin: 0 auto;
+  padding: ${({ theme }) => `${theme.space[10]} ${theme.space[6]}`};
 
-  @media (min-width: 56.25em) {
-    padding-top: 5em;
-    padding-bottom: 5em;
+  @media (min-width: ${({ theme }) => theme.breakpoint.lg}) {
+    padding: ${({ theme }) => `${theme.space[20]} ${theme.space[6]}`};
   }
 `;
 
@@ -45,7 +46,7 @@ const StudioTextContainer = styled.div`
   flex-direction: column;
   text-align: center;
   font-size: 0.8em;
-  transition: color 0.3s ease-in-out;
+  transition: color 0.3s ease-in-out, background-color 200ms ease;
   margin-top: 1.125em;
   color: ${({ theme }) => theme.color.text.secondary};
 
@@ -79,6 +80,7 @@ function HeartSVG() {
 export function PageFooter() {
   return (
     <Container>
+      <Inner>
       <Studio>
         <StudioHeader>
           <PolarCodeLogo />
@@ -95,6 +97,7 @@ export function PageFooter() {
           </StudioTextContainer>
         </StudioContent>
       </Studio>
+      </Inner>
     </Container>
   );
 }
