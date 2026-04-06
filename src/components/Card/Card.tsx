@@ -1,8 +1,9 @@
 import { IconPhotoScan, IconSelector } from '@tabler/icons-react';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import styled, { css } from 'styled-components';
 import { CardModel } from './cardModel';
-import { motion } from 'motion/react';
+import { motion, useMotionValue, useSpring, useTransform } from 'motion/react';
+import { spriteUrl, spriteUrlFallback } from '../../utils';
 import {
   BaseCardWrapper,
   BaseCardInnerWrapper,
@@ -31,11 +32,8 @@ const Container = styled.div<{ isDemo: boolean | undefined }>`
 `;
 
 const Wrapper = styled(BaseCardWrapper)``;
-
 const InnerWrapper = styled(BaseCardInnerWrapper)``;
-
 const ImageContainer = styled(BaseCardImageContainer)``;
-
 const TitleContainer = styled(BaseCardTitleContainer)``;
 
 const Name = styled.span`
@@ -52,8 +50,8 @@ const Name = styled.span`
 
 const Type = styled.span`
   display: block;
-  color: ${({ theme }) => theme.color.text.primary};
-  font-size: ${({ theme }) => theme.typography.size.md};
+  color: ${({ theme }) => theme.color.text.secondary};
+  font-size: ${({ theme }) => theme.typography.size.sm};
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -75,8 +73,10 @@ const BaseUl = styled.ul<{ expanded: boolean }>`
   transition: ${({ theme }) => theme.transition.normal};
 
   & > li {
-    font-weight: ${({ expanded, theme }) => (expanded ? theme.typography.weight.regular : theme.typography.weight.bold)};
+    font-weight: ${({ expanded, theme }) =>
+      expanded ? theme.typography.weight.regular : theme.typography.weight.bold};
     opacity: ${({ expanded }) => (expanded ? 1 : 0.7)};
+    font-size: ${({ theme }) => theme.typography.size.sm};
     transition: ${({ theme }) => theme.transition.normal};
   }
 `;
@@ -85,24 +85,27 @@ const StatUl = styled.ul<{ expanded: boolean }>`
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: auto;
-  justify-content: flex-start;
-  font-weight: ${({ theme }) => theme.typography.weight.medium};
-  transition: height 0.3s ease-in-out;
-  height: ${({ expanded }) => (expanded ? '10rem' : 0)};
-  overflow: hidden;
-  flex-flow: column;
-  place-items: start;
   place-items: center;
   padding: 0;
+  height: ${({ expanded }) => (expanded ? '10rem' : 0)};
+  overflow: hidden;
+  transition: height 0.3s ease-in-out;
   border-top: ${({ expanded, theme }) =>
     expanded ? `2px solid ${theme.color.surface.muted}` : 'none'};
+`;
+
+const StatItem = styled.li`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: ${({ theme }) => theme.space[2]};
 `;
 
 const List = styled.li`
   display: flex;
   flex-flow: column;
   align-items: center;
-  font-size: ${({ theme }) => theme.typography.size.md};
+  font-size: ${({ theme }) => theme.typography.size.sm};
   padding: ${({ theme }) => theme.space[2]};
   color: ${({ theme }) => theme.color.text.primary};
 `;
@@ -117,10 +120,7 @@ const StyledDemoImage = styled(motion(IconPhotoScan))`
   padding: ${({ theme }) => theme.space[3]};
   width: calc(100% - 8px);
   height: calc(100% - 8px);
-
-  & {
-    color: ${({ theme }) => theme.color.text.secondary};
-  }
+  color: ${({ theme }) => theme.color.text.secondary};
 `;
 
 const DuplicateIdentifer = styled.div`
@@ -159,7 +159,7 @@ const ResizeContainer = styled.div<{ expanded: boolean }>`
   margin: ${({ theme }) => theme.space[2]};
   position: absolute;
   z-index: ${({ theme }) => theme.zIndex.sticky};
-  transition: ${({ theme }) => theme.transition.normal};
+  transition: background-color ${({ theme }) => theme.transition.fast};
 
   ${({ expanded, theme }) =>
     expanded &&
@@ -180,46 +180,98 @@ const ResizeIcon = styled(IconSelector)`
   stroke-width: 1.5;
 `;
 
-const Label = styled(Type)`
-  font-size: ${({ theme }) => theme.typography.size.md};
-  opacity: 0.7;
+const Label = styled.span`
+  font-size: ${({ theme }) => theme.typography.size.xs};
+  color: ${({ theme }) => theme.color.text.secondary};
 `;
 
-const Attribute = styled(Type)`
-  font-size: ${({ theme }) => theme.typography.size.md};
+const Attribute = styled.span`
+  font-size: ${({ theme }) => theme.typography.size.sm};
+  color: ${({ theme }) => theme.color.text.primary};
+  font-weight: ${({ theme }) => theme.typography.weight.medium};
+  text-transform: capitalize;
 `;
 
-const fadeIn = {
-  initial: { opacity: 0 },
-  animate: { opacity: 1 },
-  transition: { duration: 0.3 },
-};
 
 export function Card(props: CardProps) {
   const { pokemonData, attributes, setNumber, quantity, isDemo } = props;
   const [expanded, setExpanded] = useState<boolean>(false);
 
+  const cardRef = useRef<HTMLDivElement>(null);
+  const rawX = useMotionValue(0);
+  const rawY = useMotionValue(0);
+  const rotateX = useSpring(useTransform(rawY, [-0.5, 0.5], [10, -10]), { stiffness: 150, damping: 20 });
+  const rotateY = useSpring(useTransform(rawX, [-0.5, 0.5], [-10, 10]), { stiffness: 150, damping: 20 });
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = cardRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    rawX.set((e.clientX - rect.left) / rect.width - 0.5);
+    rawY.set((e.clientY - rect.top) / rect.height - 0.5);
+  };
+
+  const handleMouseLeave = () => {
+    rawX.set(0);
+    rawY.set(0);
+  };
+
+  const stats = [
+    { label: 'Set', value: attributes?.set },
+    { label: 'Type', value: attributes?.cardType },
+    { label: 'Condition', value: attributes?.condition },
+    ...(attributes?.grading ? [{ label: 'Grading', value: String(attributes.grading) }] : []),
+  ].filter(({ value }) => Boolean(value));
+
   return (
     <Container isDemo={isDemo}>
       <Wrapper
-        whileHover={{ y: -4 }}
+        ref={cardRef}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        style={{ transformPerspective: 700, rotateX, rotateY }}
+        whileHover={{ boxShadow: '0 20px 60px rgba(0,0,0,0.22)' }}
         transition={{ type: 'spring', stiffness: 400, damping: 25 }}
       >
         <InnerWrapper>
-          <ResizeContainer
-            onClick={() => setExpanded(!expanded)}
-            expanded={expanded}
-          >
+          <ResizeContainer onClick={() => setExpanded(!expanded)} expanded={expanded}>
             <ResizeIcon />
           </ResizeContainer>
+
           <ImageContainer expanded={false}>
             {isDemo ? (
-              <StyledDemoImage stroke={1} {...fadeIn} />
-            ) : (
+              <StyledDemoImage
+                stroke={1}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+              />
+            ) : pokemonData?.imageUrl && pokemonData.imageUrl.includes('pokemontcg.io') ? (
               <StyledImage
-                className='a9bdap5'
-                src={`https://img.pokemondb.net/sprites/home/normal/${pokemonData?.name?.toLowerCase()}.png`}
-                {...fadeIn}
+                src={pokemonData.imageUrl}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3, ease: 'easeOut' as const }}
+                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+              />
+            ) : pokemonData?.name ? (
+              <StyledImage
+                src={spriteUrl(pokemonData.name ?? '')}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3, ease: 'easeOut' as const }}
+                onError={(e) => {
+                  const img = e.target as HTMLImageElement;
+                  const fallback = spriteUrlFallback(pokemonData.name ?? '');
+                  if (img.src !== fallback) { img.src = fallback; }
+                  else { img.style.opacity = '0'; }
+                }}
+              />
+            ) : (
+              <StyledDemoImage
+                stroke={1}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
               />
             )}
             {quantity && (
@@ -228,34 +280,24 @@ export function Card(props: CardProps) {
               </DuplicateIdentifer>
             )}
           </ImageContainer>
+
           <TitleContainer>
             <Name>{pokemonData?.name}</Name>
             <Type>{pokemonData?.type}</Type>
-            <BaseUl expanded={false}>
-              <List>{pokemonData?.id}</List>
-              <List>{attributes?.year}</List>
-              <List>{setNumber}</List>
+            <BaseUl expanded={expanded}>
+              {Boolean(pokemonData?.id) && <List>{pokemonData?.id}</List>}
+              {Boolean(attributes?.year) && <List>{attributes?.year}</List>}
+              {Boolean(setNumber) && <List>{setNumber}</List>}
             </BaseUl>
           </TitleContainer>
+
           <StatUl expanded={expanded}>
-            <List>
-              <Label>Set:</Label>
-              <Attribute>{attributes?.set}</Attribute>
-            </List>
-            <List>
-              <Label>Type:</Label>
-              <Attribute>{attributes?.cardType}</Attribute>
-            </List>
-            <List>
-              <Label>Condition:</Label>
-              <Attribute>{attributes?.condition}</Attribute>
-            </List>
-            {attributes?.grading && (
-              <List>
-                <Label>Grading:</Label>
-                <Attribute>{attributes.grading}</Attribute>
-              </List>
-            )}
+            {stats.map(({ label, value }) => (
+              <StatItem key={label}>
+                <Label>{label}</Label>
+                <Attribute>{value}</Attribute>
+              </StatItem>
+            ))}
           </StatUl>
         </InnerWrapper>
       </Wrapper>

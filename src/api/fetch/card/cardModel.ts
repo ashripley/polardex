@@ -25,5 +25,7 @@ export interface AttributeCardModel {
   condition: string;
   grading: number;
   isGraded?: boolean;
+  tcgId?: string;       // Pokemon TCG API card ID e.g. "base1-4"
+  tcgImageUrl?: string; // Full card artwork URL from TCG API
   meta?: unknown;
 }

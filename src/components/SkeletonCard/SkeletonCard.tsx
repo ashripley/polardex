@@ -10,7 +10,12 @@ const shimmer = keyframes`
 `;
 
 const shimmerStyle = css`
-  background: linear-gradient(90deg, #e8eaed 25%, #f4f5f7 50%, #e8eaed 75%);
+  background: linear-gradient(
+    90deg,
+    ${({ theme }) => theme.color.surface.muted} 25%,
+    ${({ theme }) => theme.color.surface.subtle} 50%,
+    ${({ theme }) => theme.color.surface.muted} 75%
+  );
   background-size: 800px 100%;
   animation: ${shimmer} 1.4s ease-in-out infinite;
 `;

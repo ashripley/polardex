@@ -1,5 +1,6 @@
 import styled, { css } from 'styled-components';
 import { CSSProperties } from 'react';
+import { motion } from 'motion/react';
 
 interface CardProps {
   title: string;
@@ -17,14 +18,15 @@ interface CardProps {
   display: boolean;
 }
 
-const Container = styled.div<{ height: number; width: number; bg: string }>`
+const Container = styled(motion.div)<{ height: number; width: number; bg: string }>`
   height: ${({ height }) => `${height}px`};
   width: ${({ width }) => `${width}px`};
-  border-radius: ${({ theme }) => theme.radius.md};
+  border-radius: ${({ theme }) => theme.radius.lg};
   background-color: ${({ bg }) => bg};
   display: flex;
   flex-direction: column;
-  padding: 1em;
+  padding: ${({ theme }) => theme.space[4]};
+  flex-shrink: 0;
 `;
 
 const Header = styled.div`
@@ -32,9 +34,6 @@ const Header = styled.div`
   height: 10%;
   width: 100%;
   background-color: inherit;
-  border-top-right-radius: 1.5em;
-  border-top-left-radius: 1.5em;
-  display: flex;
   justify-content: space-between;
   align-items: center;
 `;
@@ -47,8 +46,8 @@ const Content = styled.div`
   justify-content: space-between;
   align-items: center;
   flex-direction: column;
-  gap: 0.5em;
-  padding: 0.5em;
+  gap: ${({ theme }) => theme.space[2]};
+  padding: ${({ theme }) => theme.space[2]};
 `;
 
 const Footer = styled.div`
@@ -56,19 +55,17 @@ const Footer = styled.div`
   height: 10%;
   width: 100%;
   background-color: inherit;
-  border-bottom-right-radius: 1.5em;
-  border-bottom-left-radius: 1.5em;
 `;
 
-export const Title = styled.h1<{ titleSize: string }>`
+export const Title = styled.h2<{ titleSize: string }>`
   font-size: ${({ titleSize }) => titleSize};
-  font-weight: 500;
+  font-weight: ${({ theme }) => theme.typography.weight.medium};
   color: ${({ theme }) => theme.color.surface.base};
-  text-align: start;
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  padding-left: 1em;
+  padding-left: ${({ theme }) => theme.space[2]};
+  margin: 0;
 `;
 
 const ImageContainer = styled.div<{ imageRadius: string }>`
@@ -84,37 +81,37 @@ const ImageContainer = styled.div<{ imageRadius: string }>`
 const Info = styled.div`
   height: 40%;
   width: 100%;
-  border-radius: 1em;
+  border-radius: ${({ theme }) => theme.radius.md};
 `;
 
 const Image = styled.img<{ height: string; width: string }>`
-  ${({ width, height }) => {
-    return css`
-      height: ${height};
-      width: ${width};
-    `;
-  }}
+  ${({ width, height }) => css`
+    height: ${height};
+    width: ${width};
+  `}
 `;
 
 const Line = styled.div`
   height: 2px;
-  border-radius: 1rem;
+  border-radius: ${({ theme }) => theme.radius.full};
   background-color: ${({ theme }) => theme.color.surface.base};
-  margin: 10px 0;
+  margin: 8px 0;
+  opacity: 0.4;
   width: 100%;
-  margin: 10px auto;
 `;
 
 const FooterLine = styled(Line)`
   width: 20%;
+  opacity: 0.3;
 `;
 
 const Avatar = styled.div`
   height: 1em;
   width: 1em;
   background-color: ${({ theme }) => theme.color.surface.base};
-  border-radius: 100%;
-  margin-right: 0.5em;
+  border-radius: ${({ theme }) => theme.radius.full};
+  margin-right: ${({ theme }) => theme.space[2]};
+  opacity: 0.6;
 `;
 
 export function DisplayCard({
@@ -122,14 +119,11 @@ export function DisplayCard({
   height = 550,
   width = 350,
   title,
-  titleSize = '0.8em',
+  titleSize = '0.85em',
   bg,
   imageRadius = '1em',
   imageUrl,
-  image = {
-    height: '5em',
-    width: '5em',
-  },
+  image = { height: '5em', width: '5em' },
   display = false,
 }: CardProps) {
   return (
@@ -144,7 +138,6 @@ export function DisplayCard({
         </ImageContainer>
         {display && (
           <Info>
-            <Line />
             <Line />
             <Line />
             <Line />

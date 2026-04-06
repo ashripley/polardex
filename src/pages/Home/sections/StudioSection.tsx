@@ -1,298 +1,387 @@
-import styled, { css, keyframes, useTheme } from 'styled-components';
-import {
-  ButtonContainer,
-  SectionParagraph,
-  SectionText,
-  SectionWrapper,
-} from './sectionStyles';
-import { Button, DisplayCard } from '../../../components';
+import styled, { keyframes, useTheme } from 'styled-components';
+import { SectionParagraph, SectionWrapper } from './sectionStyles';
+import { DisplayCard } from '../../../components';
 import { Link } from 'react-router-dom';
 import { useRef } from 'react';
-import { useIsMobile } from '../../../utils';
 import { useInView } from 'motion/react';
+import { motion } from 'motion/react';
+import { useIsMobile } from '../../../utils';
+import {
+  IconPalette,
+  IconPhoto,
+  IconTypography,
+} from '@tabler/icons-react';
 
 const Container = styled.section`
-  transition: background-color 400ms ease-in-out;
   position: relative;
-  top: 0px;
-  background-color: ${({ theme }) => theme.color.surface.muted};
+  background-color: ${({ theme }) => theme.color.surface.base};
+  overflow: hidden;
+  transition: background-color 200ms ease;
+`;
+
+const GradientAccent = styled.div`
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 60% 60% at 85% 40%,
+    rgba(180, 142, 173, 0.1) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
 `;
 
 const Content = styled.div`
   display: grid;
   justify-items: center;
-  row-gap: 4em;
+  gap: ${({ theme }) => theme.space[16]};
 
-  @media (min-width: 56.25em) {
-    gap: 8em 2em;
-    -webkit-box-align: center;
+  @media (min-width: ${({ theme }) => theme.breakpoint.md}) {
+    grid-template-columns: 1fr 1fr;
     align-items: center;
+    gap: ${({ theme }) => `${theme.space[8]} ${theme.space[16]}`};
   }
 `;
 
-const ImageContainer = styled.div<{ isMobile: boolean }>`
-  width: 100%;
-  order: 1;
-  display: flex;
-  justify-content: center;
+const TextSide = styled.div`
+  text-align: center;
+  order: 2;
 
-  ${({ isMobile }) =>
-    isMobile &&
-    css`
-      margin-top: 3rem;
-    `}
+  @media (min-width: ${({ theme }) => theme.breakpoint.md}) {
+    text-align: start;
+    order: 1;
+  }
 `;
 
-const TextContainer = styled.div`
+const CardSide = styled.div`
+  order: 1;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 0;
+
+  @media (min-width: ${({ theme }) => theme.breakpoint.md}) {
+    order: 2;
+  }
+`;
+
+const EyebrowLabel = styled.p`
+  font-size: ${({ theme }) => theme.typography.size.sm};
+  font-weight: ${({ theme }) => theme.typography.weight.semibold};
+  letter-spacing: ${({ theme }) => theme.typography.letterSpacing.wide};
+  text-transform: uppercase;
+  color: ${({ theme }) => theme.color.aurora.purple};
+  margin: 0 0 ${({ theme }) => theme.space[3]} 0;
+`;
+
+const Heading = styled.h2`
+  font-size: ${({ theme }) => theme.typography.size.xxl};
+  font-weight: ${({ theme }) => theme.typography.weight.bold};
+  line-height: ${({ theme }) => theme.typography.lineHeight.tight};
+  letter-spacing: ${({ theme }) => theme.typography.letterSpacing.tight};
   color: ${({ theme }) => theme.color.text.primary};
-  text-align: center;
+  margin: 0 0 ${({ theme }) => theme.space[4]} 0;
+
+  @media (min-width: ${({ theme }) => theme.breakpoint.md}) {
+    font-size: ${({ theme }) => theme.typography.size.xxxl};
+  }
+`;
+
+const GradientWord = styled.span`
+  background-image: linear-gradient(
+    135deg,
+    ${({ theme }) => theme.color.aurora.purple} 0%,
+    ${({ theme }) => theme.color.frost.blue} 100%
+  );
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 `;
 
 const Paragraph = styled(SectionParagraph)`
   text-align: center;
+  margin-bottom: ${({ theme }) => theme.space[8]};
+
+  @media (min-width: ${({ theme }) => theme.breakpoint.md}) {
+    text-align: start;
+  }
 `;
 
-const Buttons = styled(ButtonContainer)`
-  display: inline-block;
-  text-align: center;
-`;
-
-const HeaderContainer = styled.div`
+const ToolList = styled.ul`
+  list-style: none;
+  padding: 0;
+  margin: 0 0 ${({ theme }) => theme.space[8]} 0;
   display: flex;
-  flex-flow: wrap;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.space[3]};
+  align-items: center;
+
+  @media (min-width: ${({ theme }) => theme.breakpoint.md}) {
+    align-items: flex-start;
+  }
+`;
+
+const ToolItem = styled(motion.li)`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.space[3]};
+  font-size: ${({ theme }) => theme.typography.size.md};
+  color: ${({ theme }) => theme.color.text.secondary};
+`;
+
+const ToolIcon = styled.span<{ $color: string }>`
+  display: flex;
+  align-items: center;
   justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: ${({ theme }) => theme.radius.md};
+  background-color: ${({ $color }) => $color}22;
+  color: ${({ $color }) => $color};
+  flex-shrink: 0;
 `;
 
-const StyledSectionText = styled(SectionText)`
-  max-width: fit-content;
-  display: inline-block;
-  text-align: center;
-  background-color: rgb(255, 178, 62);
-  background-image: linear-gradient(
-    268.67deg,
-    rgb(180 142 173 / 0.4) 3.43%,
-    rgb(180 142 173 / 0.6) 15.69%,
-    rgb(180 142 173 / 0.8) 55.54%,
-    rgb(180 142 173 / 1) 99%
-  );
-  background-size: 100%;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-
-  margin-bottom: 0;
-`;
-
-const AnimatedWrapper = styled.div`
+const Buttons = styled.div`
   display: flex;
-  flex-direction: row;
-  gap: 0.5rem;
+  justify-content: center;
+
+  @media (min-width: ${({ theme }) => theme.breakpoint.md}) {
+    justify-content: flex-start;
+  }
 `;
 
-const StudioSpanContainer = styled.div<{ isMobile: boolean }>`
-  display: flex;
-  gap: 0.5rem;
-  font-size: ${({ isMobile }) => (isMobile ? '2rem' : '2.5rem')};
+const CtaLink = styled(Link)`
+  display: inline-flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.space[2]};
+  text-decoration: none;
+  font-size: ${({ theme }) => theme.typography.size.md};
+  font-weight: ${({ theme }) => theme.typography.weight.semibold};
+  color: ${({ theme }) => theme.color.text.primary};
+  border: 1.5px solid ${({ theme }) => theme.color.surface.border};
+  padding: ${({ theme }) => `${theme.space[3]} ${theme.space[5]}`};
+  border-radius: ${({ theme }) => theme.radius.full};
+  transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+
+  &:hover {
+    border-color: ${({ theme }) => theme.color.frost.blue};
+    color: ${({ theme }) => theme.color.frost.blue};
+    background: ${({ theme }) => `${theme.color.frost.blue}12`};
+  }
 `;
+
+const ArrowSpan = styled.span`
+  display: inline-flex;
+  align-items: center;
+  margin-left: 6px;
+  font-size: 1em;
+  line-height: 1;
+  transform-origin: left center;
+  transition: transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  ${CtaLink}:hover & {
+    transform: scaleX(1.2);
+  }
+`;
+
+/* Card stack */
+const float = keyframes`
+  0%, 100% { transform: translateY(0px) rotate(var(--rot)); }
+  50%       { transform: translateY(-12px) rotate(var(--rot)); }
+`;
+
+const StackedCard = styled.div<{ $rot: string; $delay: string; $z: number }>`
+  --rot: ${({ $rot }) => $rot};
+  position: relative;
+  z-index: ${({ $z }) => $z};
+  animation: ${float} 5s ease-in-out infinite;
+  animation-delay: ${({ $delay }) => $delay};
+  flex-shrink: 0;
+`;
+
+const containerVariants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.12 } },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' as const } },
+};
+
+const cardStackVariants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.1 } },
+};
+
+const cardItemVariants = {
+  hidden: { opacity: 0, y: 40, scale: 0.9 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.65, ease: 'easeOut' as const },
+  },
+};
 
 export function StudioSection() {
   const theme = useTheme();
   const isMobile = useIsMobile();
-  const sectionRef = useRef<HTMLDivElement | null>(null);
-  const isVisible = useInView(sectionRef, { once: true, amount: 0.1, margin: '0px 0px -100px 0px' });
+  const textRef = useRef<HTMLDivElement | null>(null);
+  const cardsRef = useRef<HTMLDivElement | null>(null);
+  const isTextVisible = useInView(textRef, { once: true, amount: 0.2 });
+  const isCardsVisible = useInView(cardsRef, { once: true, amount: 0.2 });
+
+  const cardHeight = isMobile ? 300 : 480;
+  const cardWidth = isMobile ? 200 : 300;
+  const imgSize = isMobile ? '6rem' : '8rem';
+
+  const tools = [
+    {
+      icon: <IconPhoto size={16} />,
+      label: 'Upload custom card artwork and sprites',
+      color: theme.color.frost.blue,
+    },
+    {
+      icon: <IconTypography size={16} />,
+      label: 'Edit card names, descriptions, and stats',
+      color: theme.color.frost.teal,
+    },
+    {
+      icon: <IconPalette size={16} />,
+      label: 'Choose accent colors and card styles',
+      color: theme.color.aurora.purple,
+    },
+  ];
 
   return (
-    <Container ref={sectionRef}>
+    <Container>
+      <GradientAccent />
       <SectionWrapper>
         <Content>
-          <ImageContainer isMobile={isMobile}>
-            <DisplayCard
-              title={'Rhydon'}
-              display
-              bg={theme.color.aurora.orange}
-              imageUrl='https://img.pokemondb.net/sprites/home/normal/rhydon.png'
-              style={{
-                zIndex: theme.zIndex.raised,
-                marginRight: isMobile ? -200 : -400,
-                transform: !isVisible
-                  ? 'none'
-                  : 'perspective(1000px) rotate(90deg) rotateX(180deg) rotateY(230deg) translateX(-100px) translateZ(10px)',
-                boxShadow: theme.shadow.md,
-                transition: theme.transition.slow,
-                borderRadius: isMobile ? theme.radius.lg : theme.radius.xl,
-              }}
-              height={isMobile ? 300 : 650}
-              width={isMobile ? 200 : 400}
-              image={{
-                width: isMobile ? '5rem' : '10em',
-                height: isMobile ? '5rem' : '10em',
-              }}
-              titleSize='1.2em'
-            />
-            <div style={{ height: 150 }} />
-            <DisplayCard
-              title={'Charizard'}
-              display
-              bg={theme.color.aurora.red}
-              imageUrl='https://img.pokemondb.net/sprites/home/normal/charizard.png'
-              style={{
-                zIndex: theme.zIndex.raised,
-                boxShadow: theme.shadow.md,
-                transform: !isVisible
-                  ? 'none'
-                  : 'perspective(1500px) rotate(90deg) rotateX(180deg) rotateY(230deg) translateX(-80px) translateZ(50px)',
-                transition: theme.transition.slow,
-                borderRadius: isMobile ? theme.radius.lg : theme.radius.xl,
-              }}
-              height={isMobile ? 300 : 650}
-              width={isMobile ? 200 : 400}
-              image={{
-                width: isMobile ? '5rem' : '10em',
-                height: isMobile ? '5rem' : '10em',
-              }}
-              titleSize='1.2em'
-            />
-            <DisplayCard
-              title={'Blastoise'}
-              display
-              bg={theme.color.frost.blue}
-              imageUrl='https://img.pokemondb.net/sprites/home/normal/blastoise.png'
-              style={{
-                zIndex: theme.zIndex.raised,
-                marginLeft: isMobile ? -200 : -400,
-                boxShadow: theme.shadow.md,
-                transform: !isVisible
-                  ? 'none'
-                  : 'perspective(2500px) rotate(90deg) rotateX(180deg) rotateY(230deg) translateX(-70px) translateZ(100px)',
-                transition: theme.transition.slow,
-                borderRadius: isMobile ? theme.radius.lg : theme.radius.xl,
-              }}
-              height={isMobile ? 300 : 650}
-              width={isMobile ? 200 : 400}
-              image={{
-                width: isMobile ? '5rem' : '10em',
-                height: isMobile ? '5rem' : '10em',
-              }}
-              titleSize='1.2em'
-            />
-            <DisplayCard
-              title={'Cloyster'}
-              display
-              bg={theme.color.frost.sky}
-              imageUrl='https://img.pokemondb.net/sprites/home/normal/cloyster.png'
-              style={{
-                zIndex: theme.zIndex.raised,
-                marginLeft: isMobile ? -200 : -400,
-                boxShadow: theme.shadow.md,
-                transform: !isVisible
-                  ? 'none'
-                  : 'perspective(3500px) rotate(90deg) rotateX(180deg) rotateY(230deg) translateX(-60px) translateZ(150px)',
-                transition: theme.transition.slow,
-                borderRadius: isMobile ? theme.radius.lg : theme.radius.xl,
-              }}
-              height={isMobile ? 300 : 650}
-              width={isMobile ? 200 : 400}
-              image={{
-                width: isMobile ? '5rem' : '10em',
-                height: isMobile ? '5rem' : '10em',
-              }}
-              titleSize='1.2em'
-            />
-            <DisplayCard
-              title={'Vileplume'}
-              display
-              bg={theme.color.frost.teal}
-              imageUrl='https://img.pokemondb.net/sprites/home/normal/vileplume.png'
-              style={{
-                zIndex: theme.zIndex.raised,
-                marginLeft: isMobile ? -200 : -400,
-                boxShadow: theme.shadow.md,
-                transform: !isVisible
-                  ? 'none'
-                  : 'perspective(4500px) rotate(90deg) rotateX(180deg) rotateY(225deg) translateZ(200px)',
-                transition: theme.transition.slow,
-                borderRadius: isMobile ? theme.radius.lg : theme.radius.xl,
-              }}
-              height={isMobile ? 300 : 650}
-              width={isMobile ? 200 : 400}
-              image={{
-                width: isMobile ? '5rem' : '10em',
-                height: isMobile ? '5rem' : '10em',
-              }}
-              titleSize='1.2em'
-            />
-          </ImageContainer>
-          <TextContainer>
-            <HeaderContainer>
-              <SectionText>Studio.</SectionText>
-              <div style={{ width: '0.5em' }} />
-              <AnimatedWrapper>
-                <StyledSectionText>
-                  <span>
-                    <StudioSpanContainer isMobile={isMobile}>
-                      <span>Your</span>
-                      <span>
-                        <em>personal</em>
-                        <LineSVG />
-                      </span>
-                      <span>canvas.</span>
-                    </StudioSpanContainer>
-                  </span>
-                </StyledSectionText>
-              </AnimatedWrapper>
-            </HeaderContainer>
-            {isMobile && (
-              <StyledSectionText style={{ fontSize: '1rem', margin: '0.5rem' }}>
-                *** Only Available on Desktop ***
-              </StyledSectionText>
-            )}
-            <Paragraph>
-              Bring your cards to life. Take the cards in your hand and
-              customize them like never before, from unique illustrations to
-              personalized text. With intuitive tools and endless possibilities,
-              Studio lets you craft cards that are as unique as your collection
-            </Paragraph>
-            <Buttons>
-              <Link to={'/studio'}>
-                <Button buttonType='secondary' disabled={isMobile}>
-                  Studio
-                </Button>
-              </Link>
-            </Buttons>
-          </TextContainer>
+          <motion.div
+            ref={textRef}
+            variants={containerVariants}
+            initial='hidden'
+            animate={isTextVisible ? 'visible' : 'hidden'}
+          >
+            <TextSide>
+              <motion.div variants={itemVariants}>
+                <EyebrowLabel>Creative tools</EyebrowLabel>
+              </motion.div>
+              <motion.div variants={itemVariants}>
+                <Heading>
+                  Studio. Your <GradientWord>personal canvas.</GradientWord>
+                </Heading>
+              </motion.div>
+              <motion.div variants={itemVariants}>
+                <Paragraph>
+                  Bring your cards to life. Take the cards in your collection and
+                  customize them like never before - from unique illustrations to
+                  personalized text. Intuitive tools, endless possibilities.
+                </Paragraph>
+              </motion.div>
+              <motion.div variants={itemVariants}>
+                <ToolList>
+                  {tools.map((t) => (
+                    <ToolItem key={t.label} variants={itemVariants}>
+                      <ToolIcon $color={t.color}>{t.icon}</ToolIcon>
+                      {t.label}
+                    </ToolItem>
+                  ))}
+                </ToolList>
+              </motion.div>
+              <motion.div variants={itemVariants}>
+                <Buttons>
+                  <CtaLink to='/studio'>
+                    Open Studio
+                    <ArrowSpan>→</ArrowSpan>
+                  </CtaLink>
+                </Buttons>
+              </motion.div>
+            </TextSide>
+          </motion.div>
+
+          <motion.div
+            ref={cardsRef}
+            variants={cardStackVariants}
+            initial='hidden'
+            animate={isCardsVisible ? 'visible' : 'hidden'}
+          >
+            <CardSide>
+              {!isMobile && (
+                <StackedCard
+                  $rot='-8deg'
+                  $delay='0s'
+                  $z={1}
+                  style={{ marginRight: -100, marginBottom: 50 }}
+                >
+                  <motion.div variants={cardItemVariants}>
+                    <DisplayCard
+                      title='Rhydon'
+                      display
+                      bg={theme.color.aurora.orange}
+                      imageUrl='https://img.pokemondb.net/sprites/home/normal/rhydon.png'
+                      style={{
+                        boxShadow: theme.shadow.md,
+                        borderRadius: theme.radius.xl,
+                      }}
+                      height={cardHeight}
+                      width={cardWidth}
+                      image={{ width: imgSize, height: imgSize }}
+                      titleSize='1.1em'
+                    />
+                  </motion.div>
+                </StackedCard>
+              )}
+
+              <StackedCard $rot='0deg' $delay='0.6s' $z={3}>
+                <motion.div variants={cardItemVariants}>
+                  <DisplayCard
+                    title='Charizard'
+                    display
+                    bg={theme.color.aurora.red}
+                    imageUrl='https://img.pokemondb.net/sprites/home/normal/charizard.png'
+                    style={{
+                      boxShadow: theme.shadow.lg,
+                      borderRadius: theme.radius.xl,
+                    }}
+                    height={cardHeight}
+                    width={cardWidth}
+                    image={{ width: imgSize, height: imgSize }}
+                    titleSize='1.1em'
+                  />
+                </motion.div>
+              </StackedCard>
+
+              {!isMobile && (
+                <StackedCard
+                  $rot='7deg'
+                  $delay='1.2s'
+                  $z={1}
+                  style={{ marginLeft: -100, marginBottom: 50 }}
+                >
+                  <motion.div variants={cardItemVariants}>
+                    <DisplayCard
+                      title='Blastoise'
+                      display
+                      bg={theme.color.frost.blue}
+                      imageUrl='https://img.pokemondb.net/sprites/home/normal/blastoise.png'
+                      style={{
+                        boxShadow: theme.shadow.md,
+                        borderRadius: theme.radius.xl,
+                      }}
+                      height={cardHeight}
+                      width={cardWidth}
+                      image={{ width: imgSize, height: imgSize }}
+                      titleSize='1.1em'
+                    />
+                  </motion.div>
+                </StackedCard>
+              )}
+            </CardSide>
+          </motion.div>
         </Content>
       </SectionWrapper>
     </Container>
-  );
-}
-
-const dash = keyframes`
-from {
-  stroke-dashoffset: 1;
-}
-to {
-  stroke-dashoffset: 0;
-}
-
-`;
-
-const StyledPath = styled.path`
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  animation: ${dash} 2s linear alternate infinite;
-`;
-
-function LineSVG() {
-  const theme = useTheme();
-  return (
-    <svg viewBox='0 0 480 120' style={{ marginTop: -30 }}>
-      <StyledPath
-        className='path'
-        fill='none'
-        stroke={theme.color.aurora.green}
-        strokeWidth='8'
-        d='M10,100 L30,80 L50,100 L70,90 L90,110 L110,90 L130,100 L150,80 L170,100 L190,90 L210,110 L230,90 L250,100 L270,80 L290,100 L310,90 L330,110 L350,90 L370,100 L390,80 L410,100 L430,90 L450,110 L470,90'
-        pathLength='1'
-      />
-    </svg>
   );
 }

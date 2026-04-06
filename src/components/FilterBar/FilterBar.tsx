@@ -1,9 +1,16 @@
 import styled from 'styled-components';
-import { IconSearch, IconX, IconAdjustmentsHorizontal, IconChevronDown, IconCheck } from '@tabler/icons-react';
-import { useState } from 'react';
+import {
+  IconSearch,
+  IconX,
+  IconChevronDown,
+  IconCheck,
+} from '@tabler/icons-react';
 import { motion, AnimatePresence } from 'motion/react';
 import * as RadixSelect from '@radix-ui/react-select';
 import { GalleryFilters, defaultFilters, hasActiveFilters } from './filterTypes';
+import { useState } from 'react';
+
+export type ViewMode = 'cards' | 'art';
 
 interface FilterBarProps {
   filters: GalleryFilters;
@@ -15,228 +22,169 @@ interface FilterBarProps {
   filteredCount: number;
 }
 
-// ── Layout ────────────────────────────────────────────────────────────────────
+// ── Shell ─────────────────────────────────────────────────────────────────────
+
+// Control height - everything shares this so the row sits on one baseline
+const H = '2.25rem';
 
 const Bar = styled.div`
   width: 100%;
+  padding: ${({ theme }) => `${theme.space[5]} 0 ${theme.space[4]}`};
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.space[3]};
-  padding: ${({ theme }) => `${theme.space[4]} 0`};
+  gap: ${({ theme }) => theme.space[2]};
 `;
 
-const TopRow = styled.div`
+// Primary row - search + filters + view toggle
+const PrimaryRow = styled.div`
   display: flex;
   align-items: center;
-  gap: ${({ theme }) => theme.space[3]};
+  gap: ${({ theme }) => theme.space[2]};
+  flex-wrap: wrap;
+`;
+
+// Meta row - count + clear (only visible when filtered)
+const MetaRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.space[2]};
+  min-height: 1.25rem;
 `;
 
 // ── Search ────────────────────────────────────────────────────────────────────
 
 const SearchWrapper = styled.div`
   position: relative;
-  flex: 1;
   display: flex;
   align-items: center;
+  flex: 1;
+  min-width: 10rem;
 `;
 
-const SearchIconWrapper = styled.div`
+const SearchIconWrap = styled(motion.div)`
   position: absolute;
   left: ${({ theme }) => theme.space[3]};
-  color: ${({ theme }) => theme.color.text.secondary};
   display: flex;
   pointer-events: none;
+  color: ${({ theme }) => theme.color.text.secondary};
 `;
 
 const SearchInput = styled.input`
   width: 100%;
-  padding: ${({ theme }) =>
-    `${theme.space[2]} ${theme.space[4]} ${theme.space[2]} ${theme.space[8]}`};
-  border: 1.5px solid ${({ theme }) => theme.color.surface.muted};
-  border-radius: ${({ theme }) => theme.radius.lg};
-  background-color: ${({ theme }) => theme.color.surface.subtle};
+  height: ${H};
+  padding: 0 2.25rem 0 2.25rem;
+  border: none;
+  border-radius: ${({ theme }) => theme.radius.full};
+  background: ${({ theme }) => theme.color.surface.subtle};
   color: ${({ theme }) => theme.color.text.primary};
   font-size: ${({ theme }) => theme.typography.size.sm};
+  font-family: inherit;
   outline: none;
-  transition: border-color 150ms ease, background-color 200ms ease;
+  box-shadow: 0 0 0 1.5px ${({ theme }) => theme.color.surface.border};
+  transition: box-shadow 150ms ease, background 200ms ease;
 
-  &::placeholder {
-    color: ${({ theme }) => theme.color.text.secondary};
-  }
-
+  &::placeholder { color: ${({ theme }) => theme.color.text.secondary}; }
   &:focus {
-    border-color: ${({ theme }) => theme.color.frost.blue};
-    background-color: ${({ theme }) => theme.color.surface.base};
+    box-shadow: 0 0 0 2px ${({ theme }) => theme.color.frost.blue};
+    background: ${({ theme }) => theme.color.surface.base};
   }
 `;
 
-const ClearInputButton = styled.button`
+const ClearBtn = styled(motion.button)`
   position: absolute;
   right: ${({ theme }) => theme.space[2]};
-  display: flex;
-  align-items: center;
-  background: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
   border: none;
-  cursor: pointer;
+  background: ${({ theme }) => theme.color.surface.border};
   color: ${({ theme }) => theme.color.text.secondary};
-  padding: ${({ theme }) => theme.space[1]};
-  border-radius: ${({ theme }) => theme.radius.full};
-  transition: color 150ms ease, background-color 150ms ease;
-
-  &:hover {
-    color: ${({ theme }) => theme.color.text.primary};
-    background-color: ${({ theme }) => theme.color.text.primaryHover};
-  }
-`;
-
-// ── Mobile toggle ─────────────────────────────────────────────────────────────
-
-const FilterToggle = styled.button<{ $active: boolean }>`
   display: flex;
   align-items: center;
-  gap: ${({ theme }) => theme.space[1]};
-  padding: ${({ theme }) => `${theme.space[2]} ${theme.space[3]}`};
-  border: 1.5px solid
-    ${({ $active, theme }) =>
-      $active ? theme.color.frost.blue : theme.color.surface.muted};
-  border-radius: ${({ theme }) => theme.radius.lg};
-  background-color: ${({ $active, theme }) =>
-    $active ? `${theme.color.frost.blue}18` : theme.color.surface.subtle};
-  color: ${({ $active, theme }) =>
-    $active ? theme.color.frost.blue : theme.color.text.secondary};
-  font-size: ${({ theme }) => theme.typography.size.sm};
+  justify-content: center;
   cursor: pointer;
+  &:hover { background: ${({ theme }) => theme.color.surface.muted}; }
+`;
+
+
+// ── Meta (count + clear) ──────────────────────────────────────────────────────
+
+const CountText = styled.span`
+  font-size: ${({ theme }) => theme.typography.size.xs};
+  color: ${({ theme }) => theme.color.text.secondary};
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
-  transition: border-color 150ms ease, background-color 150ms ease, color 150ms ease;
-
-  &:hover {
-    border-color: ${({ theme }) => theme.color.frost.blue};
-    color: ${({ theme }) => theme.color.frost.blue};
-  }
-
-  @media (min-width: ${({ theme }) => theme.breakpoint.sm}) {
-    display: none;
-  }
 `;
 
-// ── Filters body ──────────────────────────────────────────────────────────────
-
-const FiltersContainer = styled(motion.div)`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.space[3]};
-  overflow: hidden;
-`;
-
-const TypeRow = styled.div`
-  display: flex;
-  gap: ${({ theme }) => theme.space[2]};
-  overflow-x: auto;
-  padding-bottom: ${({ theme }) => theme.space[1]};
-  scrollbar-width: none;
-  &::-webkit-scrollbar {
-    display: none;
-  }
-`;
-
-const TypePill = styled.button<{ $active: boolean }>`
-  flex-shrink: 0;
-  padding: ${({ theme }) => `${theme.space[1]} ${theme.space[3]}`};
+const ClearAllBtn = styled(motion.button)`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px ${({ theme }) => theme.space[2]};
+  border: none;
   border-radius: ${({ theme }) => theme.radius.full};
-  border: 1.5px solid
-    ${({ $active, theme }) =>
-      $active ? theme.color.frost.blue : theme.color.surface.muted};
-  background-color: ${({ $active, theme }) =>
-    $active ? theme.color.frost.blue : theme.color.surface.subtle};
-  color: ${({ $active, theme }) =>
-    $active ? '#ffffff' : theme.color.text.secondary};
+  background: ${({ theme }) => `${theme.color.aurora.red}14`};
+  color: ${({ theme }) => theme.color.aurora.red};
   font-size: ${({ theme }) => theme.typography.size.xs};
   font-weight: ${({ theme }) => theme.typography.weight.medium};
+  font-family: inherit;
   cursor: pointer;
-  text-transform: capitalize;
-  transition: border-color 150ms ease, background-color 150ms ease, color 150ms ease;
-
-  &:hover {
-    border-color: ${({ theme }) => theme.color.frost.blue};
-    color: ${({ $active }) => ($active ? '#ffffff' : undefined)};
-  }
+  &:hover { background: ${({ theme }) => `${theme.color.aurora.red}26`}; }
 `;
 
-const FilterRow = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: ${({ theme }) => theme.space[2]};
-  align-items: center;
-`;
-
-// ── Radix Custom Select ───────────────────────────────────────────────────────
+// ── Radix Select ──────────────────────────────────────────────────────────────
 
 const SelectTrigger = styled(RadixSelect.Trigger)`
   display: inline-flex;
   align-items: center;
   gap: ${({ theme }) => theme.space[2]};
-  padding: ${({ theme }) => `${theme.space[2]} ${theme.space[3]}`};
-  border: 1.5px solid ${({ theme }) => theme.color.surface.muted};
-  border-radius: ${({ theme }) => theme.radius.lg};
-  background-color: ${({ theme }) => theme.color.surface.subtle};
+  height: ${H};
+  padding: 0 ${({ theme }) => theme.space[3]};
+  border: none;
+  border-radius: ${({ theme }) => theme.radius.full};
+  background: ${({ theme }) => theme.color.surface.subtle};
+  box-shadow: 0 0 0 1.5px ${({ theme }) => theme.color.surface.border};
   color: ${({ theme }) => theme.color.text.primary};
   font-size: ${({ theme }) => theme.typography.size.sm};
+  font-family: inherit;
+  font-weight: ${({ theme }) => theme.typography.weight.medium};
   cursor: pointer;
   outline: none;
   white-space: nowrap;
-  transition: border-color 150ms ease, background-color 150ms ease;
-  font-family: inherit;
+  flex-shrink: 0;
+  text-transform: capitalize;
+  transition: box-shadow 150ms ease, background 150ms ease;
 
-  &[data-placeholder] {
-    color: ${({ theme }) => theme.color.text.secondary};
-  }
-
+  &[data-placeholder] { color: ${({ theme }) => theme.color.text.secondary}; }
   &:hover {
-    border-color: ${({ theme }) => theme.color.frost.blue};
-    background-color: ${({ theme }) => theme.color.surface.base};
+    box-shadow: 0 0 0 1.5px ${({ theme }) => theme.color.frost.blue};
+    background: ${({ theme }) => theme.color.surface.base};
   }
-
   &[data-state='open'] {
-    border-color: ${({ theme }) => theme.color.frost.blue};
-    background-color: ${({ theme }) => theme.color.surface.base};
-  }
-`;
-
-const SelectChevron = styled(RadixSelect.Icon)`
-  display: flex;
-  align-items: center;
-  color: ${({ theme }) => theme.color.text.secondary};
-  transition: transform 200ms ease;
-
-  [data-state='open'] & {
-    transform: rotate(180deg);
+    box-shadow: 0 0 0 2px ${({ theme }) => theme.color.frost.blue};
+    background: ${({ theme }) => theme.color.surface.base};
   }
 `;
 
 const SelectContent = styled(RadixSelect.Content)`
   overflow: hidden;
-  background-color: ${({ theme }) => theme.color.surface.subtle};
-  border: 1.5px solid ${({ theme }) => theme.color.surface.muted};
+  background: ${({ theme }) => theme.color.surface.base};
+  border: 1.5px solid ${({ theme }) => theme.color.surface.border};
   border-radius: ${({ theme }) => theme.radius.lg};
-  box-shadow: ${({ theme }) => theme.shadow.md};
-  z-index: ${({ theme }) => theme.zIndex.dropdown};
+  box-shadow: ${({ theme }) => theme.shadow.lg};
+  z-index: ${({ theme }) => theme.zIndex.modal};
   min-width: var(--radix-select-trigger-width);
-  animation: slideDown 150ms ease;
+  animation: popIn 130ms cubic-bezier(0.16, 1, 0.3, 1);
 
-  @keyframes slideDown {
-    from {
-      opacity: 0;
-      transform: translateY(-6px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+  @keyframes popIn {
+    from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
   }
 `;
 
 const SelectViewport = styled(RadixSelect.Viewport)`
   padding: ${({ theme }) => theme.space[1]};
+  max-height: 280px;
 `;
 
 const SelectItem = styled(RadixSelect.Item)`
@@ -247,80 +195,37 @@ const SelectItem = styled(RadixSelect.Item)`
   padding: ${({ theme }) => `${theme.space[2]} ${theme.space[3]}`};
   border-radius: ${({ theme }) => theme.radius.md};
   font-size: ${({ theme }) => theme.typography.size.sm};
+  font-family: inherit;
   color: ${({ theme }) => theme.color.text.primary};
   cursor: pointer;
   outline: none;
   user-select: none;
-  transition: background-color 100ms ease;
+  text-transform: capitalize;
+  transition: background 80ms ease;
 
-  &[data-highlighted] {
-    background-color: ${({ theme }) => theme.color.text.primaryHover};
-  }
-
+  &[data-highlighted] { background: ${({ theme }) => theme.color.surface.muted}; }
   &[data-state='checked'] {
     color: ${({ theme }) => theme.color.frost.blue};
-    font-weight: ${({ theme }) => theme.typography.weight.medium};
+    font-weight: ${({ theme }) => theme.typography.weight.semibold};
   }
 `;
 
-const ItemCheckIcon = styled(RadixSelect.ItemIndicator)`
+const CheckIndicator = styled(RadixSelect.ItemIndicator)`
   display: flex;
   align-items: center;
   color: ${({ theme }) => theme.color.frost.blue};
 `;
 
-// ── Count + Clear ─────────────────────────────────────────────────────────────
-
-const CountText = styled.span`
-  font-size: ${({ theme }) => theme.typography.size.sm};
-  color: ${({ theme }) => theme.color.text.secondary};
-  margin-left: auto;
+// Active filter dot on trigger
+const ActiveDot = styled.span`
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: ${({ theme }) => theme.color.frost.blue};
+  flex-shrink: 0;
 `;
 
-const ClearAllButton = styled.button`
-  padding: ${({ theme }) => `${theme.space[1]} ${theme.space[3]}`};
-  border: 1.5px solid ${({ theme }) => theme.color.aurora.red};
-  border-radius: ${({ theme }) => theme.radius.full};
-  background: none;
-  color: ${({ theme }) => theme.color.aurora.red};
-  font-size: ${({ theme }) => theme.typography.size.xs};
-  font-weight: ${({ theme }) => theme.typography.weight.medium};
-  cursor: pointer;
-  transition: background-color 150ms ease, color 150ms ease;
-
-  &:hover {
-    background-color: ${({ theme }) => theme.color.aurora.red};
-    color: #ffffff;
-  }
-`;
-
-const DesktopFilters = styled.div`
-  display: none;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.space[3]};
-
-  @media (min-width: ${({ theme }) => theme.breakpoint.sm}) {
-    display: flex;
-  }
-`;
-
-// ── Shared body ───────────────────────────────────────────────────────────────
-
-interface FiltersBodyProps {
-  filters: GalleryFilters;
-  typeOptions: string[];
-  setOptions: string[];
-  conditionOptions: string[];
-  filteredCount: number;
-  totalCount: number;
-  isFiltered: boolean;
-  onTypeClick: (type: string) => void;
-  onSetChange: (set: string) => void;
-  onConditionChange: (condition: string) => void;
-  onClearAll: () => void;
-}
-
-function CustomSelect({
+function FilterSelect({
   value,
   onValueChange,
   placeholder,
@@ -332,15 +237,19 @@ function CustomSelect({
   options: string[];
 }) {
   return (
-    <RadixSelect.Root value={value || ''} onValueChange={(v) => onValueChange(v === '__all__' ? '' : v)}>
+    <RadixSelect.Root
+      value={value || ''}
+      onValueChange={(v) => onValueChange(v === '__all__' ? '' : v)}
+    >
       <SelectTrigger>
+        {value && <ActiveDot />}
         <RadixSelect.Value placeholder={placeholder} />
-        <SelectChevron>
-          <IconChevronDown size={14} stroke={2} />
-        </SelectChevron>
+        <RadixSelect.Icon style={{ display: 'flex', opacity: 0.45 }}>
+          <IconChevronDown size={12} stroke={2} />
+        </RadixSelect.Icon>
       </SelectTrigger>
       <RadixSelect.Portal>
-        <SelectContent position='popper' sideOffset={4}>
+        <SelectContent position='popper' sideOffset={6}>
           <SelectViewport>
             <SelectItem value='__all__'>
               <RadixSelect.ItemText>{placeholder}</RadixSelect.ItemText>
@@ -348,74 +257,13 @@ function CustomSelect({
             {options.map((opt) => (
               <SelectItem key={opt} value={opt}>
                 <RadixSelect.ItemText>{opt}</RadixSelect.ItemText>
-                <ItemCheckIcon>
-                  <IconCheck size={12} stroke={2.5} />
-                </ItemCheckIcon>
+                <CheckIndicator><IconCheck size={12} stroke={2.5} /></CheckIndicator>
               </SelectItem>
             ))}
           </SelectViewport>
         </SelectContent>
       </RadixSelect.Portal>
     </RadixSelect.Root>
-  );
-}
-
-function FiltersBody({
-  filters,
-  typeOptions,
-  setOptions,
-  conditionOptions,
-  filteredCount,
-  totalCount,
-  isFiltered,
-  onTypeClick,
-  onSetChange,
-  onConditionChange,
-  onClearAll,
-}: FiltersBodyProps) {
-  return (
-    <>
-      <TypeRow>
-        <TypePill $active={filters.type === ''} onClick={() => onTypeClick('')}>
-          All
-        </TypePill>
-        {typeOptions.map((type) => (
-          <TypePill
-            key={type}
-            $active={filters.type === type}
-            onClick={() => onTypeClick(type)}
-          >
-            {type}
-          </TypePill>
-        ))}
-      </TypeRow>
-      <FilterRow>
-        {setOptions.length > 0 && (
-          <CustomSelect
-            value={filters.set}
-            onValueChange={onSetChange}
-            placeholder='All Sets'
-            options={setOptions}
-          />
-        )}
-        {conditionOptions.length > 0 && (
-          <CustomSelect
-            value={filters.condition}
-            onValueChange={onConditionChange}
-            placeholder='All Conditions'
-            options={conditionOptions}
-          />
-        )}
-        {isFiltered && (
-          <ClearAllButton onClick={onClearAll}>Clear all</ClearAllButton>
-        )}
-        <CountText>
-          {isFiltered && filteredCount !== totalCount
-            ? `${filteredCount} / ${totalCount} cards`
-            : `${totalCount} cards`}
-        </CountText>
-      </FilterRow>
-    </>
   );
 }
 
@@ -430,88 +278,101 @@ export function FilterBar({
   totalCount,
   filteredCount,
 }: FilterBarProps) {
-  const [mobileOpen, setMobileOpen] = useState(false);
   const isFiltered = hasActiveFilters(filters) || filters.search !== '';
+  const [searchFocusCount, setSearchFocusCount] = useState(0);
 
-  const updateFilter = <K extends keyof GalleryFilters>(
-    key: K,
-    value: GalleryFilters[K]
-  ) => {
+  const update = <K extends keyof GalleryFilters>(key: K, value: GalleryFilters[K]) =>
     onChange({ ...filters, [key]: value });
-  };
 
-  const handleTypeClick = (type: string) =>
-    updateFilter('type', filters.type === type ? '' : type);
-
-  const sharedBodyProps: FiltersBodyProps = {
-    filters,
-    typeOptions,
-    setOptions,
-    conditionOptions,
-    filteredCount,
-    totalCount,
-    isFiltered,
-    onTypeClick: handleTypeClick,
-    onSetChange: (set) => updateFilter('set', set),
-    onConditionChange: (condition) => updateFilter('condition', condition),
-    onClearAll: () => onChange(defaultFilters),
-  };
+  const countLabel = isFiltered && filteredCount !== totalCount
+    ? `${filteredCount} of ${totalCount}`
+    : `${totalCount} Card${totalCount !== 1 ? 's' : ''}`;
 
   return (
     <Bar>
-      <TopRow>
+      {/* Single row: search - filters - divider - view toggle */}
+      <PrimaryRow>
         <SearchWrapper>
-          <SearchIconWrapper>
-            <IconSearch size={16} stroke={2} />
-          </SearchIconWrapper>
+          <SearchIconWrap
+            key={searchFocusCount}
+            animate={{ rotate: searchFocusCount > 0 ? [0, -12, 10, -6, 0] : 0 }}
+            transition={{ duration: 0.4, ease: 'easeInOut' }}
+          >
+            <IconSearch size={14} stroke={2} />
+          </SearchIconWrap>
           <SearchInput
             type='text'
             placeholder='Search Pokémon...'
             value={filters.search}
-            onChange={(e) => updateFilter('search', e.target.value)}
+            onChange={(e) => update('search', e.target.value)}
+            onFocus={() => setSearchFocusCount((n) => n + 1)}
           />
           <AnimatePresence>
             {filters.search && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
+              <ClearBtn
+                key='clear'
+                className='icon-close'
+                initial={{ opacity: 0, scale: 0.6 }}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
+                exit={{ opacity: 0, scale: 0.6 }}
                 transition={{ duration: 0.1 }}
-                style={{ position: 'absolute', right: '0.5rem' }}
+                onClick={() => update('search', '')}
               >
-                <ClearInputButton onClick={() => updateFilter('search', '')}>
-                  <IconX size={14} stroke={2} />
-                </ClearInputButton>
-              </motion.div>
+                <IconX size={9} stroke={3} />
+              </ClearBtn>
             )}
           </AnimatePresence>
         </SearchWrapper>
-        <FilterToggle
-          $active={isFiltered}
-          onClick={() => setMobileOpen((o) => !o)}
-          aria-label='Toggle filters'
-        >
-          <IconAdjustmentsHorizontal size={16} stroke={2} />
-          Filters{hasActiveFilters(filters) ? ' •' : ''}
-        </FilterToggle>
-      </TopRow>
 
-      <DesktopFilters>
-        <FiltersBody {...sharedBodyProps} />
-      </DesktopFilters>
-
-      <AnimatePresence>
-        {mobileOpen && (
-          <FiltersContainer
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <FiltersBody {...sharedBodyProps} />
-          </FiltersContainer>
+        {setOptions.length > 0 && (
+          <FilterSelect
+            value={filters.set}
+            onValueChange={(s) => update('set', s)}
+            placeholder='Set'
+            options={setOptions}
+          />
         )}
-      </AnimatePresence>
+
+        {conditionOptions.length > 0 && (
+          <FilterSelect
+            value={filters.condition}
+            onValueChange={(c) => update('condition', c)}
+            placeholder='Condition'
+            options={conditionOptions}
+          />
+        )}
+
+        {typeOptions.length > 0 && (
+          <FilterSelect
+            value={filters.type}
+            onValueChange={(t) => update('type', t)}
+            placeholder='Type'
+            options={typeOptions}
+          />
+        )}
+
+      </PrimaryRow>
+
+      {/* Meta row - only takes space when needed */}
+      <MetaRow>
+        <CountText>{countLabel}</CountText>
+        <AnimatePresence>
+          {isFiltered && (
+            <ClearAllBtn
+              key='clear-all'
+              initial={{ opacity: 0, x: -4 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -4 }}
+              transition={{ duration: 0.12 }}
+              onClick={() => onChange(defaultFilters)}
+              whileTap={{ scale: 0.95 }}
+            >
+              <IconX size={9} stroke={3} />
+              Clear filters
+            </ClearAllBtn>
+          )}
+        </AnimatePresence>
+      </MetaRow>
     </Bar>
   );
 }

@@ -1,8 +1,9 @@
 import { IconPhotoScan } from '@tabler/icons-react';
 import styled from 'styled-components';
+import { spriteUrl, spriteUrlFallback } from '../../utils';
+import { motion } from 'motion/react';
 import { Card } from '../Card';
 import { SearchField } from '../Input';
-import { useState } from 'react';
 import {
   BaseCardWrapper,
   BaseCardInnerWrapper,
@@ -16,133 +17,100 @@ type StudioCardProps = Partial<Parameters<typeof Card>[0]> & {
 
 const Container = styled.div`
   flex-grow: 1;
-  padding: 1em;
-  border-radius: 1.5em;
+  padding: ${({ theme }) => theme.space[4]};
+  border-radius: ${({ theme }) => theme.radius.xl};
   height: auto;
   min-width: 18rem;
 `;
 
 const Wrapper = styled(BaseCardWrapper)``;
-
 const InnerWrapper = styled(BaseCardInnerWrapper)``;
-
 const ImageContainer = styled(BaseCardImageContainer)``;
-
 const TitleContainer = styled(BaseCardTitleContainer)``;
 
-const Type = styled.span`
+const Label = styled.span`
   display: block;
-  color: ${({ theme }) => theme.color.text.primary};
-  font-size: ${({ theme }) => theme.typography.size.md};
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  text-transform: capitalize;
-  max-width: 100%;
+  font-size: ${({ theme }) => theme.typography.size.xs};
+  color: ${({ theme }) => theme.color.text.secondary};
 `;
 
-const BaseUl = styled.ul<{ expanded: boolean }>`
+const BaseUl = styled.ul`
   display: flex;
   align-items: center;
   justify-content: space-evenly;
-  font-weight: 700;
-  gap: ${({ expanded }) => (expanded ? '3rem' : '1rem')};
+  font-weight: ${({ theme }) => theme.typography.weight.bold};
+  gap: ${({ theme }) => theme.space[2]};
   padding: 0;
   color: ${({ theme }) => theme.color.text.primary};
   min-width: 0;
   width: 100%;
-  transition: all 0.3s ease-in-out;
-
-  & > li {
-    font-weight: ${({ expanded }) => (expanded ? '400' : '700')};
-    opacity: ${({ expanded }) => (expanded ? 1 : 0.7)};
-    transition: all 0.3s ease-in-out;
-  }
+  transition: ${({ theme }) => theme.transition.normal};
 
   & > input {
     width: 33%;
-    font-weight: 400;
+    font-weight: ${({ theme }) => theme.typography.weight.regular};
   }
 `;
 
-const StatUl = styled.ul`
+const StatGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto;
-  justify-content: flex-start;
-  font-weight: 500;
-  transition: height 0.3s ease-in-out;
-  overflow: hidden;
-  flex-flow: column;
-  place-items: start;
-  place-items: center;
-  padding: 0;
-  border-top: ${({ theme }) => `2px solid ${theme.color.surface.muted}`};
+  gap: ${({ theme }) => theme.space[1]};
+  border-top: 2px solid ${({ theme }) => theme.color.surface.muted};
+  padding-top: ${({ theme }) => theme.space[2]};
+  margin-top: ${({ theme }) => theme.space[2]};
 `;
 
-const List = styled.li`
+const StatItem = styled.div`
   display: flex;
-  flex-flow: column;
+  flex-direction: column;
   align-items: center;
-  font-size: ${({ theme }) => theme.typography.size.md};
   padding: ${({ theme }) => theme.space[2]};
-  color: ${({ theme }) => theme.color.text.primary};
 `;
 
-const StyledImage = styled.img`
-  padding: 0.8rem;
+const StyledImage = styled(motion.img)`
+  padding: ${({ theme }) => theme.space[3]};
   width: calc(100% - 8px);
   height: calc(100% - 8px);
 `;
 
-const StyledDemoImage = styled(IconPhotoScan)`
-  padding: 0.8rem;
+const StyledDemoImage = styled(motion(IconPhotoScan))`
+  padding: ${({ theme }) => theme.space[3]};
   width: calc(100% - 8px);
   height: calc(100% - 8px);
-
-  & {
-    color: ${({ theme }) => theme.color.text.secondary};
-  }
+  color: ${({ theme }) => theme.color.text.secondary};
 `;
 
 const DuplicateIdentifer = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: ${({ theme }) => theme.color.text.secondary};
-  height: 1.5rem;
-  width: 1.5rem;
-  border-radius: 50%;
+  background-color: ${({ theme }) => theme.color.frost.blue};
+  min-width: 1.35rem;
+  height: 1.35rem;
+  padding: 0 ${({ theme }) => theme.space[1]};
+  border-radius: ${({ theme }) => theme.radius.full};
   top: 0;
   right: 0;
-  margin: 0.5rem;
+  margin: ${({ theme }) => theme.space[2]};
   position: absolute;
-  z-index: 5;
+  z-index: ${({ theme }) => theme.zIndex.sticky};
   box-shadow: ${({ theme }) => theme.shadow.sm};
 `;
 
 const IdentifierText = styled.span`
-  color: ${({ theme }) => theme.color.surface.muted};
+  color: #ffffff;
   display: block;
-  font-size: 0.9rem;
-`;
-
-const Label = styled(Type)`
-  font-size: ${({ theme }) => theme.typography.size.md};
-  opacity: 0.7;
+  font-size: ${({ theme }) => theme.typography.size.xs};
+  font-weight: ${({ theme }) => theme.typography.weight.bold};
+  line-height: 1;
 `;
 
 export function StudioCard(props: StudioCardProps) {
-  const [card, setCard] = useState<Partial<Parameters<typeof Card>[0]>>({});
-
   const { pokemonData, attributes, quantity, isDemo } = props;
 
-  const onCardChange = (field: string, payload: string) => {
-    const update = {
-      [field]: payload,
-    };
-
-    setCard({ ...card, ...update });
+  const onCardChange = (_field: string, _payload: string) => {
+    // TODO: wire up to form state / Firestore
   };
 
   return (
@@ -151,11 +119,24 @@ export function StudioCard(props: StudioCardProps) {
         <InnerWrapper>
           <ImageContainer>
             {isDemo ? (
-              <StyledDemoImage stroke={1} />
+              <StyledDemoImage
+                stroke={1}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+              />
             ) : (
               <StyledImage
-                className='a9bdap5'
-                src={`https://img.pokemondb.net/sprites/home/normal/${pokemonData?.name?.toLowerCase()}.png`}
+                src={spriteUrl(pokemonData?.name ?? '')}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3, ease: 'easeOut' as const }}
+                onError={(e) => {
+                  const img = e.target as HTMLImageElement;
+                  const fallback = spriteUrlFallback(pokemonData?.name ?? '');
+                  if (img.src !== fallback) { img.src = fallback; }
+                  else { img.style.opacity = '0'; }
+                }}
               />
             )}
             {quantity && (
@@ -164,89 +145,37 @@ export function StudioCard(props: StudioCardProps) {
               </DuplicateIdentifer>
             )}
           </ImageContainer>
+
           <TitleContainer>
-            <SearchField
-              active
-              onClear={() => {}}
-              onSubmit={() => {}}
-              onChange={(val) => onCardChange('name', val)}
-              placeholder='Name'
-            />
-            <SearchField
-              active
-              onClear={() => {}}
-              onSubmit={() => {}}
-              onChange={(val) => onCardChange('type', val)}
-              placeholder='Type'
-            />
-            <BaseUl expanded={false}>
-              <SearchField
-                active
-                onClear={() => {}}
-                onSubmit={() => {}}
-                onChange={(val) => onCardChange('id', val)}
-                placeholder='#'
-              />
-              <SearchField
-                active
-                onClear={() => {}}
-                onSubmit={() => {}}
-                onChange={(val) => onCardChange('year', val)}
-                placeholder='Year'
-              />
-              <SearchField
-                active
-                onClear={() => {}}
-                onSubmit={() => {}}
-                onChange={(val) => onCardChange('setNumber', val)}
-                placeholder='0/0'
-              />
+            <SearchField active onClear={() => {}} onSubmit={() => {}} onChange={(val) => onCardChange('name', val)} placeholder='Name' />
+            <SearchField active onClear={() => {}} onSubmit={() => {}} onChange={(val) => onCardChange('type', val)} placeholder='Type' />
+            <BaseUl>
+              <SearchField active onClear={() => {}} onSubmit={() => {}} onChange={(val) => onCardChange('id', val)} placeholder='#' />
+              <SearchField active onClear={() => {}} onSubmit={() => {}} onChange={(val) => onCardChange('year', val)} placeholder='Year' />
+              <SearchField active onClear={() => {}} onSubmit={() => {}} onChange={(val) => onCardChange('setNumber', val)} placeholder='0/0' />
             </BaseUl>
           </TitleContainer>
-          <StatUl>
-            <List>
-              <Label>Set:</Label>
-              <SearchField
-                active
-                onClear={() => {}}
-                onSubmit={() => {}}
-                onChange={(val) => onCardChange('set', val)}
-                placeholder='Set'
-              />
-            </List>
-            <List>
-              <Label>Type:</Label>
-              <SearchField
-                active
-                onClear={() => {}}
-                onSubmit={() => {}}
-                onChange={(val) => onCardChange('cardType', val)}
-                placeholder='Card Type'
-              />
-            </List>
-            <List>
-              <Label>Condition:</Label>
-              <SearchField
-                active
-                onClear={() => {}}
-                onSubmit={() => {}}
-                onChange={(val) => onCardChange('condition', val)}
-                placeholder='Condition'
-              />
-            </List>
-            {attributes?.grading && (
-              <List>
-                <Label>Grading:</Label>
-                <SearchField
-                  active
-                  onClear={() => {}}
-                  onSubmit={() => {}}
-                  onChange={(val) => onCardChange('grading', val)}
-                  placeholder='Grading'
-                />
-              </List>
+
+          <StatGrid>
+            <StatItem>
+              <Label>Set</Label>
+              <SearchField active onClear={() => {}} onSubmit={() => {}} onChange={(val) => onCardChange('set', val)} placeholder='Set' />
+            </StatItem>
+            <StatItem>
+              <Label>Card Type</Label>
+              <SearchField active onClear={() => {}} onSubmit={() => {}} onChange={(val) => onCardChange('cardType', val)} placeholder='Type' />
+            </StatItem>
+            <StatItem>
+              <Label>Condition</Label>
+              <SearchField active onClear={() => {}} onSubmit={() => {}} onChange={(val) => onCardChange('condition', val)} placeholder='Condition' />
+            </StatItem>
+            {attributes?.grading !== undefined && (
+              <StatItem>
+                <Label>Grading</Label>
+                <SearchField active onClear={() => {}} onSubmit={() => {}} onChange={(val) => onCardChange('grading', val)} placeholder='Grading' />
+              </StatItem>
             )}
-          </StatUl>
+          </StatGrid>
         </InnerWrapper>
       </Wrapper>
     </Container>

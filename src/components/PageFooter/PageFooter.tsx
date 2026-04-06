@@ -1,102 +1,92 @@
 import styled from 'styled-components';
+import { Link } from 'react-router-dom';
 import { PolarCodeLogo } from '../PolarCodeLogo';
 
 const Container = styled.section`
   width: 100%;
   background-color: ${({ theme }) => theme.color.surface.footer};
-  border-top: 1px solid ${({ theme }) => theme.color.surface.muted};
+  border-top: 1px solid ${({ theme }) => theme.color.surface.border};
   transition: background-color 200ms ease, border-color 200ms ease;
 `;
 
 const Inner = styled.div`
   max-width: ${({ theme }) => theme.breakpoint.lg};
   margin: 0 auto;
-  padding: ${({ theme }) => `${theme.space[10]} ${theme.space[6]}`};
-
-  @media (min-width: ${({ theme }) => theme.breakpoint.lg}) {
-    padding: ${({ theme }) => `${theme.space[20]} ${theme.space[6]}`};
-  }
-`;
-
-const Studio = styled.div`
+  padding: ${({ theme }) => `${theme.space[8]} ${theme.space[6]}`};
   display: flex;
   flex-direction: column;
-  -webkit-box-align: center;
   align-items: center;
-  box-sizing: inherit;
+  gap: ${({ theme }) => theme.space[5]};
+`;
+
+const NavLinks = styled.nav`
+  display: flex;
+  flex-wrap: wrap;
   justify-content: center;
+  gap: ${({ theme }) => `${theme.space[1]} ${theme.space[6]}`};
 `;
 
-const StudioHeader = styled.div`
-  display: flex;
-  -webkit-box-align: center;
-  align-items: center;
-  margin-bottom: 1em;
-  box-sizing: inherit;
-
-  path {
-    fill: ${({ theme }) => theme.color.text.primary};
-  }
-`;
-
-const StudioContent = styled.div``;
-
-const StudioTextContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  text-align: center;
-  font-size: 0.8em;
-  transition: color 0.3s ease-in-out, background-color 200ms ease;
-  margin-top: 1.125em;
+const NavLink = styled(Link)`
+  font-size: ${({ theme }) => theme.typography.size.sm};
   color: ${({ theme }) => theme.color.text.secondary};
+  text-decoration: none;
+  transition: color 150ms ease;
 
-  @media (min-width: 56.25em) {
-    display: block;
+  &:hover {
+    color: ${({ theme }) => theme.color.text.primary};
   }
+`;
+
+const Meta = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: ${({ theme }) => theme.space[2]};
+  font-size: ${({ theme }) => theme.typography.size.xs};
+  color: ${({ theme }) => theme.color.text.secondary};
+`;
+
+const Dot = styled.span`
+  opacity: 0.4;
 `;
 
 function HeartSVG() {
-  const HeartStyles = {
-    width: '0.8em',
-    height: '0.8em',
-    verticalAlign: 'middle',
-    fill: 'rgb(220, 170, 174)',
-    transition: 'fill 0.3s ease-in-out',
-  };
-
   return (
     <svg
-      data-name='Heart Logo'
       xmlns='http://www.w3.org/2000/svg'
       viewBox='0 0 24 24'
-      preserveAspectRatio='none'
-      style={{ ...HeartStyles }}
+      style={{ width: '0.75em', height: '0.75em', verticalAlign: 'middle', fill: 'rgb(220, 170, 174)' }}
     >
-      <path d='M12 21a1 1 0 0 1-.71-.29l-7.77-7.78a5.26 5.26 0 0 1 0-7.4 5.24 5.24 0 0 1 7.4 0L12 6.61l1.08-1.08a5.24 5.24 0 0 1 7.4 0 5.26 5.26 0 0 1 0 7.4l-7.77 7.78A1 1 0 0 1 12 21z'></path>
+      <path d='M12 21a1 1 0 0 1-.71-.29l-7.77-7.78a5.26 5.26 0 0 1 0-7.4 5.24 5.24 0 0 1 7.4 0L12 6.61l1.08-1.08a5.24 5.24 0 0 1 7.4 0 5.26 5.26 0 0 1 0 7.4l-7.77 7.78A1 1 0 0 1 12 21z' />
     </svg>
   );
 }
+
+const navLinks = [
+  { to: '/gallery', label: 'Collection' },
+  { to: '/sets', label: 'Sets' },
+  { to: '/studio', label: 'Studio' },
+  { to: '/overview', label: 'Overview' },
+];
 
 export function PageFooter() {
   return (
     <Container>
       <Inner>
-      <Studio>
-        <StudioHeader>
-          <PolarCodeLogo />
-        </StudioHeader>
-        <StudioContent>
-          <StudioTextContainer>
-            <div>© 2022-2025 Polar Code Studio</div>
-            <div style={{ display: 'inline-flex', alignItems: 'center' }}>
-              <div style={{ marginRight: 5 }}>Made with</div>
-              <HeartSVG />
-              <div style={{ marginLeft: 5 }}>in Australia</div>
-            </div>
-            <div>v1.0.0</div>
-          </StudioTextContainer>
-        </StudioContent>
-      </Studio>
+        <PolarCodeLogo monochrome />
+        <NavLinks>
+          {navLinks.map(({ to, label }) => (
+            <NavLink key={to} to={to}>{label}</NavLink>
+          ))}
+        </NavLinks>
+        <Meta>
+          <span>© 2022–2026 Polar Studio</span>
+          <Dot>·</Dot>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+            Made with <HeartSVG /> in Australia
+          </span>
+        </Meta>
       </Inner>
     </Container>
   );

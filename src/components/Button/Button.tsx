@@ -14,8 +14,8 @@ const baseStyles = css`
   font-size: ${({ theme }) => theme.typography.size.md};
   font-weight: ${({ theme }) => theme.typography.weight.medium};
   letter-spacing: ${({ theme }) => theme.typography.letterSpacing.wide};
-  border-radius: ${({ theme }) => theme.radius.md};
-  padding: ${({ theme }) => `${theme.space[2]} ${theme.space[4]}`};
+  border-radius: ${({ theme }) => theme.radius.full};
+  padding: ${({ theme }) => `${theme.space[2]} ${theme.space[5]}`};
   min-width: 100px;
   border: none;
   cursor: pointer;
@@ -43,13 +43,12 @@ const PrimaryBase = styled(motion.button).withConfig({
   shouldForwardProp: (prop) => prop !== 'buttonType',
 })<Props>`
   ${baseStyles}
-  background-color: ${({ theme }) => theme.color.text.tertiary};
-  color: ${({ theme }) => theme.color.text.primary};
+  background-color: ${({ theme }) => theme.color.frost.blue};
+  color: #ffffff;
 
   @media not all and (hover: none) {
     &:hover:not(:disabled) {
-      background-color: ${({ theme }) => theme.color.frost.sky};
-      color: ${({ theme }) => theme.color.surface.base};
+      background-color: ${({ theme }) => theme.color.frost.deep};
     }
   }
 `;
@@ -60,17 +59,19 @@ const SecondaryBase = styled(motion.button).withConfig({
   ${baseStyles}
   background: transparent;
   color: ${({ theme }) => theme.color.text.primary};
-  border: 1px solid ${({ theme }) => theme.color.text.primary};
+  border: 1.5px solid ${({ theme }) => theme.color.surface.border};
 
   @media not all and (hover: none) {
     &:hover:not(:disabled) {
       border-color: ${({ theme }) => theme.color.frost.blue};
       color: ${({ theme }) => theme.color.frost.blue};
+      background: ${({ theme }) => `${theme.color.frost.blue}12`};
     }
   }
 `;
 
 const motionProps = {
+  whileHover: { scale: 1.02 },
   whileTap: { scale: 0.97 },
   transition: { type: 'spring' as const, stiffness: 400, damping: 25 },
 };

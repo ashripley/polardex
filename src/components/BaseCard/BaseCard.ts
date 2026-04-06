@@ -6,7 +6,7 @@ export const BaseCardWrapper = styled(motion.div)`
   flex-direction: column;
   flex-basis: 250px;
   margin-inline: auto;
-  overflow: hidden;
+  border-radius: ${({ theme }) => theme.radius.md};
   box-shadow: ${({ theme }) => theme.shadow.sm};
   transition: background-color 200ms ease, box-shadow 200ms ease;
 `;
@@ -19,8 +19,6 @@ export const BaseCardInnerWrapper = styled.div`
   position: relative;
   justify-items: center;
   padding: ${({ theme }) => theme.space[4]};
-  filter: drop-shadow(0 0px 0px hsl(0deg 0% 0% / 0.1))
-    drop-shadow(0 0px 1px hsl(0deg 0% 0% / 0.1));
   transition: ${({ theme }) => theme.transition.normal}, background-color 200ms ease;
 
   &::before {
@@ -32,6 +30,7 @@ export const BaseCardInnerWrapper = styled.div`
     height: 130px;
     border-radius: ${({ theme }) => theme.radius.md} ${({ theme }) => theme.radius.md} 0 0;
     background: ${({ theme }) => theme.color.surface.muted};
+    transition: background-color 200ms ease;
   }
 `;
 
@@ -48,6 +47,8 @@ export const BaseCardImageContainer = styled.div<{ expanded?: boolean }>`
   justify-content: flex-end;
   border: 3px solid ${({ theme }) => theme.color.surface.muted};
   margin-inline: auto;
+  transition: transform 300ms ease, outline 200ms ease, background-color 200ms ease,
+    border-color 200ms ease;
 
   ${({ expanded }) =>
     expanded &&

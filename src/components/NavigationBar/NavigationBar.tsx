@@ -6,6 +6,8 @@ import { motion, AnimatePresence, LayoutGroup } from 'motion/react';
 import { IconMenu2, IconMoon, IconSun, IconX } from '@tabler/icons-react';
 import { useThemeMode } from '../../providers';
 
+// ── Root shell ────────────────────────────────────────────────────────────────
+
 const RootContainer = styled.div`
   position: sticky;
   z-index: ${({ theme }) => theme.zIndex.sticky};
@@ -13,27 +15,22 @@ const RootContainer = styled.div`
   right: 0;
   left: 0;
   width: 100%;
-  margin-inline: auto;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  background: ${({ theme }) => theme.color.surface.base}cc;
-  border-bottom: 1px solid ${({ theme }) => theme.color.surface.muted};
+  background: ${({ theme }) => theme.color.surface.base}e6;
+  border-bottom: 1px solid ${({ theme }) => theme.color.surface.border};
   transition: background-color 200ms ease, border-color 200ms ease;
 `;
 
 const NavigationContainer = styled.div`
-  z-index: ${({ theme }) => theme.zIndex.dropdown};
-  position: sticky;
-  top: 0;
-  left: 0;
-  right: 0;
+  position: relative;
   margin-inline: auto;
   width: 100%;
   padding-inline: ${({ theme }) => theme.space[6]};
 
-  @media (min-width: 75em) {
-    max-width: 75em;
-    padding: unset;
+  @media (min-width: ${({ theme }) => theme.breakpoint.lg}) {
+    max-width: ${({ theme }) => theme.breakpoint.lg};
+    padding-inline: ${({ theme }) => theme.space[6]};
   }
 `;
 
@@ -44,13 +41,55 @@ const NavigationWrapper = styled.div`
 `;
 
 const NavigationHeader = styled.header`
-  flex: 1 1;
-  justify-content: space-between;
-  gap: ${({ theme }) => theme.space[12]};
-  height: 3rem;
+  flex: 1;
   display: flex;
+  justify-content: space-between;
   align-items: center;
+  gap: ${({ theme }) => theme.space[12]};
 `;
+
+// ── Logo ──────────────────────────────────────────────────────────────────────
+
+const StyledLogoLink = styled(Link)`
+  display: inline-flex;
+  text-decoration: none;
+`;
+
+const LogoTitle = styled.span`
+  color: ${({ theme }) => theme.color.frost.deep};
+  display: inline-block;
+  font-weight: ${({ theme }) => theme.typography.weight.heavy};
+  font-size: ${({ theme }) => theme.typography.size.xl};
+  background-image: linear-gradient(
+    268.67deg,
+    ${({ theme }) => theme.color.frost.teal} 3.43%,
+    ${({ theme }) => theme.color.frost.sky} 15.69%,
+    ${({ theme }) => theme.color.frost.blue} 55.54%,
+    ${({ theme }) => theme.color.frost.deep} 99%
+  );
+  background-size: 100%;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: ${({ theme }) => theme.typography.letterSpacing.wide};
+`;
+
+const ImageWrapper = styled.span`
+  display: inline-block;
+  position: relative;
+  width: 10rem;
+`;
+
+const DragoniteImage = styled(motion.img)`
+  position: absolute;
+  left: 2px;
+  top: -100px;
+  height: 10rem;
+  width: 10rem;
+  transform: matrix(-1, 0, 0, -1, 0, 0) !important;
+  filter: ${({ theme }) => theme.dropShadow.sm};
+`;
+
+// ── Nav links ─────────────────────────────────────────────────────────────────
 
 const NavContainer = styled.nav`
   position: relative;
@@ -65,39 +104,19 @@ const NavList = styled.ul`
   margin: 0;
 `;
 
-const StyledLink = styled(Link)`
-  display: inline-flex;
-  font-size: ${({ theme }) => theme.typography.size.md};
-  padding: 0;
-  text-decoration: none;
-  -webkit-text-decoration: none;
-`;
-
-const LogoTitle = styled.span`
-  color: ${({ theme }) => theme.color.frost.deep};
-  display: inline-block;
-  font-weight: ${({ theme }) => theme.typography.weight.heavy};
-  font-size: ${({ theme }) => theme.typography.size.xl};
-  text-align: center;
-  background-image: linear-gradient(
-    268.67deg,
-    ${({ theme }) => theme.color.frost.teal} 3.43%,
-    ${({ theme }) => theme.color.frost.sky} 15.69%,
-    ${({ theme }) => theme.color.frost.blue} 55.54%,
-    ${({ theme }) => theme.color.frost.deep} 99%
-  );
-  background-size: 100%;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  letter-spacing: ${({ theme }) => theme.typography.letterSpacing.wide};
-`;
-
 const List = styled.li`
   text-decoration: none;
   position: relative;
 `;
 
-const StyledButton = styled.button`
+const StyledLink = styled(Link)`
+  display: inline-flex;
+  font-size: ${({ theme }) => theme.typography.size.md};
+  padding: 0;
+  text-decoration: none;
+`;
+
+const NavButton = styled(motion.button)`
   flex-direction: column;
   height: 3rem;
   color: ${({ theme }) => theme.color.text.primary};
@@ -113,6 +132,11 @@ const StyledButton = styled.button`
   background: transparent;
   cursor: pointer;
   text-align: center;
+  transition: color ${({ theme }) => theme.transition.fast};
+
+  &:hover {
+    color: ${({ theme }) => theme.color.frost.blue};
+  }
 `;
 
 const ActiveIndicator = styled(motion.div)`
@@ -121,27 +145,17 @@ const ActiveIndicator = styled(motion.div)`
   left: ${({ theme }) => theme.space[4]};
   right: ${({ theme }) => theme.space[4]};
   height: 2px;
-  background: ${({ theme }) => theme.color.frost.blue};
+  background: linear-gradient(
+    90deg,
+    ${({ theme }) => theme.color.frost.teal},
+    ${({ theme }) => theme.color.frost.blue}
+  );
   border-radius: 1px;
 `;
 
-const ImageWrapper = styled.span`
-  display: inline-block;
-  position: relative;
-  width: 10rem;
-  overflow: hidden;
-`;
+// ── Icon buttons ──────────────────────────────────────────────────────────────
 
-const DragoniteImage = styled(motion.img)`
-  position: absolute;
-  left: 2px;
-  top: -100px;
-  height: 10rem;
-  width: 10rem;
-  filter: ${({ theme }) => theme.dropShadow.sm};
-`;
-
-const HamburgerButton = styled.button`
+const IconButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -149,29 +163,19 @@ const HamburgerButton = styled.button`
   border: none;
   cursor: pointer;
   padding: ${({ theme }) => theme.space[2]};
-  color: ${({ theme }) => theme.color.text.primary};
+  color: ${({ theme }) => theme.color.text.secondary};
   border-radius: ${({ theme }) => theme.radius.md};
-  transition: ${({ theme }) => theme.transition.fast};
+  transition: color ${({ theme }) => theme.transition.fast},
+    background-color ${({ theme }) => theme.transition.fast};
 
   &:hover {
+    color: ${({ theme }) => theme.color.text.primary};
     background: ${({ theme }) => theme.color.text.primaryHover};
   }
-`;
 
-const ThemeToggle = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: ${({ theme }) => theme.space[2]};
-  color: ${({ theme }) => theme.color.text.primary};
-  border-radius: ${({ theme }) => theme.radius.md};
-  transition: ${({ theme }) => theme.transition.fast};
-
-  &:hover {
-    background: ${({ theme }) => theme.color.text.primaryHover};
+  &:focus-visible {
+    outline: 2px solid ${({ theme }) => theme.color.frost.blue};
+    outline-offset: 2px;
   }
 `;
 
@@ -187,14 +191,17 @@ const DesktopControls = styled.div`
   gap: ${({ theme }) => theme.space[2]};
 `;
 
+// ── Mobile menu ───────────────────────────────────────────────────────────────
+
 const MobileMenu = styled(motion.nav)`
   position: absolute;
   top: 100%;
   left: 0;
   right: 0;
   background: ${({ theme }) => theme.color.surface.subtle};
-  backdrop-filter: blur(8px);
-  padding: ${({ theme }) => theme.space[4]};
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: ${({ theme }) => theme.space[3]} ${({ theme }) => theme.space[4]};
   border-bottom: 1px solid ${({ theme }) => theme.color.surface.muted};
   display: flex;
   flex-direction: column;
@@ -210,17 +217,57 @@ const MobileNavLink = styled(Link)`
   font-size: ${({ theme }) => theme.typography.size.md};
   font-weight: ${({ theme }) => theme.typography.weight.medium};
   border-radius: ${({ theme }) => theme.radius.md};
-  transition: ${({ theme }) => theme.transition.fast};
+  transition: background-color ${({ theme }) => theme.transition.fast},
+    color ${({ theme }) => theme.transition.fast};
 
   &:hover {
     background: ${({ theme }) => theme.color.text.primaryHover};
+    color: ${({ theme }) => theme.color.frost.blue};
   }
 `;
 
+// ── Theme icon toggle ─────────────────────────────────────────────────────────
+
+function ThemeIcon({ isDark }: { isDark: boolean }) {
+  return (
+    <AnimatePresence mode='wait' initial={false}>
+      {isDark ? (
+        <motion.span
+          key='sun'
+          initial={{ rotate: -90, opacity: 0 }}
+          animate={{ rotate: 0, opacity: 1 }}
+          exit={{ rotate: 90, opacity: 0 }}
+          transition={{ duration: 0.15 }}
+          style={{ display: 'flex' }}
+        >
+          <IconSun stroke={2} size={18} />
+        </motion.span>
+      ) : (
+        <motion.span
+          key='moon'
+          initial={{ rotate: 90, opacity: 0 }}
+          animate={{ rotate: 0, opacity: 1 }}
+          exit={{ rotate: -90, opacity: 0 }}
+          transition={{ duration: 0.15 }}
+          style={{ display: 'flex' }}
+        >
+          <IconMoon stroke={2} size={18} />
+        </motion.span>
+      )}
+    </AnimatePresence>
+  );
+}
+
+// ── Nav data ──────────────────────────────────────────────────────────────────
+
 const navLinks = [
-  { to: '/gallery', label: 'Gallery' },
+  { to: '/gallery', label: 'Collection' },
+  { to: '/sets', label: 'Sets' },
   { to: '/studio', label: 'Studio' },
+  { to: '/overview', label: 'Overview' },
 ];
+
+// ── Component ─────────────────────────────────────────────────────────────────
 
 export function NavigationBar() {
   const isMobile = useIsMobile();
@@ -237,7 +284,7 @@ export function NavigationBar() {
       <NavigationContainer>
         <NavigationWrapper>
           <NavigationHeader>
-            <StyledLink to='/' style={{ display: 'flex' }}>
+            <StyledLogoLink to='/' style={{ display: 'flex' }}>
               <LogoTitle>POLARDEX</LogoTitle>
               <ImageWrapper>
                 <DragoniteImage
@@ -247,40 +294,17 @@ export function NavigationBar() {
                   transition={{ type: 'spring', stiffness: 180, damping: 14, delay: 0.2 }}
                 />
               </ImageWrapper>
-            </StyledLink>
+            </StyledLogoLink>
+
             {isMobile ? (
               <MobileControls>
-                <ThemeToggle
+                <IconButton
                   onClick={toggle}
                   aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
                 >
-                  <AnimatePresence mode='wait' initial={false}>
-                    {isDark ? (
-                      <motion.span
-                        key='sun'
-                        initial={{ rotate: -90, opacity: 0 }}
-                        animate={{ rotate: 0, opacity: 1 }}
-                        exit={{ rotate: 90, opacity: 0 }}
-                        transition={{ duration: 0.15 }}
-                        style={{ display: 'flex' }}
-                      >
-                        <IconSun stroke={2} size={18} />
-                      </motion.span>
-                    ) : (
-                      <motion.span
-                        key='moon'
-                        initial={{ rotate: 90, opacity: 0 }}
-                        animate={{ rotate: 0, opacity: 1 }}
-                        exit={{ rotate: -90, opacity: 0 }}
-                        transition={{ duration: 0.15 }}
-                        style={{ display: 'flex' }}
-                      >
-                        <IconMoon stroke={2} size={18} />
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-                </ThemeToggle>
-                <HamburgerButton
+                  <ThemeIcon isDark={isDark} />
+                </IconButton>
+                <IconButton
                   onClick={() => setMenuOpen((o) => !o)}
                   aria-label='Toggle menu'
                 >
@@ -309,7 +333,7 @@ export function NavigationBar() {
                       </motion.span>
                     )}
                   </AnimatePresence>
-                </HamburgerButton>
+                </IconButton>
               </MobileControls>
             ) : (
               <DesktopControls>
@@ -318,8 +342,14 @@ export function NavigationBar() {
                     <NavList>
                       {navLinks.map(({ to, label }) => (
                         <List key={to}>
-                          <StyledLink to={to} style={{ display: 'flex' }}>
-                            <StyledButton>{label}</StyledButton>
+                          <StyledLink to={to}>
+                            <NavButton
+                              whileHover={{ y: -1 }}
+                              whileTap={{ scale: 0.97 }}
+                              transition={{ duration: 0.15, ease: 'easeOut' }}
+                            >
+                              {label}
+                            </NavButton>
                           </StyledLink>
                           {pathname === to && (
                             <ActiveIndicator layoutId='nav-underline' />
@@ -329,41 +359,18 @@ export function NavigationBar() {
                     </NavList>
                   </NavContainer>
                 </LayoutGroup>
-                <ThemeToggle
+                <IconButton
                   onClick={toggle}
                   aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
                 >
-                  <AnimatePresence mode='wait' initial={false}>
-                    {isDark ? (
-                      <motion.span
-                        key='sun'
-                        initial={{ rotate: -90, opacity: 0 }}
-                        animate={{ rotate: 0, opacity: 1 }}
-                        exit={{ rotate: 90, opacity: 0 }}
-                        transition={{ duration: 0.15 }}
-                        style={{ display: 'flex' }}
-                      >
-                        <IconSun stroke={2} size={18} />
-                      </motion.span>
-                    ) : (
-                      <motion.span
-                        key='moon'
-                        initial={{ rotate: 90, opacity: 0 }}
-                        animate={{ rotate: 0, opacity: 1 }}
-                        exit={{ rotate: -90, opacity: 0 }}
-                        transition={{ duration: 0.15 }}
-                        style={{ display: 'flex' }}
-                      >
-                        <IconMoon stroke={2} size={18} />
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-                </ThemeToggle>
+                  <ThemeIcon isDark={isDark} />
+                </IconButton>
               </DesktopControls>
             )}
           </NavigationHeader>
         </NavigationWrapper>
       </NavigationContainer>
+
       <AnimatePresence>
         {isMobile && menuOpen && (
           <MobileMenu

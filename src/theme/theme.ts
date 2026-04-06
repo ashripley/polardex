@@ -1,13 +1,14 @@
 export interface Theme {
   color: {
-    // Surfaces — backgrounds for pages, cards, modals
+    // Surfaces - backgrounds for pages, cards, modals
     surface: {
       base: string    // #ffffff   primary surface (cards, main content)
       subtle: string  // #fbfbfc   secondary surface (modals)
       muted: string   // #f2f4f8   tertiary surface (section bgs, card headers, dividers)
       footer: string  // #f4f6f9   footer surface
+      border: string  // explicit border colour - more visible than muted
     }
-    // Text — readable content
+    // Text - readable content
     text: {
       primary: string        // #4c566a   body text, headings
       secondary: string      // #7b88a1   supporting text, labels
@@ -15,14 +16,14 @@ export interface Theme {
       primaryHover: string   // rgba(236,239,244,0.4)    hover state bg for primary actions
       secondaryHover: string // rgba(229,233,240,0.75)   hover state bg for secondary actions
     }
-    // Nord Frost — cool blues & teals used as card/section accent backgrounds
+    // Nord Frost - cool blues & teals used as card/section accent backgrounds
     frost: {
       teal: string  // #8fbcbb
       sky: string   // #88c0d0
       blue: string  // #81a1c1
       deep: string  // #5e81ac
     }
-    // Nord Aurora — warm accent palette for highlights & visual interest
+    // Nord Aurora - warm accent palette for highlights & visual interest
     aurora: {
       red: string    // #bf616a
       orange: string // #d08770
@@ -32,7 +33,7 @@ export interface Theme {
     }
   }
 
-  // Spacing — 4px base unit, scale follows Tailwind conventions
+  // Spacing - 4px base unit, scale follows Tailwind conventions
   space: {
     1: string   // 0.25rem  (4px)
     2: string   // 0.5rem   (8px)
@@ -57,7 +58,7 @@ export interface Theme {
     full: string  // 9999px           circles, pills
   }
 
-  // Box shadows — use for cards and elevated surfaces
+  // Box shadows - use for cards and elevated surfaces
   shadow: {
     none: string
     sm: string   // soft ambient glow (cards)
@@ -65,7 +66,7 @@ export interface Theme {
     lg: string   // prominent surface (hero cards, modals)
   }
 
-  // Drop shadows — use in CSS filter property for images/icons
+  // Drop shadows - use in CSS filter property for images/icons
   dropShadow: {
     sm: string   // subtle image lift
     md: string   // strong image lift
@@ -105,7 +106,7 @@ export interface Theme {
     }
   }
 
-  // Z-index — explicit layer stack
+  // Z-index - explicit layer stack
   zIndex: {
     base: number      // 0
     raised: number    // 1   inline card overlays
@@ -138,6 +139,7 @@ export const lightTheme: Theme = {
       subtle: '#fbfbfc',
       muted: '#f2f4f8',
       footer: '#f4f6f9',
+      border: '#dde2ea',
     },
     text: {
       primary: '#4c566a',
@@ -260,6 +262,7 @@ export const darkTheme: Theme = {
       subtle: '#3b4252',
       muted: '#434c5e',
       footer: '#242831',
+      border: '#3d4659',
     },
     text: {
       primary: '#eceff4',
