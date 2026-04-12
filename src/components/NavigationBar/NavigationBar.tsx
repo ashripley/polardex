@@ -29,6 +29,9 @@ const RootContainer = styled.div`
   background: ${({ theme }) => theme.color.surface.base}e6;
   border-bottom: 1px solid ${({ theme }) => theme.color.surface.border};
   transition: background-color 200ms cubic-bezier(0.22, 1, 0.36, 1), border-color 200ms cubic-bezier(0.22, 1, 0.36, 1);
+  /* Respect the iOS PWA safe-area inset so the nav doesn't slip under the
+     status bar / notch when running as a standalone home-screen app. */
+  padding-top: env(safe-area-inset-top, 0px);
 `;
 
 const NavigationContainer = styled.div`
