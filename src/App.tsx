@@ -193,7 +193,14 @@ function AppContent() {
   const navigate = useNavigate();
   const isStandalone = pathname === '/login';
 
-  // Session check: guest flag (sessionStorage) or Firebase auth
+  // Auth gate is currently a no-op — real auth isn't wired yet, and the
+  // login screen was just friction. Auto-set the guest session on mount so
+  // every route lands straight into the app. When Firebase auth goes live,
+  // flip AUTO_GUEST off and the existing onAuthStateChanged path takes over.
+  const AUTO_GUEST = true;
+  if (AUTO_GUEST && sessionStorage.getItem('polardex_session') !== 'true') {
+    sessionStorage.setItem('polardex_session', 'true');
+  }
   const hasGuestSession = sessionStorage.getItem('polardex_session') === 'true';
   const [sessionReady, setSessionReady] = useState(isStandalone || hasGuestSession);
 
