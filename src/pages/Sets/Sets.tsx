@@ -1,10 +1,11 @@
-import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import { useState, useMemo, useEffect, useCallback, useRef, memo } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { motion, AnimatePresence } from 'motion/react';
 import { useTheme } from 'styled-components';
-import { IconSearch, IconX, IconChevronLeft, IconPackage, IconPlus, IconCheck, IconSortAscending, IconSortDescending, IconRefresh, IconEye } from '@tabler/icons-react';
+import { IconSearch, IconX, IconChevronLeft, IconPackage, IconPlus, IconCheck, IconSortAscending, IconSortDescending, IconRefresh, IconEye, IconHeart, IconHeartFilled } from '@tabler/icons-react';
 import { SectionWrapper } from '../Home/sections/sectionStyles';
 import { usePokemonSetsQuery } from '../../api/tcg/usePokemonSetsQuery';
+import { useUpcomingSetsQuery } from '../../api/tcg/useUpcomingSetsQuery';
 import { usePokemonSetCardsQuery } from '../../api/tcg/usePokemonSetCardsQuery';
 import { useTcgPrices } from '../../api/tcg/useTcgPrices';
 import { useGetCardsQuery } from '../../api';
@@ -20,7 +21,7 @@ import { CardModel } from '../../api/fetch/card/cardModel';
 const Main = styled.main`
   background-color: ${({ theme }) => theme.color.surface.muted};
   min-height: 60dvh;
-  transition: background-color 200ms ease;
+  transition: background-color 200ms cubic-bezier(0.22, 1, 0.36, 1);
 `;
 
 // ── Page header ───────────────────────────────────────────────────────────────
@@ -72,7 +73,7 @@ const SearchInput = styled.input`
   font-family: inherit;
   outline: none;
   box-shadow: 0 0 0 1.5px ${({ theme }) => theme.color.surface.muted};
-  transition: box-shadow 150ms ease, background-color 200ms ease;
+  transition: box-shadow 150ms cubic-bezier(0.22, 1, 0.36, 1), background-color 200ms cubic-bezier(0.22, 1, 0.36, 1);
 
   &::placeholder { color: ${({ theme }) => theme.color.text.secondary}; }
   &:focus {
@@ -134,7 +135,7 @@ const SyncBtn = styled.button<{ $loading: boolean }>`
   cursor: ${({ $loading }) => ($loading ? 'default' : 'pointer')};
   flex-shrink: 0;
   opacity: ${({ $loading }) => ($loading ? 0.55 : 1)};
-  transition: border-color 150ms ease, color 150ms ease;
+  transition: border-color 150ms cubic-bezier(0.22, 1, 0.36, 1), color 150ms cubic-bezier(0.22, 1, 0.36, 1);
 
   svg {
     animation: ${({ $loading }) => ($loading ? spin : 'none')} 0.9s linear infinite;
@@ -158,7 +159,7 @@ const SortBtn = styled.button`
   background: ${({ theme }) => theme.color.surface.subtle};
   color: ${({ theme }) => theme.color.text.secondary};
   cursor: pointer;
-  transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+  transition: border-color 150ms cubic-bezier(0.22, 1, 0.36, 1), color 150ms cubic-bezier(0.22, 1, 0.36, 1), background 150ms cubic-bezier(0.22, 1, 0.36, 1);
 
   &:hover {
     border-color: ${({ theme }) => theme.color.frost.blue};
@@ -178,7 +179,7 @@ const ModeBtn = styled.button<{ $active: boolean }>`
   font-family: inherit;
   cursor: pointer;
   white-space: nowrap;
-  transition: background 150ms ease, color 150ms ease;
+  transition: background 150ms cubic-bezier(0.22, 1, 0.36, 1), color 150ms cubic-bezier(0.22, 1, 0.36, 1);
 `;
 
 // ── Series filter pills ───────────────────────────────────────────────────────
@@ -211,7 +212,7 @@ const Pill = styled(motion.button) <{ $active: boolean }>`
     $active
       ? `0 2px 8px ${theme.color.frost.blue}40`
       : `0 0 0 1.5px ${theme.color.surface.muted}`};
-  transition: background-color 150ms ease, color 150ms ease, box-shadow 150ms ease;
+  transition: background-color 150ms cubic-bezier(0.22, 1, 0.36, 1), color 150ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 150ms cubic-bezier(0.22, 1, 0.36, 1);
 `;
 
 // ── Sets grid ─────────────────────────────────────────────────────────────────
@@ -235,7 +236,7 @@ const SetCard = styled(motion.button)`
   border: none;
   cursor: pointer;
   text-align: left;
-  transition: box-shadow 200ms ease;
+  transition: box-shadow 200ms cubic-bezier(0.22, 1, 0.36, 1);
   width: 100%;
 
   &:hover {
@@ -255,6 +256,87 @@ const SetLogoFallback = styled.div`
   align-items: center;
   color: ${({ theme }) => theme.color.text.tertiary};
 `;
+
+// Wraps the set logo inside a circular progress arc
+const LogoRingWrap = styled.div`
+  position: relative;
+  width: 5.25rem;
+  height: 5.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Isolate compositing so parent hover/tap transforms can't subtly re-raster the stroke */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+`;
+
+const LogoRingSvg = styled.svg`
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  /* NOTE: no CSS transform here. The -90° rotation is applied per-circle as an SVG
+     attribute so it's evaluated in user coordinate space and CANNOT stack with any
+     CSS transforms on ancestors (which was the root cause of the hover/tap
+     "moving progress bar" bug). */
+  overflow: visible;
+`;
+
+const LogoRingInner = styled.div`
+  width: 4rem;
+  height: 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: ${({ theme }) => theme.color.surface.subtle};
+`;
+
+const LogoRing = memo(function LogoRing({ pct, children }: { pct: number; children: React.ReactNode }) {
+  const size = 84;
+  const stroke = 3;
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
+  const clamped = Math.min(100, Math.max(0, pct));
+  const offset = c - (clamped / 100) * c;
+  const color = pct === 100 ? '#a3be8c' : pct > 0 ? '#88c0d0' : 'transparent';
+  const center = size / 2;
+  // SVG-native rotation: turns the starting point of the arc from 3 o'clock
+  // to 12 o'clock. Applied to the circle in the element's OWN coordinate space,
+  // so parent CSS transforms (hover/tap) can't compound with this.
+  const rotate = `rotate(-90 ${center} ${center})`;
+  return (
+    <LogoRingWrap>
+      <LogoRingSvg viewBox={`0 0 ${size} ${size}`}>
+        <circle
+          cx={center}
+          cy={center}
+          r={r}
+          fill='none'
+          stroke='rgba(128,128,128,0.18)'
+          strokeWidth={stroke}
+          vectorEffect='non-scaling-stroke'
+        />
+        {pct > 0 && (
+          <circle
+            cx={center}
+            cy={center}
+            r={r}
+            fill='none'
+            stroke={color}
+            strokeWidth={stroke}
+            strokeLinecap='round'
+            strokeDasharray={c}
+            strokeDashoffset={offset}
+            vectorEffect='non-scaling-stroke'
+            transform={rotate}
+          />
+        )}
+      </LogoRingSvg>
+      <LogoRingInner>{children}</LogoRingInner>
+    </LogoRingWrap>
+  );
+});
 
 const SetInfo = styled.div`
   flex: 1;
@@ -311,6 +393,136 @@ const CollectionBadge = styled.span<{ $pct: number }>`
   padding: ${({ theme }) => `2px ${theme.space[2]}`};
   border-radius: ${({ theme }) => theme.radius.full};
 `;
+
+// ── Upcoming sets strip ───────────────────────────────────────────────────────
+
+const UpcomingSection = styled.div`
+  margin: ${({ theme }) => `${theme.space[2]} 0 ${theme.space[4]}`};
+  padding: ${({ theme }) => theme.space[4]};
+  border-radius: ${({ theme }) => theme.radius.lg};
+  background: linear-gradient(135deg,
+    ${({ theme }) => `${theme.color.frost.deep}10`} 0%,
+    ${({ theme }) => `${theme.color.aurora.purple}10`} 100%);
+  border: 1px solid ${({ theme }) => `${theme.color.frost.deep}35`};
+  backdrop-filter: blur(8px);
+`;
+
+const UpcomingHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: ${({ theme }) => theme.space[3]};
+`;
+
+const UpcomingTitle = styled.h3`
+  font-size: ${({ theme }) => theme.typography.size.sm};
+  font-weight: ${({ theme }) => theme.typography.weight.bold};
+  color: ${({ theme }) => theme.color.text.primary};
+  margin: 0;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.space[2]};
+`;
+
+const PulseDot = styled(motion.span)`
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: ${({ theme }) => theme.color.aurora.purple};
+  box-shadow: 0 0 10px ${({ theme }) => theme.color.aurora.purple};
+`;
+
+const UpcomingStrip = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.space[3]};
+  overflow-x: auto;
+  padding-bottom: ${({ theme }) => theme.space[1]};
+  scrollbar-width: thin;
+  scrollbar-color: ${({ theme }) => `${theme.color.frost.blue}55`} transparent;
+  &::-webkit-scrollbar { height: 4px; }
+  &::-webkit-scrollbar-thumb {
+    background: ${({ theme }) => `${theme.color.frost.blue}55`};
+    border-radius: 2px;
+  }
+`;
+
+const UpcomingCard = styled(motion.div)`
+  flex-shrink: 0;
+  min-width: 12rem;
+  max-width: 14rem;
+  padding: ${({ theme }) => theme.space[3]};
+  border-radius: ${({ theme }) => theme.radius.md};
+  background: ${({ theme }) => theme.color.surface.base};
+  border: 1px solid ${({ theme }) => theme.color.surface.border};
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.space[2]};
+  transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1), border-color 200ms cubic-bezier(0.22, 1, 0.36, 1);
+
+  &:hover {
+    transform: translateY(-2px);
+    border-color: ${({ theme }) => theme.color.frost.blue};
+  }
+`;
+
+const UpcomingCardHeader = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.space[2]};
+`;
+
+const UpcomingName = styled.span`
+  font-size: ${({ theme }) => theme.typography.size.sm};
+  font-weight: ${({ theme }) => theme.typography.weight.bold};
+  color: ${({ theme }) => theme.color.text.primary};
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+const UpcomingSeries = styled.span`
+  font-size: ${({ theme }) => theme.typography.size.xs};
+  color: ${({ theme }) => theme.color.text.secondary};
+`;
+
+const UpcomingDate = styled.span`
+  font-size: ${({ theme }) => theme.typography.size.xs};
+  color: ${({ theme }) => theme.color.text.tertiary};
+  font-variant-numeric: tabular-nums;
+`;
+
+const UpcomingBadge = styled.span<{ $rumored: boolean }>`
+  padding: 2px ${({ theme }) => theme.space[2]};
+  border-radius: ${({ theme }) => theme.radius.full};
+  font-size: 0.65rem;
+  font-weight: ${({ theme }) => theme.typography.weight.bold};
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: ${({ $rumored, theme }) =>
+    $rumored ? `${theme.color.aurora.purple}22` : `${theme.color.frost.teal}22`};
+  color: ${({ $rumored, theme }) =>
+    $rumored ? theme.color.aurora.purple : theme.color.frost.teal};
+  border: 1px solid ${({ $rumored, theme }) =>
+    $rumored ? `${theme.color.aurora.purple}55` : `${theme.color.frost.teal}55`};
+  white-space: nowrap;
+  flex-shrink: 0;
+`;
+
+function formatUpcomingDate(iso: string): string {
+  // Input: "YYYY/MM/DD"
+  const parsed = Date.parse(iso.replace(/\//g, '-'));
+  if (!Number.isFinite(parsed)) return iso;
+  const d = new Date(parsed);
+  const diffDays = Math.round((parsed - Date.now()) / (1000 * 60 * 60 * 24));
+  const nice = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  if (diffDays <= 0) return nice;
+  if (diffDays <= 30) return `${nice} · ${diffDays}d`;
+  return nice;
+}
 
 // ── Set detail (cards view) ───────────────────────────────────────────────────
 
@@ -403,14 +615,39 @@ const CardsGrid = styled.div`
   }
 `;
 
-const TcgCardItem = styled(motion.div) <{ $owned: boolean }>`
+const TcgCardItem = styled(motion.div) <{ $owned: boolean; $wanted?: boolean }>`
   position: relative;
   border-radius: ${({ theme }) => theme.radius.md};
   overflow: hidden;
   background: ${({ theme }) => theme.color.surface.subtle};
-  box-shadow: ${({ $owned, theme }) =>
-    $owned ? `0 0 0 2.5px ${theme.color.frost.blue}, ${theme.shadow.sm}` : theme.shadow.sm};
+  box-shadow: ${({ $owned, $wanted, theme }) =>
+    $owned
+      ? `0 0 0 2.5px ${theme.color.frost.blue}, ${theme.shadow.sm}`
+      : $wanted
+        ? `0 0 0 2.5px ${theme.color.aurora.red}, ${theme.shadow.sm}`
+        : theme.shadow.sm};
   cursor: ${({ $owned }) => ($owned ? 'default' : 'pointer')};
+`;
+
+const WishlistRibbon = styled.div`
+  position: absolute;
+  top: ${({ theme }) => theme.space[2]};
+  left: ${({ theme }) => theme.space[2]};
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: ${({ theme }) => theme.radius.full};
+  background: ${({ theme }) => `${theme.color.aurora.red}e6`};
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: ${({ theme }) => theme.typography.weight.bold};
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  z-index: 3;
+  pointer-events: none;
 `;
 
 
@@ -448,7 +685,7 @@ const VariantBtn = styled.button<{ $color: string }>`
   font-family: inherit;
   cursor: pointer;
   letter-spacing: 0.02em;
-  transition: filter 100ms ease, transform 80ms ease;
+  transition: filter 100ms cubic-bezier(0.22, 1, 0.36, 1), transform 80ms cubic-bezier(0.22, 1, 0.36, 1);
 
   &:hover { filter: brightness(1.15); }
   &:active { transform: scale(0.96); }
@@ -472,7 +709,7 @@ const ConditionBtn = styled.button<{ $color: string }>`
   font-family: inherit;
   cursor: pointer;
   letter-spacing: 0.02em;
-  transition: filter 100ms ease, transform 80ms ease;
+  transition: filter 100ms cubic-bezier(0.22, 1, 0.36, 1), transform 80ms cubic-bezier(0.22, 1, 0.36, 1);
 
   &:hover { filter: brightness(1.15); }
   &:active { transform: scale(0.96); }
@@ -501,7 +738,7 @@ const QuantityOverlay = styled.div`
   gap: 5px;
   background: rgba(0, 0, 0, 0.55);
   opacity: 0;
-  transition: opacity 150ms ease;
+  transition: opacity 150ms cubic-bezier(0.22, 1, 0.36, 1);
 
   ${TcgCardItem}:hover & {
     opacity: 1;
@@ -531,7 +768,7 @@ const AddVariantBtn = styled.button`
   font-family: inherit;
   font-weight: 700;
   cursor: pointer;
-  transition: background 100ms ease;
+  transition: background 100ms cubic-bezier(0.22, 1, 0.36, 1);
 
   &:hover {
     background: rgba(180, 142, 173, 0.9);
@@ -551,7 +788,7 @@ const QtyBtn = styled.button`
   cursor: pointer;
   color: #fff;
   box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  transition: transform 100ms ease;
+  transition: transform 100ms cubic-bezier(0.22, 1, 0.36, 1);
 
   &:active { transform: scale(0.9); }
 `;
@@ -576,7 +813,7 @@ const TcgCardImg = styled.img<{ $owned: boolean }>`
   width: 100%;
   display: block;
   opacity: ${({ $owned }) => ($owned ? 1 : 0.4)};
-  transition: opacity 200ms ease;
+  transition: opacity 200ms cubic-bezier(0.22, 1, 0.36, 1);
 `;
 
 const OwnedBadge = styled.div`
@@ -622,7 +859,7 @@ const CardActionsBar = styled.div`
   padding: 4px 5px;
   background: linear-gradient(to top, rgba(0,0,0,0.72) 0%, transparent 100%);
   opacity: 0;
-  transition: opacity 150ms ease;
+  transition: opacity 150ms cubic-bezier(0.22, 1, 0.36, 1);
   z-index: 3;
 
   ${TcgCardItem}:hover & {
@@ -647,7 +884,7 @@ const CardActionBtn = styled.button<{ $accent?: string }>`
   justify-content: center;
   cursor: pointer;
   flex-shrink: 0;
-  transition: background 120ms ease, transform 100ms ease;
+  transition: background 120ms cubic-bezier(0.22, 1, 0.36, 1), transform 100ms cubic-bezier(0.22, 1, 0.36, 1);
 
   &:hover {
     background: ${({ $accent }) => $accent ? $accent : 'rgba(0,0,0,0.65)'};
@@ -679,7 +916,7 @@ const ViewFilterBtn = styled.button<{ $active: boolean }>`
   font-family: inherit;
   cursor: pointer;
   white-space: nowrap;
-  transition: background 150ms ease, color 150ms ease;
+  transition: background 150ms cubic-bezier(0.22, 1, 0.36, 1), color 150ms cubic-bezier(0.22, 1, 0.36, 1);
 `;
 
 // ── Card preview lightbox ─────────────────────────────────────────────────────
@@ -883,6 +1120,7 @@ export function Sets() {
   const audRate = useAudRate();
 
   const { sets, loading: setsLoading, refresh: refreshSets } = usePokemonSetsQuery();
+  const { upcoming: upcomingSets } = useUpcomingSetsQuery();
   const { cards: tcgCards, loading: cardsLoading } = usePokemonSetCardsQuery(
     selectedSet?.id ?? null
   );
@@ -922,17 +1160,26 @@ export function Sets() {
     return () => document.removeEventListener('keydown', handler);
   }, [pendingCard]);
 
-  // Owned detection:
-  // - Match by tcgId (exact per variant) when available
-  // - Fall back to name+set only for cards stored without a tcgId
+  // Owned detection — only cards with status === 'owned' (default) count as owned.
+  // Wishlist (wanted) cards are tracked separately via `wantedTcgIds` so they
+  // don't accidentally render as owned in the set grid.
+  const ownedCards = useMemo(
+    () => myCards.filter((c) => (c.status ?? 'owned') !== 'wanted'),
+    [myCards],
+  );
+  const wantedCards = useMemo(
+    () => myCards.filter((c) => c.status === 'wanted'),
+    [myCards],
+  );
+
   const ownedTcgIds = useMemo(
-    () => new Set(myCards.map((c) => c.attributes.tcgId).filter(Boolean)),
-    [myCards]
+    () => new Set(ownedCards.map((c) => c.attributes.tcgId).filter(Boolean)),
+    [ownedCards]
   );
   const ownedByNameAndSet = useMemo(() => {
     if (!selectedSet) return new Set<string>();
     return new Set(
-      myCards
+      ownedCards
         .filter(
           (c) =>
             !c.attributes.tcgId &&
@@ -940,10 +1187,17 @@ export function Sets() {
         )
         .map((c) => c.pokemonData.name.toLowerCase())
     );
-  }, [myCards, selectedSet]);
+  }, [ownedCards, selectedSet]);
+
+  const wantedTcgIds = useMemo(
+    () => new Set(wantedCards.map((c) => c.attributes.tcgId).filter(Boolean)),
+    [wantedCards]
+  );
 
   const isOwned = (card: TcgCard) =>
     ownedTcgIds.has(card.id) || ownedByNameAndSet.has(card.name.toLowerCase());
+
+  const isOnWishlist = (card: TcgCard) => wantedTcgIds.has(card.id);
 
   const findOwnedCard = (card: TcgCard) =>
     myCards.find(
@@ -954,6 +1208,54 @@ export function Sets() {
           selectedSet &&
           c.attributes.set.toLowerCase() === selectedSet.name.toLowerCase())
     );
+
+  const handleWishlistToggle = useCallback(async (card: TcgCard) => {
+    if (isReadOnly) return;
+    const existing = findOwnedCard(card);
+    // Already on wishlist — remove it
+    if (existing && existing.status === 'wanted') {
+      await removeCard(existing.cardId);
+      setToastMsg(`${card.name} removed from wishlist.`);
+      setTimeout(() => setToastMsg(null), 3000);
+      return;
+    }
+    // Already owned — don't overwrite; bail out
+    if (existing && existing.status !== 'wanted') {
+      setToastMsg(`${card.name} is already in your collection.`);
+      setTimeout(() => setToastMsg(null), 3000);
+      return;
+    }
+    // Create a new card as wanted
+    const setName = selectedSet?.name ?? card.set.name;
+    const wanted: CardModel = {
+      cardId: generateCardId(),
+      status: 'wanted',
+      quantity: 1,
+      setNumber: card.number ? parseInt(card.number, 10) || 0 : 0,
+      attributes: {
+        cardType: '',
+        set: setName,
+        rarity: card.rarity ?? '',
+        condition: '',
+        grading: 0,
+        isGraded: false,
+        tcgId: card.id,
+        tcgImageUrl: card.images.large,
+        variants: { normal: true, alternate: false },
+      },
+      pokemonData: {
+        name: card.name,
+        id: 0,
+        evolutions: { first: { name: '', imageUrl: '' } },
+        type: (card.types?.[0] === 'Lightning' ? 'Electric' : card.types?.[0]) ?? '',
+        imageUrl: `https://img.pokemondb.net/sprites/home/normal/${toSpriteName(card.name)}.png`,
+      },
+    };
+    await saveCard(wanted);
+    setToastMsg(`${card.name} added to wishlist!`);
+    setTimeout(() => setToastMsg(null), 3000);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedSet, isReadOnly, myCards]);
 
   const handleQuickAdd = useCallback(async (
     card: TcgCard,
@@ -970,8 +1272,41 @@ export function Sets() {
       prices?.reverseHolofoil?.market ??
       undefined
     );
+
+    // Promotion path: if this card already exists as a wishlist entry, flip it
+    // to owned in-place (preserving its cardId + createdAt) rather than creating
+    // a duplicate row. This is the common "I wanted it, now I got it" flow.
+    const existingWanted = myCards.find(
+      (c) => c.attributes.tcgId === card.id && c.status === 'wanted',
+    );
+    if (existingWanted) {
+      await saveCard({
+        ...existingWanted,
+        status: 'owned',
+        quantity: variant === 'both' ? 2 : 1,
+        setNumber: card.number ? parseInt(card.number, 10) || 0 : existingWanted.setNumber,
+        attributes: {
+          ...existingWanted.attributes,
+          condition,
+          grading: 0,
+          isGraded,
+          ...(marketPrice != null ? { marketPrice } : {}),
+          variants: {
+            normal: variant !== 'alternate',
+            alternate: variant !== 'normal',
+          },
+        },
+      });
+      setJustAddedId(card.id);
+      setToastMsg(`${card.name} — moved from wishlist to collection!`);
+      setTimeout(() => setJustAddedId(null), 700);
+      setTimeout(() => setToastMsg(null), 3000);
+      return;
+    }
+
     const cardModel: CardModel = {
       cardId: generateCardId(),
+      status: 'owned',
       // "Both" = two physical cards: the standard print + the alternate print
       quantity: variant === 'both' ? 2 : 1,
       setNumber: card.number ? parseInt(card.number, 10) || 0 : 0,
@@ -1003,7 +1338,8 @@ export function Sets() {
     setToastMsg(`${card.name} added to your collection!`);
     setTimeout(() => setJustAddedId(null), 700);
     setTimeout(() => setToastMsg(null), 3000);
-  }, [selectedSet, isReadOnly]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedSet, isReadOnly, myCards]);
 
   const getVariantState = (card: CardModel): 'normal' | 'alternate' | 'both' => {
     const v = card.attributes.variants;
@@ -1220,10 +1556,12 @@ export function Sets() {
                     <CardsGrid>
                       {filteredTcgCards.map((card, i) => {
                         const owned = isOwned(card);
+                        const wanted = isOnWishlist(card);
                         return (
                           <TcgCardItem
                             key={card.id}
                             $owned={owned}
+                            $wanted={wanted}
                             initial={{ opacity: 0, y: 12 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.2, delay: Math.min(i * 0.02, 0.4) }}
@@ -1234,9 +1572,14 @@ export function Sets() {
                             <TcgCardImg
                               src={card.images.small}
                               alt={card.name}
-                              $owned={owned}
+                              $owned={owned || wanted}
                               loading='lazy'
                             />
+                            {wanted && !owned && (
+                              <WishlistRibbon>
+                                <IconHeartFilled size={10} /> Wishlist
+                              </WishlistRibbon>
+                            )}
                             {owned && (() => {
                               const ownedCard = findOwnedCard(card);
                               const vState = ownedCard ? getVariantState(ownedCard) : 'normal';
@@ -1311,7 +1654,7 @@ export function Sets() {
                                 transition={{ duration: 0.65, ease: 'easeOut' }}
                               />
                             )}
-                            {/* Bottom action bar: eye (preview) + plus (add) */}
+                            {/* Bottom action bar: eye (preview) + plus (add) + heart (wishlist) */}
                             <CardActionsBar>
                               <CardActionBtn
                                 title='Preview card'
@@ -1319,15 +1662,28 @@ export function Sets() {
                               >
                                 <IconEye size={12} stroke={2} />
                               </CardActionBtn>
-                              {!owned && !isReadOnly && (
-                                <CardActionBtn
-                                  $accent={theme.color.frost.blue}
-                                  title='Add to collection'
-                                  onClick={(e) => { e.stopPropagation(); const next = pendingCard === card.id ? null : card.id; setPendingCard(next); if (!next) setPendingVariant(null); }}
-                                >
-                                  <IconPlus size={12} stroke={2.5} />
-                                </CardActionBtn>
-                              )}
+                              <div style={{ display: 'flex', gap: 5 }}>
+                                {!isReadOnly && (
+                                  <CardActionBtn
+                                    $accent={isOnWishlist(card) ? theme.color.aurora.red : undefined}
+                                    title={isOnWishlist(card) ? 'Remove from wishlist' : 'Add to wishlist'}
+                                    onClick={(e) => { e.stopPropagation(); handleWishlistToggle(card); }}
+                                  >
+                                    {isOnWishlist(card)
+                                      ? <IconHeartFilled size={12} />
+                                      : <IconHeart size={12} stroke={2} />}
+                                  </CardActionBtn>
+                                )}
+                                {!owned && !isReadOnly && (
+                                  <CardActionBtn
+                                    $accent={theme.color.frost.blue}
+                                    title='Add to collection'
+                                    onClick={(e) => { e.stopPropagation(); const next = pendingCard === card.id ? null : card.id; setPendingCard(next); if (!next) setPendingVariant(null); }}
+                                  >
+                                    <IconPlus size={12} stroke={2.5} />
+                                  </CardActionBtn>
+                                )}
+                              </div>
                             </CardActionsBar>
                             <TcgCardName>{card.name}</TcgCardName>
                           </TcgCardItem>
@@ -1511,10 +1867,12 @@ export function Sets() {
                   <CardsGrid>
                     {pokemonResults.map((card, i) => {
                       const owned = isOwned(card);
+                      const wanted = isOnWishlist(card);
                       return (
                         <TcgCardItem
                           key={card.id}
                           $owned={owned}
+                          $wanted={wanted}
                           initial={{ opacity: 0, y: 12 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.2, delay: Math.min(i * 0.015, 0.4) }}
@@ -1522,7 +1880,12 @@ export function Sets() {
                           whileTap={{ scale: 0.97 }}
                           style={{ cursor: 'default' }}
                         >
-                          <TcgCardImg src={card.images.small} alt={card.name} $owned={owned} loading='lazy' />
+                          <TcgCardImg src={card.images.small} alt={card.name} $owned={owned || wanted} loading='lazy' />
+                          {wanted && !owned && (
+                            <WishlistRibbon>
+                              <IconHeartFilled size={10} /> Wishlist
+                            </WishlistRibbon>
+                          )}
                           {owned && (() => {
                             const ownedCard = findOwnedCard(card);
                             const vState = ownedCard ? getVariantState(ownedCard) : 'normal';
@@ -1591,15 +1954,28 @@ export function Sets() {
                             >
                               <IconEye size={12} stroke={2} />
                             </CardActionBtn>
-                            {!owned && !isReadOnly && (
-                              <CardActionBtn
-                                $accent={theme.color.frost.blue}
-                                title='Add to collection'
-                                onClick={(e) => { e.stopPropagation(); const next = pendingCard === card.id ? null : card.id; setPendingCard(next); if (!next) setPendingVariant(null); }}
-                              >
-                                <IconPlus size={12} stroke={2.5} />
-                              </CardActionBtn>
-                            )}
+                            <div style={{ display: 'flex', gap: 5 }}>
+                              {!isReadOnly && (
+                                <CardActionBtn
+                                  $accent={isOnWishlist(card) ? theme.color.aurora.red : undefined}
+                                  title={isOnWishlist(card) ? 'Remove from wishlist' : 'Add to wishlist'}
+                                  onClick={(e) => { e.stopPropagation(); handleWishlistToggle(card); }}
+                                >
+                                  {isOnWishlist(card)
+                                    ? <IconHeartFilled size={12} />
+                                    : <IconHeart size={12} stroke={2} />}
+                                </CardActionBtn>
+                              )}
+                              {!owned && !isReadOnly && (
+                                <CardActionBtn
+                                  $accent={theme.color.frost.blue}
+                                  title='Add to collection'
+                                  onClick={(e) => { e.stopPropagation(); const next = pendingCard === card.id ? null : card.id; setPendingCard(next); if (!next) setPendingVariant(null); }}
+                                >
+                                  <IconPlus size={12} stroke={2.5} />
+                                </CardActionBtn>
+                              )}
+                            </div>
                           </CardActionsBar>
                           <TcgCardSetLabel>{card.set?.name ?? ''}</TcgCardSetLabel>
                         </TcgCardItem>
@@ -1621,7 +1997,43 @@ export function Sets() {
               ))}
             </SetsGrid>
           ) : (
-            <SetsGrid>
+            <>
+              {searchMode === 'sets' && !search.trim() && !activeSeries && upcomingSets.length > 0 && (
+                <UpcomingSection>
+                  <UpcomingHeader>
+                    <UpcomingTitle>
+                      <PulseDot
+                        animate={{ opacity: [0.5, 1, 0.5], scale: [0.9, 1.1, 0.9] }}
+                        transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+                      />
+                      Upcoming sets
+                    </UpcomingTitle>
+                  </UpcomingHeader>
+                  <UpcomingStrip>
+                    {upcomingSets.map((set, i) => (
+                      <UpcomingCard
+                        key={set.id}
+                        initial={{ opacity: 0, x: 12 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.25, delay: i * 0.04 }}
+                      >
+                        <UpcomingCardHeader>
+                          <UpcomingName title={set.name}>{set.name}</UpcomingName>
+                          <UpcomingBadge $rumored={!!set.isRumored}>
+                            {set.isRumored ? 'Rumored' : 'Coming'}
+                          </UpcomingBadge>
+                        </UpcomingCardHeader>
+                        <UpcomingSeries>{set.series}</UpcomingSeries>
+                        <UpcomingDate>
+                          {set.releaseDate ? formatUpcomingDate(set.releaseDate) : 'TBA'}
+                          {set.isRumored && set.rumoredSource ? ` · ${set.rumoredSource}` : ''}
+                        </UpcomingDate>
+                      </UpcomingCard>
+                    ))}
+                  </UpcomingStrip>
+                </UpcomingSection>
+              )}
+              <SetsGrid>
               {filteredSets.map((set, i) => {
                 const pct = getCompletionPct(set);
                 return (
@@ -1630,17 +2042,18 @@ export function Sets() {
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2, delay: Math.min(i * 0.03, 0.5) }}
-                    whileHover={{ y: -4 }}
-                    whileTap={{ scale: 0.98 }}
+                    whileTap={{ scale: 0.985 }}
                     onClick={() => setSelectedSet(set)}
                   >
-                    {set.images?.logo ? (
-                      <SetLogo src={set.images.logo} alt={set.name} loading='lazy' />
-                    ) : (
-                      <SetLogoFallback>
-                        <IconPackage size={32} stroke={1} />
-                      </SetLogoFallback>
-                    )}
+                    <LogoRing pct={pct}>
+                      {set.images?.logo ? (
+                        <SetLogo src={set.images.logo} alt={set.name} loading='lazy' />
+                      ) : (
+                        <SetLogoFallback>
+                          <IconPackage size={28} stroke={1} />
+                        </SetLogoFallback>
+                      )}
+                    </LogoRing>
                     <SetInfo>
                       <SetName>{set.name}</SetName>
                       <SetMeta>{set.series} · {set.releaseDate}</SetMeta>
@@ -1654,7 +2067,8 @@ export function Sets() {
                   </SetCard>
                 );
               })}
-            </SetsGrid>
+              </SetsGrid>
+            </>
           )}
         </SectionWrapper>
       </section>

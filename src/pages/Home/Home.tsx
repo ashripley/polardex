@@ -10,7 +10,7 @@ import {
 const Main = styled.main`
   background-color: ${({ theme }) => theme.color.surface.base};
   box-sizing: inherit;
-  transition: background-color 200ms ease;
+  transition: background-color 200ms cubic-bezier(0.22, 1, 0.36, 1);
 `;
 
 export function Home() {

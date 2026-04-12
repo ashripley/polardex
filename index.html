@@ -3,13 +3,26 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <link rel="icon" type="image/svg+xml" href="https://img.pokemondb.net/sprites/home/normal/dragonite.png" />
-    <!-- <link rel="icon" type="image/svg+xml" href="/src/assets/images/archosphere-logo.svg" /> -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>polardex</title>
+    <meta name="theme-color" content="#2e3440" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Polardex" />
+    <link rel="icon" type="image/png" href="/dragonite-192.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <title>Polardex</title>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {
+            /* SW failure is non-fatal — the app still works. */
+          });
+        });
+      }
+    </script>
   </body>
 </html>

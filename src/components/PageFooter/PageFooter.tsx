@@ -6,7 +6,7 @@ const Container = styled.section`
   width: 100%;
   background-color: ${({ theme }) => theme.color.surface.footer};
   border-top: 1px solid ${({ theme }) => theme.color.surface.border};
-  transition: background-color 200ms ease, border-color 200ms ease;
+  transition: background-color 200ms cubic-bezier(0.22, 1, 0.36, 1), border-color 200ms cubic-bezier(0.22, 1, 0.36, 1);
 
   @media (max-width: 759px) {
     /* Sit above the fixed bottom tab bar */
@@ -39,7 +39,7 @@ const NavLink = styled(Link)`
   font-size: ${({ theme }) => theme.typography.size.sm};
   color: ${({ theme }) => theme.color.text.secondary};
   text-decoration: none;
-  transition: color 150ms ease;
+  transition: color 150ms cubic-bezier(0.22, 1, 0.36, 1);
 
   &:hover {
     color: ${({ theme }) => theme.color.text.primary};
@@ -73,7 +73,7 @@ function HeartSVG() {
 }
 
 const navLinks = [
-  { to: '/gallery', label: 'Collection' },
+  { to: '/collections', label: 'Collection' },
   { to: '/sets', label: 'Sets' },
   { to: '/studio', label: 'Studio' },
   { to: '/overview', label: 'Overview' },

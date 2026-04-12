@@ -20,7 +20,13 @@ function stripUndefined<T>(obj: T): T {
 /** Add or overwrite a card in the cards document. */
 export async function saveCard(card: CardModel): Promise<void> {
   if (isReadOnly()) return;
-  const clean = stripUndefined(card);
+  const now = Date.now();
+  const withTimestamps: CardModel = {
+    ...card,
+    createdAt: card.createdAt ?? now,
+    updatedAt: now,
+  };
+  const clean = stripUndefined(withTimestamps);
   await setDoc(cardsRef(), { [clean.cardId]: clean }, { merge: true });
 }
 

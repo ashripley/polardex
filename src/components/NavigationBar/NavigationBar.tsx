@@ -27,7 +27,7 @@ const RootContainer = styled.div`
   -webkit-backdrop-filter: blur(12px);
   background: ${({ theme }) => theme.color.surface.base}e6;
   border-bottom: 1px solid ${({ theme }) => theme.color.surface.border};
-  transition: background-color 200ms ease, border-color 200ms ease;
+  transition: background-color 200ms cubic-bezier(0.22, 1, 0.36, 1), border-color 200ms cubic-bezier(0.22, 1, 0.36, 1);
 `;
 
 const NavigationContainer = styled.div`
@@ -245,7 +245,7 @@ const TabItem = styled(Link)<{ $active: boolean }>`
   font-weight: ${({ $active, theme }) =>
     $active ? theme.typography.weight.semibold : theme.typography.weight.medium};
   font-family: inherit;
-  transition: color 150ms ease;
+  transition: color 150ms cubic-bezier(0.22, 1, 0.36, 1);
   -webkit-tap-highlight-color: transparent;
 `;
 
@@ -329,7 +329,7 @@ function ThemeIcon({ isDark }: { isDark: boolean }) {
 // ── Nav data ──────────────────────────────────────────────────────────────────
 
 const navLinks = [
-  { to: '/gallery',  label: 'Collection', icon: IconCards    },
+  { to: '/collections',  label: 'Collection', icon: IconCards    },
   { to: '/sets',     label: 'Sets',       icon: IconPackage  },
   { to: '/studio',   label: 'Studio',     icon: IconPencil   },
   { to: '/overview', label: 'Stats',      icon: IconChartBar },

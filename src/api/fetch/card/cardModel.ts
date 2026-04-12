@@ -6,6 +6,10 @@ export interface CardModel {
   setNumber: number;
   attributes: AttributeCardModel;
   pokemonData: PokemonModel;
+  createdAt?: number;    // ms since epoch, set on first save
+  updatedAt?: number;    // ms since epoch, set on every save
+  status?: 'owned' | 'wanted';  // defaults to 'owned' when absent
+  manualOrder?: number;  // user-drag-reorder index in Studio
   meta?: unknown;
 }
 

@@ -21,7 +21,7 @@ const SkeletonBox = styled(motion.div)`
 const Main = styled.main`
   background-color: ${({ theme }) => theme.color.surface.muted};
   min-height: 60dvh;
-  transition: background-color 200ms ease;
+  transition: background-color 200ms cubic-bezier(0.22, 1, 0.36, 1);
 `;
 
 const PageHeader = styled.div`
@@ -313,7 +313,7 @@ const CurrencyToggle = styled.button<{ $active: boolean }>`
   font-family: inherit;
   cursor: pointer;
   letter-spacing: 0.04em;
-  transition: all 150ms ease;
+  transition: all 150ms cubic-bezier(0.22, 1, 0.36, 1);
   &:hover { border-color: ${({ theme }) => theme.color.frost.blue}; color: ${({ theme }) => theme.color.frost.blue}; }
 `;
 
@@ -413,6 +413,36 @@ export function Overview() {
       .sort((a, b) => b.price - a.price)
       .slice(0, 10);
   }, [cards, priceMap]);
+
+  // Rarest cards — weighted by the rarity string from the TCG API.
+  // Higher weights = rarer. Cards without a recognised rarity are excluded.
+  const rarestCards = useMemo(() => {
+    const rank = (rarity: string | undefined): number => {
+      if (!rarity) return 0;
+      const r = rarity.toLowerCase();
+      if (r.includes('hyper')) return 100;
+      if (r.includes('special illustration')) return 95;
+      if (r.includes('illustration')) return 90;
+      if (r.includes('secret')) return 88;
+      if (r.includes('rainbow')) return 86;
+      if (r.includes('gold')) return 84;
+      if (r.includes('shiny')) return 82;
+      if (r.includes('ultra')) return 78;
+      if (r.includes('amazing')) return 72;
+      if (r.includes('vmax') || r.includes('vstar')) return 70;
+      if (r.includes('ex') || r.includes('gx') || r.includes('v ')) return 60;
+      if (r.includes('rare holo')) return 50;
+      if (r === 'rare') return 40;
+      if (r.includes('uncommon')) return 20;
+      if (r.includes('common')) return 10;
+      return 30; // unknown but tagged
+    };
+    return cards
+      .filter((c) => !!c.attributes.rarity && rank(c.attributes.rarity) >= 50)
+      .map((c) => ({ card: c, rarity: c.attributes.rarity!, weight: rank(c.attributes.rarity) }))
+      .sort((a, b) => b.weight - a.weight)
+      .slice(0, 8);
+  }, [cards]);
 
   return (
     <Main>
@@ -534,8 +564,32 @@ export function Overview() {
                   )}
                 </Card>
 
+                {/* ── Rarest cards ── */}
+                {rarestCards.length > 0 && (
+                  <Card custom={4} variants={cardVariants} initial='hidden' animate='visible'>
+                    <CardTitle>Rarest Cards</CardTitle>
+                    <TopList>
+                      {rarestCards.map(({ card, rarity }, i) => (
+                        <TopItem
+                          key={card.cardId}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.25 + i * 0.04 }}
+                        >
+                          <Rank>#{i + 1}</Rank>
+                          <TopName>{card.pokemonData.name}</TopName>
+                          <StatLabel style={{ fontSize: '0.7rem', opacity: 0.7 }}>{card.attributes.set}</StatLabel>
+                          <PillLabel $accent='#d08770' style={{ fontSize: '0.66rem', textTransform: 'capitalize' }}>
+                            {rarity}
+                          </PillLabel>
+                        </TopItem>
+                      ))}
+                    </TopList>
+                  </Card>
+                )}
+
                 {/* ── Top sets ── */}
-                <Card custom={4} variants={cardVariants} initial='hidden' animate='visible'>
+                <Card custom={5} variants={cardVariants} initial='hidden' animate='visible'>
                   <CardTitle>Top Sets</CardTitle>
                   <BarChart
                     data={stats.setEntries}

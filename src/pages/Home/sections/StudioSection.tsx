@@ -16,7 +16,7 @@ const Container = styled.section`
   position: relative;
   background-color: ${({ theme }) => theme.color.surface.base};
   overflow: hidden;
-  transition: background-color 200ms ease;
+  transition: background-color 200ms cubic-bezier(0.22, 1, 0.36, 1);
 `;
 
 const GradientAccent = styled.div`
@@ -160,7 +160,7 @@ const CtaLink = styled(Link)`
   border: 1.5px solid ${({ theme }) => theme.color.surface.border};
   padding: ${({ theme }) => `${theme.space[3]} ${theme.space[5]}`};
   border-radius: ${({ theme }) => theme.radius.full};
-  transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+  transition: border-color 150ms cubic-bezier(0.22, 1, 0.36, 1), color 150ms cubic-bezier(0.22, 1, 0.36, 1), background 150ms cubic-bezier(0.22, 1, 0.36, 1);
 
   &:hover {
     border-color: ${({ theme }) => theme.color.frost.blue};

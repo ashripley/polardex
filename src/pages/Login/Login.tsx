@@ -230,7 +230,7 @@ const Input = styled.input`
   background: ${({ theme }) => theme.color.surface.muted};
   color: ${({ theme }) => theme.color.text.primary};
   box-shadow: 0 0 0 1.5px ${({ theme }) => theme.color.surface.border};
-  transition: box-shadow 150ms ease, background 150ms ease;
+  transition: box-shadow 150ms cubic-bezier(0.22, 1, 0.36, 1), background 150ms cubic-bezier(0.22, 1, 0.36, 1);
 
   &::placeholder { color: ${({ theme }) => theme.color.text.tertiary}; }
   &:focus {
@@ -273,7 +273,7 @@ const SignInBtn = styled(motion.button)`
   background: ${({ theme }) => theme.color.frost.blue};
   color: #fff;
   box-shadow: 0 4px 16px ${({ theme }) => `${theme.color.frost.blue}50`};
-  transition: background 150ms ease, box-shadow 150ms ease;
+  transition: background 150ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 150ms cubic-bezier(0.22, 1, 0.36, 1);
 
   &:hover:not(:disabled) {
     background: ${({ theme }) => theme.color.frost.deep};
@@ -312,7 +312,7 @@ const GuestBtn = styled(motion.button)`
   cursor: pointer;
   background: transparent;
   color: ${({ theme }) => theme.color.text.primary};
-  transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+  transition: border-color 150ms cubic-bezier(0.22, 1, 0.36, 1), color 150ms cubic-bezier(0.22, 1, 0.36, 1), background 150ms cubic-bezier(0.22, 1, 0.36, 1);
 
   &:hover {
     border-color: ${({ theme }) => theme.color.frost.blue};

@@ -9,7 +9,7 @@ import { useIsMobile } from '../../../utils';
 const Container = styled.section`
   position: relative;
   background-color: ${({ theme }) => theme.color.surface.muted};
-  transition: background-color 200ms ease;
+  transition: background-color 200ms cubic-bezier(0.22, 1, 0.36, 1);
   overflow: hidden;
 `;
 

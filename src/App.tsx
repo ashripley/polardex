@@ -1,7 +1,7 @@
 import { Route, BrowserRouter as Router, Routes, useLocation, useNavigate } from 'react-router-dom';
 import styled, { createGlobalStyle } from 'styled-components';
-import { Gallery, Home, Studio, Sets, Overview, Login } from './pages';
-import { NavigationBar, PageFooter } from './components';
+import { Collections, Home, Studio, Sets, Overview, Login } from './pages';
+import { NavigationBar, PageFooter, PwaInstallBanner } from './components';
 import { useEffect, useState } from 'react';
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -12,7 +12,7 @@ const GlobalStyle = createGlobalStyle`
     background-color: ${({ theme }) => theme.color.surface.base};
     color: ${({ theme }) => theme.color.text.primary};
     font-family: ${({ theme }) => theme.typography.family.primary};
-    transition: background-color 200ms ease, color 200ms ease;
+    transition: background-color 200ms cubic-bezier(0.22, 1, 0.36, 1), color 200ms cubic-bezier(0.22, 1, 0.36, 1);
     /* Prevent rubber-band scroll revealing white edges on iOS */
     overscroll-behavior: none;
   }
@@ -51,7 +51,7 @@ const GlobalStyle = createGlobalStyle`
   a:active svg,
   [role="button"]:active svg {
     transform: scale(0.88);
-    transition: transform 80ms ease;
+    transition: transform 80ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   button:disabled svg {
@@ -84,7 +84,7 @@ const AppContainer = styled.div`
   display: flex;
   flex-direction: column;
   background-color: ${({ theme }) => theme.color.surface.base};
-  transition: background-color 200ms ease;
+  transition: background-color 200ms cubic-bezier(0.22, 1, 0.36, 1);
 `;
 
 const Main = styled.main`
@@ -120,7 +120,9 @@ function AnimatedRoutes() {
         <Routes location={location}>
           <Route path='/'        element={<Home />} />
           <Route path='/home'    element={<Home />} />
-          <Route path='/gallery' element={<Gallery />} />
+          <Route path='/collections' element={<Collections />} />
+          {/* Legacy redirect for old /gallery links */}
+          <Route path='/gallery' element={<Collections />} />
           <Route path='/studio'  element={<Studio />} />
           <Route path='/sets'    element={<Sets />} />
           <Route path='/overview' element={<Overview />} />
@@ -201,6 +203,7 @@ function AppContent() {
           <AnimatedRoutes />
         </Main>
         <PageFooter />
+        <PwaInstallBanner />
       </AppContainer>
     </MotionConfig>
   );

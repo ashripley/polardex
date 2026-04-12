@@ -12,7 +12,7 @@ const Container = styled.section`
   flex-grow: 1;
   background-color: ${({ theme }) => theme.color.surface.muted};
   overflow: hidden;
-  transition: background-color 200ms ease;
+  transition: background-color 200ms cubic-bezier(0.22, 1, 0.36, 1);
 `;
 
 /* Ambient background orbs */
@@ -148,7 +148,7 @@ const SecondaryLink = styled(Link)`
   font-size: ${({ theme }) => theme.typography.size.md};
   font-weight: ${({ theme }) => theme.typography.weight.medium};
   color: ${({ theme }) => theme.color.text.secondary};
-  transition: color 200ms ease;
+  transition: color 200ms cubic-bezier(0.22, 1, 0.36, 1);
 
   &:hover {
     color: ${({ theme }) => theme.color.text.primary};
@@ -209,7 +209,7 @@ export function WelcomeSection() {
               </motion.div>
               <motion.div variants={itemVariants}>
                 <ButtonRow>
-                  <PrimaryLink to='/gallery'>
+                  <PrimaryLink to='/collections'>
                     <Button buttonType='primary'>View Collection</Button>
                   </PrimaryLink>
                   <SecondaryLink to='/studio' className='icon-arr-r'>

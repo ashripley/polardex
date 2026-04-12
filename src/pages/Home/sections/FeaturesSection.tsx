@@ -11,7 +11,7 @@ import { Link } from 'react-router-dom';
 
 const Container = styled.section`
   background-color: ${({ theme }) => theme.color.surface.base};
-  transition: background-color 200ms ease;
+  transition: background-color 200ms cubic-bezier(0.22, 1, 0.36, 1);
 `;
 
 const Header = styled.div`
@@ -73,7 +73,7 @@ const FeatureCard = styled(motion.div)`
   flex-direction: column;
   gap: ${({ theme }) => theme.space[4]};
   cursor: default;
-  transition: box-shadow 250ms ease, border-color 250ms ease, transform 250ms ease;
+  transition: box-shadow 250ms cubic-bezier(0.22, 1, 0.36, 1), border-color 250ms cubic-bezier(0.22, 1, 0.36, 1), transform 250ms cubic-bezier(0.22, 1, 0.36, 1);
   overflow: hidden;
 
   &:hover {
@@ -133,7 +133,7 @@ const FeatureLink = styled(Link)<{ $accent: string }>`
   color: ${({ $accent }) => $accent};
   text-decoration: none;
   margin-top: auto;
-  transition: opacity 150ms ease;
+  transition: opacity 150ms cubic-bezier(0.22, 1, 0.36, 1);
 
   &:hover {
     opacity: 0.75;
@@ -142,7 +142,7 @@ const FeatureLink = styled(Link)<{ $accent: string }>`
 
 const Arrow = styled.span`
   display: inline-block;
-  transition: transform 200ms ease;
+  transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
 
   ${FeatureLink}:hover & {
     transform: translateX(3px);
@@ -182,9 +182,9 @@ export function FeaturesSection() {
       accent: '#81a1c1',
       title: 'Your Collection',
       description:
-        'Organize every card you own in a single, searchable gallery. Filter by set, rarity, or Pokémon name and watch your collection grow over time.',
-      to: '/gallery',
-      cta: 'Browse gallery',
+        'Organize every card you own in one searchable Collection. Filter by set, rarity, or Pokémon name and watch it grow over time.',
+      to: '/collections',
+      cta: 'Browse collection',
     },
     {
       icon: <IconSearch size={24} />,
@@ -192,7 +192,7 @@ export function FeaturesSection() {
       title: 'Discover Sets',
       description:
         'Explore iconic Pokémon TCG sets from Base Set to modern expansions. Track which cards you own and which ones are still on your wish list.',
-      to: '/gallery',
+      to: '/sets',
       cta: 'Explore sets',
     },
     {

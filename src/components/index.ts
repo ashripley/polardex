@@ -11,3 +11,4 @@ export * from './Attribute';
 export * from './Modal';
 export * from './StudioCard';
 export * from './FilterBar';
+export * from './PwaInstallBanner';

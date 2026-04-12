@@ -8,7 +8,7 @@ import {
 } from '@tabler/icons-react';
 import { motion, AnimatePresence } from 'motion/react';
 import * as RadixSelect from '@radix-ui/react-select';
-import { GalleryFilters, defaultFilters, hasActiveFilters } from './filterTypes';
+import { CollectionsFilters, defaultFilters, hasActiveFilters } from './filterTypes';
 import { useState, type ReactNode } from 'react';
 
 export type ViewMode = 'cards' | 'art';
@@ -30,8 +30,8 @@ const MobileSortRow = styled.div`
 `;
 
 interface FilterBarProps {
-  filters: GalleryFilters;
-  onChange: (filters: GalleryFilters) => void;
+  filters: CollectionsFilters;
+  onChange: (filters: CollectionsFilters) => void;
   typeOptions: string[];
   setOptions: string[];
   conditionOptions: string[];
@@ -83,7 +83,7 @@ const FilterToggleBtn = styled.button<{ $active: boolean }>`
   font-family: inherit;
   cursor: pointer;
   flex-shrink: 0;
-  transition: all 150ms ease;
+  transition: all 150ms cubic-bezier(0.22, 1, 0.36, 1);
 
   @media (max-width: 759px) {
     display: inline-flex;
@@ -167,7 +167,7 @@ const SearchInput = styled.input`
   font-family: inherit;
   outline: none;
   box-shadow: 0 0 0 1.5px ${({ theme }) => theme.color.surface.border};
-  transition: box-shadow 150ms ease, background 200ms ease;
+  transition: box-shadow 150ms cubic-bezier(0.22, 1, 0.36, 1), background 200ms cubic-bezier(0.22, 1, 0.36, 1);
 
   &::placeholder { color: ${({ theme }) => theme.color.text.secondary}; }
   &:focus {
@@ -239,7 +239,7 @@ const SelectTrigger = styled(RadixSelect.Trigger)`
   white-space: nowrap;
   flex-shrink: 0;
   text-transform: capitalize;
-  transition: box-shadow 150ms ease, background 150ms ease;
+  transition: box-shadow 150ms cubic-bezier(0.22, 1, 0.36, 1), background 150ms cubic-bezier(0.22, 1, 0.36, 1);
 
   &[data-placeholder] { color: ${({ theme }) => theme.color.text.secondary}; }
   &:hover {
@@ -293,7 +293,7 @@ const SelectItem = styled(RadixSelect.Item)`
   outline: none;
   user-select: none;
   text-transform: capitalize;
-  transition: background 80ms ease;
+  transition: background 80ms cubic-bezier(0.22, 1, 0.36, 1);
 
   &[data-highlighted] { background: ${({ theme }) => theme.color.surface.muted}; }
   &[data-state='checked'] {
@@ -375,7 +375,7 @@ export function FilterBar({
   const [searchFocusCount, setSearchFocusCount] = useState(0);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
-  const update = <K extends keyof GalleryFilters>(key: K, value: GalleryFilters[K]) =>
+  const update = <K extends keyof CollectionsFilters>(key: K, value: CollectionsFilters[K]) =>
     onChange({ ...filters, [key]: value });
 
   const countLabel = isFiltered && filteredCount !== totalCount

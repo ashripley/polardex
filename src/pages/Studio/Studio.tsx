@@ -15,7 +15,7 @@ import { StudioModal } from './StudioModal';
 const Main = styled.main`
   background-color: ${({ theme }) => theme.color.surface.muted};
   min-height: 60dvh;
-  transition: background-color 200ms ease;
+  transition: background-color 200ms cubic-bezier(0.22, 1, 0.36, 1);
 `;
 
 // ── Header ────────────────────────────────────────────────────────────────────
@@ -74,7 +74,7 @@ const SelectButton = styled(motion.button)<{ $active: boolean }>`
   font-weight: ${({ theme }) => theme.typography.weight.semibold};
   font-family: inherit;
   cursor: pointer;
-  transition: border-color 150ms ease, background 150ms ease, color 150ms ease;
+  transition: border-color 150ms cubic-bezier(0.22, 1, 0.36, 1), background 150ms cubic-bezier(0.22, 1, 0.36, 1), color 150ms cubic-bezier(0.22, 1, 0.36, 1);
 `;
 
 // ── Delete bar ────────────────────────────────────────────────────────────────
@@ -162,7 +162,7 @@ const SearchInput = styled.input`
   font-family: inherit;
   outline: none;
   box-shadow: 0 0 0 1.5px ${({ theme }) => theme.color.surface.muted};
-  transition: box-shadow 150ms ease, background-color 200ms ease;
+  transition: box-shadow 150ms cubic-bezier(0.22, 1, 0.36, 1), background-color 200ms cubic-bezier(0.22, 1, 0.36, 1);
 
   &::placeholder { color: ${({ theme }) => theme.color.text.secondary}; }
   &:focus {
@@ -211,7 +211,7 @@ const CardItem = styled(motion.div)<{ $selected: boolean }>`
     $selected
       ? `0 0 0 2.5px ${theme.color.aurora.red}, 0 4px 16px rgba(0,0,0,0.2)`
       : '0 4px 16px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255,255,255,0.06)'};
-  transition: box-shadow 150ms ease;
+  transition: box-shadow 150ms cubic-bezier(0.22, 1, 0.36, 1);
 `;
 
 const CardImg = styled.img`
@@ -286,7 +286,7 @@ const EditBadge = styled.div`
   justify-content: center;
   color: #fff;
   opacity: 0;
-  transition: opacity 200ms ease;
+  transition: opacity 200ms cubic-bezier(0.22, 1, 0.36, 1);
 
   ${CardItem}:hover & {
     opacity: 1;

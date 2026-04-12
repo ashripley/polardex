@@ -1,5 +1,5 @@
 import { IconPhotoScan, IconSelector } from '@tabler/icons-react';
-import { useState, useRef } from 'react';
+import { useState, useRef, memo } from 'react';
 import styled, { css } from 'styled-components';
 import { CardModel } from './cardModel';
 import { motion, useMotionValue, useSpring, useTransform } from 'motion/react';
@@ -218,7 +218,7 @@ const Attribute = styled.span`
 `;
 
 
-export function Card(props: CardProps) {
+function CardInner(props: CardProps) {
   const { pokemonData, attributes, setNumber, quantity, isDemo } = props;
   const [expanded, setExpanded] = useState<boolean>(false);
 
@@ -337,3 +337,5 @@ export function Card(props: CardProps) {
     </Container>
   );
 }
+
+export const Card = memo(CardInner);

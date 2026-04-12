@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { motion, AnimatePresence } from 'motion/react';
-import { IconCheck, IconX } from '@tabler/icons-react';
+import { IconCheck, IconX, IconAlertTriangle, IconPlus } from '@tabler/icons-react';
 import { toSpriteName } from '../../../utils';
 import { Modal } from '../../../components';
 import { CardModel } from '../../../api/fetch/card/cardModel';
 import { saveCard, saveAttribute, removeCard, generateCardId } from '../../../api/mutations';
+import { useGetCardsQuery } from '../../../api';
 import { StudioModalDialog } from './StudioModalDialog';
 import { StudioModalCanvas } from './StudioModalCanvas';
 
@@ -28,6 +29,7 @@ export interface CardDraft {
   tcgImageUrl: string;
   hasNormal: boolean;
   hasReverseHolo: boolean;
+  status: 'owned' | 'wanted';
 }
 
 export interface AttributeDraft {
@@ -42,6 +44,7 @@ export const emptyCardDraft: CardDraft = {
   year: '', setNumber: '', grading: '', quantity: 1,
   tcgId: '', tcgImageUrl: '',
   hasNormal: true, hasReverseHolo: false,
+  status: 'owned',
 };
 
 export const emptyAttributeDraft: AttributeDraft = { name: '', year: '', totalCards: '' };
@@ -52,6 +55,7 @@ function draftToCard(draft: CardDraft, existing?: CardModel): CardModel {
   const cardId = draft.cardId || generateCardId();
   return {
     cardId,
+    status: draft.status ?? existing?.status ?? 'owned',
     quantity: draft.quantity ?? existing?.quantity ?? 1,
     setNumber: Number(draft.setNumber.split('/')[0]) || 0,
     attributes: {
@@ -80,6 +84,7 @@ function draftToCard(draft: CardDraft, existing?: CardModel): CardModel {
 export function cardToDraft(card: CardModel): CardDraft {
   return {
     cardId: card.cardId,
+    status: card.status ?? 'owned',
     name: card.pokemonData.name,
     pokemonId: `#${String(card.pokemonData.id).padStart(3, '0')}`,
     type: card.pokemonData.type,
@@ -184,6 +189,86 @@ const CanvasPane = styled.div`
   }
 `;
 
+// ── Duplicate warning overlay ─────────────────────────────────────────────────
+
+const DuplicateOverlay = styled(motion.div)`
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: ${({ theme }) => theme.space[6]};
+  gap: ${({ theme }) => theme.space[4]};
+  background: ${({ theme }) => theme.color.surface.subtle};
+  z-index: 20;
+  text-align: center;
+`;
+
+const WarnRing = styled(motion.div)`
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 50%;
+  background: ${({ theme }) => `${theme.color.aurora.yellow}1a`};
+  border: 2px solid ${({ theme }) => `${theme.color.aurora.yellow}55`};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: ${({ theme }) => theme.color.aurora.yellow};
+`;
+
+const DupTitle = styled.p`
+  font-size: ${({ theme }) => theme.typography.size.lg};
+  font-weight: ${({ theme }) => theme.typography.weight.semibold};
+  color: ${({ theme }) => theme.color.text.primary};
+  margin: 0;
+`;
+
+const DupSubtext = styled.p`
+  font-size: ${({ theme }) => theme.typography.size.sm};
+  color: ${({ theme }) => theme.color.text.secondary};
+  margin: 0;
+  max-width: 22rem;
+  line-height: 1.5;
+`;
+
+const DupActions = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.space[3]};
+  margin-top: ${({ theme }) => theme.space[2]};
+  flex-wrap: wrap;
+  justify-content: center;
+`;
+
+const DupBtnPrimary = styled(motion.button)`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: ${({ theme }) => `${theme.space[2]} ${theme.space[4]}`};
+  border-radius: ${({ theme }) => theme.radius.full};
+  background: ${({ theme }) => theme.color.frost.blue};
+  color: #fff;
+  border: none;
+  font-size: ${({ theme }) => theme.typography.size.sm};
+  font-weight: ${({ theme }) => theme.typography.weight.semibold};
+  font-family: inherit;
+  cursor: pointer;
+  &:hover { filter: brightness(1.1); }
+`;
+
+const DupBtnSecondary = styled(motion.button)`
+  padding: ${({ theme }) => `${theme.space[2]} ${theme.space[4]}`};
+  border-radius: ${({ theme }) => theme.radius.full};
+  background: transparent;
+  color: ${({ theme }) => theme.color.text.secondary};
+  border: 1.5px solid ${({ theme }) => theme.color.surface.border};
+  font-size: ${({ theme }) => theme.typography.size.sm};
+  font-weight: ${({ theme }) => theme.typography.weight.medium};
+  font-family: inherit;
+  cursor: pointer;
+  &:hover { border-color: ${({ theme }) => theme.color.frost.blue}; color: ${({ theme }) => theme.color.frost.blue}; }
+`;
+
 // ── Success overlay ───────────────────────────────────────────────────────────
 
 const SuccessOverlay = styled(motion.div)`
@@ -259,6 +344,29 @@ export function StudioModal({ isOpen, onClose, actionType, preselectedCard, pref
   const [attributeDraft, setAttributeDraft] = useState<AttributeDraft>(emptyAttributeDraft);
   const [selectedCard, setSelectedCard] = useState<CardModel | null>(preselectedCard ?? null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'success' | 'delete-success' | 'error'>('idle');
+  const [duplicateMatch, setDuplicateMatch] = useState<CardModel | null>(null);
+  const [pendingDraft, setPendingDraft] = useState<CardDraft | null>(null);
+  const { cards: existingCards } = useGetCardsQuery();
+
+  // Find a duplicate for an add action (ignores the currently-selected card when modifying)
+  const findDuplicate = (draft: CardDraft): CardModel | null => {
+    const name = draft.name.trim().toLowerCase();
+    if (!name) return null;
+    const set = draft.set.trim().toLowerCase();
+    const tcgId = draft.tcgId.trim();
+    for (const c of existingCards) {
+      if (selectedCard && c.cardId === selectedCard.cardId) continue;
+      // Strongest match: same tcgId
+      if (tcgId && c.attributes.tcgId === tcgId) return c;
+      // Fallback: name + set + setNumber
+      if (
+        c.pokemonData.name.toLowerCase() === name &&
+        c.attributes.set.toLowerCase() === set &&
+        String(c.setNumber) === draft.setNumber.split('/')[0]
+      ) return c;
+    }
+    return null;
+  };
 
   // Sync draft when a preselected card is passed (e.g. clicking a card in Studio grid)
   useEffect(() => {
@@ -273,10 +381,21 @@ export function StudioModal({ isOpen, onClose, actionType, preselectedCard, pref
     setCardDraft(cardToDraft(card));
   };
 
-  const handleSave = async () => {
+  const performSave = async (draft: CardDraft) => {
     setSaveStatus('saving');
     try {
-      if (actionType === 'attribute') {
+      await saveCard(draftToCard(draft, selectedCard ?? undefined));
+      setSaveStatus('success');
+      setTimeout(() => { setSaveStatus('idle'); handleClose(); }, 2000);
+    } catch {
+      setSaveStatus('error');
+    }
+  };
+
+  const handleSave = async () => {
+    if (actionType === 'attribute') {
+      setSaveStatus('saving');
+      try {
         await saveAttribute({
           id: `attr_${Date.now()}`,
           name: attributeDraft.name,
@@ -286,9 +405,60 @@ export function StudioModal({ isOpen, onClose, actionType, preselectedCard, pref
             totalCards: Number(attributeDraft.totalCards) || undefined,
           },
         });
-      } else {
-        await saveCard(draftToCard(cardDraft, selectedCard ?? undefined));
+        setSaveStatus('success');
+        setTimeout(() => { setSaveStatus('idle'); handleClose(); }, 2000);
+      } catch {
+        setSaveStatus('error');
       }
+      return;
+    }
+
+    // For 'add', check for duplicates first
+    if (actionType === 'add') {
+      const match = findDuplicate(cardDraft);
+      if (match) {
+        setDuplicateMatch(match);
+        setPendingDraft(cardDraft);
+        return;
+      }
+    }
+    performSave(cardDraft);
+  };
+
+  const handleSaveDraft = async (draft: CardDraft) => {
+    if (actionType === 'add') {
+      const match = findDuplicate(draft);
+      if (match) {
+        setDuplicateMatch(match);
+        setPendingDraft(draft);
+        return;
+      }
+    }
+    performSave(draft);
+  };
+
+  const resolveIncrement = async () => {
+    if (!duplicateMatch) return;
+    // If the pending draft is for an owned card but the existing record is
+    // wishlist-only, promote it — don't leave it as wanted.
+    const incomingStatus = pendingDraft?.status ?? 'owned';
+    const nextStatus: 'owned' | 'wanted' =
+      duplicateMatch.status === 'wanted' && incomingStatus === 'owned'
+        ? 'owned'
+        : duplicateMatch.status ?? 'owned';
+    const bumped: CardModel = {
+      ...duplicateMatch,
+      status: nextStatus,
+      // Wishlist entries start at qty 1; don't "double" when promoting
+      quantity: duplicateMatch.status === 'wanted' && incomingStatus === 'owned'
+        ? (pendingDraft?.quantity ?? 1)
+        : (duplicateMatch.quantity ?? 1) + (pendingDraft?.quantity ?? 1),
+    };
+    setDuplicateMatch(null);
+    setPendingDraft(null);
+    setSaveStatus('saving');
+    try {
+      await saveCard(bumped);
       setSaveStatus('success');
       setTimeout(() => { setSaveStatus('idle'); handleClose(); }, 2000);
     } catch {
@@ -296,15 +466,16 @@ export function StudioModal({ isOpen, onClose, actionType, preselectedCard, pref
     }
   };
 
-  const handleSaveDraft = async (draft: CardDraft) => {
-    setSaveStatus('saving');
-    try {
-      await saveCard(draftToCard(draft, selectedCard ?? undefined));
-      setSaveStatus('success');
-      setTimeout(() => { setSaveStatus('idle'); handleClose(); }, 2000);
-    } catch {
-      setSaveStatus('error');
-    }
+  const resolveAddAnyway = async () => {
+    const draft = pendingDraft;
+    setDuplicateMatch(null);
+    setPendingDraft(null);
+    if (draft) await performSave(draft);
+  };
+
+  const resolveCancel = () => {
+    setDuplicateMatch(null);
+    setPendingDraft(null);
   };
 
   const handleDelete = async () => {
@@ -362,6 +533,71 @@ export function StudioModal({ isOpen, onClose, actionType, preselectedCard, pref
             <StudioModalCanvas type={actionType} cardDraft={cardDraft} />
           </CanvasPane>
         </ContentContainer>
+
+        {/* ── Duplicate warning overlay ── */}
+        <AnimatePresence>
+          {duplicateMatch && (
+            <DuplicateOverlay
+              key='duplicate'
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <WarnRing
+                initial={{ scale: 0, rotate: -30 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ type: 'spring', stiffness: 350, damping: 20, delay: 0.05 }}
+              >
+                <IconAlertTriangle size={32} stroke={2.5} />
+              </WarnRing>
+              <DupTitle>
+                {duplicateMatch.status === 'wanted' ? 'Already on your wishlist' : 'Duplicate card detected'}
+              </DupTitle>
+              <DupSubtext>
+                {duplicateMatch.status === 'wanted' ? (
+                  <>
+                    <strong>{duplicateMatch.pokemonData.name}</strong>
+                    {duplicateMatch.attributes.set ? <> from <strong>{duplicateMatch.attributes.set}</strong></> : null}
+                    {' '}is on your wishlist. Moving it to your collection will mark it as owned.
+                  </>
+                ) : (
+                  <>
+                    You already own <strong>{duplicateMatch.pokemonData.name}</strong>
+                    {duplicateMatch.attributes.set ? <> from <strong>{duplicateMatch.attributes.set}</strong></> : null}
+                    {' '}(×{duplicateMatch.quantity ?? 1}). Increment the quantity, or add this as a separate copy.
+                  </>
+                )}
+              </DupSubtext>
+              <DupActions>
+                <DupBtnPrimary
+                  onClick={resolveIncrement}
+                  whileTap={{ scale: 0.96 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 24 }}
+                >
+                  <IconPlus size={14} stroke={2.5} />
+                  {duplicateMatch.status === 'wanted'
+                    ? 'Move to collection'
+                    : `Increment to ×${(duplicateMatch.quantity ?? 1) + (pendingDraft?.quantity ?? 1)}`}
+                </DupBtnPrimary>
+                <DupBtnSecondary
+                  onClick={resolveAddAnyway}
+                  whileTap={{ scale: 0.96 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 24 }}
+                >
+                  Add as new
+                </DupBtnSecondary>
+                <DupBtnSecondary
+                  onClick={resolveCancel}
+                  whileTap={{ scale: 0.96 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 24 }}
+                >
+                  Cancel
+                </DupBtnSecondary>
+              </DupActions>
+            </DuplicateOverlay>
+          )}
+        </AnimatePresence>
 
         {/* ── Success overlay ── */}
         <AnimatePresence>

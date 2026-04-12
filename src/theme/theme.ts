@@ -240,11 +240,17 @@ export const lightTheme: Theme = {
     overlay: 20,
   },
 
+  // Softer, more natural easing curves. Defaults:
+  //  - fast   → quick interactions (button hover color/bg)
+  //  - normal → general movement (panel opens, modal fades)
+  //  - slow   → deliberate, heavy changes (page transitions)
+  //  - spring → bouncy playfulness (tap feedback)
+  // Curve (0.22, 1, 0.36, 1) is "easeOutQuint" — decelerates smoothly from a fast start.
   transition: {
-    fast: 'all 150ms ease-in-out',
-    normal: 'all 300ms ease-in-out',
-    slow: 'all 1s ease-in-out',
-    spring: 'all 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+    fast: 'all 180ms cubic-bezier(0.22, 1, 0.36, 1)',
+    normal: 'all 320ms cubic-bezier(0.22, 1, 0.36, 1)',
+    slow: 'all 800ms cubic-bezier(0.22, 1, 0.36, 1)',
+    spring: 'all 360ms cubic-bezier(0.34, 1.56, 0.64, 1)',
   },
 
   breakpoint: {

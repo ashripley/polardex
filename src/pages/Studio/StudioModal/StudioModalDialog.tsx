@@ -100,7 +100,7 @@ const Input = styled.input`
   font-size: ${({ theme }) => theme.typography.size.sm};
   width: 100%;
   box-shadow: 0 0 0 1.5px transparent;
-  transition: box-shadow 150ms ease, background-color 150ms ease;
+  transition: box-shadow 150ms cubic-bezier(0.22, 1, 0.36, 1), background-color 150ms cubic-bezier(0.22, 1, 0.36, 1);
   background-color: ${({ theme }) => theme.color.surface.muted};
   color: ${({ theme }) => theme.color.text.primary};
   box-sizing: border-box;
@@ -143,7 +143,7 @@ const VariantToggle = styled.button<{ $active: boolean }>`
   font-weight: ${({ theme }) => theme.typography.weight.semibold};
   font-family: inherit;
   cursor: pointer;
-  transition: border-color 150ms ease, background 150ms ease, color 150ms ease;
+  transition: border-color 150ms cubic-bezier(0.22, 1, 0.36, 1), background 150ms cubic-bezier(0.22, 1, 0.36, 1), color 150ms cubic-bezier(0.22, 1, 0.36, 1);
 
   &:hover {
     border-color: ${({ theme }) => theme.color.aurora.purple};
@@ -171,21 +171,26 @@ const SelectTrigger = styled(RadixSelect.Trigger)`
   padding: 0 ${({ theme }) => theme.space[3]};
   border: none;
   border-radius: ${({ theme }) => theme.radius.md};
-  background-color: ${({ theme }) => theme.color.surface.muted};
+  background: ${({ theme }) => theme.color.surface.subtle};
+  box-shadow: 0 0 0 1.5px ${({ theme }) => theme.color.surface.border};
   color: ${({ theme }) => theme.color.text.primary};
   font-size: ${({ theme }) => theme.typography.size.sm};
   font-family: inherit;
   cursor: pointer;
   outline: none;
   width: 100%;
-  transition: box-shadow 150ms ease, background-color 150ms ease;
+  transition: box-shadow 150ms cubic-bezier(0.22, 1, 0.36, 1), background-color 150ms cubic-bezier(0.22, 1, 0.36, 1);
   box-sizing: border-box;
 
   &[data-placeholder] { color: ${({ theme }) => theme.color.text.tertiary}; }
 
+  &:hover {
+    box-shadow: 0 0 0 1.5px ${({ theme }) => theme.color.frost.blue};
+    background: ${({ theme }) => theme.color.surface.base};
+  }
   &:focus, &[data-state='open'] {
     box-shadow: 0 0 0 2px ${({ theme }) => theme.color.frost.blue};
-    background-color: ${({ theme }) => theme.color.surface.base};
+    background: ${({ theme }) => theme.color.surface.base};
   }
 `;
 
@@ -223,7 +228,7 @@ const SelectItem = styled(RadixSelect.Item)`
   cursor: pointer;
   outline: none;
   user-select: none;
-  transition: background-color 80ms ease;
+  transition: background-color 80ms cubic-bezier(0.22, 1, 0.36, 1);
 
   &[data-highlighted] { background-color: ${({ theme }) => theme.color.surface.muted}; }
   &[data-state='checked'] {
@@ -282,7 +287,7 @@ const DropdownItem = styled.li`
   padding: ${({ theme }) => `${theme.space[2]} ${theme.space[3]}`};
   border-radius: ${({ theme }) => theme.radius.md};
   cursor: pointer;
-  transition: background-color 80ms ease;
+  transition: background-color 80ms cubic-bezier(0.22, 1, 0.36, 1);
   font-size: ${({ theme }) => theme.typography.size.sm};
   color: ${({ theme }) => theme.color.text.primary};
 
@@ -321,7 +326,7 @@ const PokemonSuggestion = styled.li`
   padding: ${({ theme }) => `${theme.space[2]} ${theme.space[3]}`};
   border-radius: ${({ theme }) => theme.radius.md};
   cursor: pointer;
-  transition: background-color 80ms ease;
+  transition: background-color 80ms cubic-bezier(0.22, 1, 0.36, 1);
   font-size: ${({ theme }) => theme.typography.size.sm};
   color: ${({ theme }) => theme.color.text.primary};
 
@@ -365,7 +370,7 @@ const SetDropdownItem = styled.li`
   padding: ${({ theme }) => `${theme.space[2]} ${theme.space[3]}`};
   border-radius: ${({ theme }) => theme.radius.md};
   cursor: pointer;
-  transition: background-color 80ms ease;
+  transition: background-color 80ms cubic-bezier(0.22, 1, 0.36, 1);
   font-size: ${({ theme }) => theme.typography.size.sm};
   color: ${({ theme }) => theme.color.text.primary};
 
@@ -394,7 +399,7 @@ const StepBtn = styled.button`
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: border-color 120ms ease, background 120ms ease;
+  transition: border-color 120ms cubic-bezier(0.22, 1, 0.36, 1), background 120ms cubic-bezier(0.22, 1, 0.36, 1);
 
   &:hover:not(:disabled) {
     border-color: ${({ theme }) => theme.color.frost.blue};
@@ -465,7 +470,7 @@ const ArtCard = styled(motion.button)<{ $selected: boolean }>`
   background: ${({ theme }) => theme.color.surface.muted};
   box-shadow: ${({ $selected, theme }) =>
     $selected ? `0 0 0 2.5px ${theme.color.frost.blue}` : theme.shadow.sm};
-  transition: box-shadow 150ms ease;
+  transition: box-shadow 150ms cubic-bezier(0.22, 1, 0.36, 1);
 
   &:hover { box-shadow: ${({ theme }) => theme.shadow.md}; }
 `;
@@ -511,7 +516,7 @@ const StockArtButton = styled.button`
   font-size: ${({ theme }) => theme.typography.size.xs};
   font-family: inherit;
   cursor: pointer;
-  transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+  transition: border-color 150ms cubic-bezier(0.22, 1, 0.36, 1), color 150ms cubic-bezier(0.22, 1, 0.36, 1), background 150ms cubic-bezier(0.22, 1, 0.36, 1);
 
   &:hover {
     border-color: ${({ theme }) => theme.color.frost.blue};
@@ -1172,6 +1177,26 @@ export function StudioModalDialog({
               </SearchWrapper>
             </Field>
           </Row>
+
+          {/* Collection status (Owned vs Wanted) */}
+          <Field label='Status'>
+            <VariantToggleRow>
+              <VariantToggle
+                type='button'
+                $active={(cardDraft.status ?? 'owned') === 'owned'}
+                onClick={() => onCardDraftChange({ ...cardDraft, status: 'owned' })}
+              >
+                Owned
+              </VariantToggle>
+              <VariantToggle
+                type='button'
+                $active={cardDraft.status === 'wanted'}
+                onClick={() => onCardDraftChange({ ...cardDraft, status: 'wanted' })}
+              >
+                Wanted
+              </VariantToggle>
+            </VariantToggleRow>
+          </Field>
 
           {/* Print variants */}
           <Field label='Print Variants'>
