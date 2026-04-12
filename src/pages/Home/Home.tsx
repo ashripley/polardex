@@ -1,6 +1,7 @@
 import styled from 'styled-components';
 import {
   WelcomeSection,
+  RecentlyAddedSection,
   FeaturesSection,
   HowItWorksSection,
   DetailSection,
@@ -17,6 +18,7 @@ export function Home() {
   return (
     <Main>
       <WelcomeSection />
+      <RecentlyAddedSection />
       <FeaturesSection />
       <HowItWorksSection />
       <DetailSection />

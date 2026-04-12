@@ -1,10 +1,15 @@
 import styled from 'styled-components';
 import { useMemo, useState, useEffect, useRef, useCallback, memo } from 'react';
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'motion/react';
-import { tapPress, tapPressFirm } from '../../theme/motion';
+import { tapPress, tapPressFirm, easeOut, easeInOut } from '../../theme/motion';
 import { useIsMobile } from '../../utils';
-import { IconPhotoScan, IconX, IconDownload, IconChevronDown, IconChevronLeft, IconChevronRight, IconChevronsLeft, IconChevronsRight, IconLink, IconHeartFilled, IconCheck, IconArrowsSort } from '@tabler/icons-react';
-import { useSearchParams } from 'react-router-dom';
+import { HeroCard, HeroLabel, HeroValue } from '../../components/HeroCard';
+import { Popover } from '../../components/Popover';
+import { useToast } from '../../providers/ToastProvider';
+import { IconFileUpload, IconFileDownload, IconFileExport } from '@tabler/icons-react';
+import { IconPhotoScan, IconX, IconDownload, IconChevronLeft, IconChevronRight, IconChevronsLeft, IconChevronsRight, IconLink, IconHeartFilled, IconCheck, IconArrowsSort } from '@tabler/icons-react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { IconArrowUpRight } from '@tabler/icons-react';
 import { SectionWrapper } from '../Home/sections/sectionStyles';
 import { FilterBar, CollectionsFilters, defaultFilters } from '../../components';
 import { useGetCardsQuery } from '../../api';
@@ -15,6 +20,7 @@ import { CardModel } from '../../api/fetch/card/cardModel';
 import { useAudRate } from '../../hooks/useAudRate';
 import { useCurrency, fmtPrice } from '../../hooks/useCurrency';
 import * as RadixSelect from '@radix-ui/react-select';
+import { SelectTrigger, SelectContent, SelectViewport, SelectItem, SelectChevron } from '../../components/Select';
 
 // ── Shell ─────────────────────────────────────────────────────────────────────
 
@@ -372,7 +378,41 @@ const HeaderActions = styled.div`
   }
 `;
 
-// ── Summary block — unified across viewports ────────────────────────────────
+const MenuItem = styled.button`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.space[3]};
+  width: 100%;
+  padding: ${({ theme }) => `${theme.space[2]} ${theme.space[3]}`};
+  border-radius: ${({ theme }) => theme.radius.md};
+  background: transparent;
+  border: none;
+  color: ${({ theme }) => theme.color.text.primary};
+  font-family: inherit;
+  font-size: ${({ theme }) => theme.typography.size.sm};
+  font-weight: ${({ theme }) => theme.typography.weight.medium};
+  cursor: pointer;
+  text-align: left;
+  transition: background 120ms cubic-bezier(0.22, 1, 0.36, 1);
+
+  &:hover { background: ${({ theme }) => theme.color.surface.muted}; }
+
+  svg {
+    color: ${({ theme }) => theme.color.text.secondary};
+    flex-shrink: 0;
+  }
+`;
+
+const MenuItemHint = styled.span`
+  display: block;
+  font-size: ${({ theme }) => theme.typography.size.xxs};
+  color: ${({ theme }) => theme.color.text.tertiary};
+  font-weight: ${({ theme }) => theme.typography.weight.regular};
+  margin-top: 1px;
+`;
+
+// ── Collections-specific summary chrome ─────────────────────────────────────
+// (the main hero card uses the shared HeroCard primitives)
 
 const Summary = styled(motion.div)`
   display: flex;
@@ -381,68 +421,11 @@ const Summary = styled(motion.div)`
   margin-top: ${({ theme }) => theme.space[4]};
 `;
 
-const SummaryCard = styled.div`
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.space[2]};
-  padding: ${({ theme }) => `${theme.space[4]} ${theme.space[5]}`};
-  border-radius: ${({ theme }) => theme.radius.xl};
-  background: linear-gradient(135deg,
-    ${({ theme }) => `${theme.color.frost.teal}14`} 0%,
-    ${({ theme }) => `${theme.color.frost.blue}14`} 100%);
-  border: 1.5px solid ${({ theme }) => `${theme.color.frost.teal}40`};
-  backdrop-filter: blur(10px);
-  overflow: hidden;
-
-  /* Subtle radial accent in the corner */
-  &::before {
-    content: '';
-    position: absolute;
-    top: -40%;
-    right: -10%;
-    width: 50%;
-    height: 180%;
-    background: radial-gradient(
-      circle,
-      ${({ theme }) => `${theme.color.frost.teal}22`} 0%,
-      transparent 70%
-    );
-    pointer-events: none;
-  }
-
-  @media (min-width: calc(${({ theme }) => theme.breakpoint.mobile} + 1px)) {
-    padding: ${({ theme }) => `${theme.space[6]} ${theme.space[8]}`};
-    gap: ${({ theme }) => theme.space[3]};
-  }
-`;
-
-const SummaryLabel = styled.span`
-  font-size: ${({ theme }) => theme.typography.size.xxs};
-  font-weight: ${({ theme }) => theme.typography.weight.bold};
-  color: ${({ theme }) => theme.color.text.secondary};
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-`;
-
 const SummaryValueRow = styled.div`
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: ${({ theme }) => theme.space[3]};
-`;
-
-const SummaryValue = styled.span`
-  font-size: 1.75rem;
-  font-weight: ${({ theme }) => theme.typography.weight.bold};
-  color: ${({ theme }) => theme.color.text.primary};
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
-  line-height: 1;
-
-  @media (min-width: calc(${({ theme }) => theme.breakpoint.mobile} + 1px)) {
-    font-size: 2.5rem;
-  }
 `;
 
 // On desktop, currency/export live in the page header so we hide them inside
@@ -615,6 +598,26 @@ const WishlistBadge = styled.span`
   text-transform: uppercase;
 `;
 
+const DetailLink = styled(Link)`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: ${({ theme }) => `${theme.space[1]} ${theme.space[3]}`};
+  border-radius: ${({ theme }) => theme.radius.full};
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  font-size: ${({ theme }) => theme.typography.size.xs};
+  font-weight: ${({ theme }) => theme.typography.weight.medium};
+  text-decoration: none;
+  backdrop-filter: blur(6px);
+  transition: background 150ms cubic-bezier(0.22, 1, 0.36, 1), border-color 150ms cubic-bezier(0.22, 1, 0.36, 1);
+  &:hover {
+    background: rgba(255, 255, 255, 0.18);
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+`;
+
 const ShareBtn = styled(motion.button)`
   display: inline-flex;
   align-items: center;
@@ -730,81 +733,6 @@ const CurrencyToggle = styled.button<{ $active: boolean }>`
   }
 `;
 
-const SelectTrigger = styled(RadixSelect.Trigger)`
-  display: inline-flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.space[2]};
-  height: 2.25rem;
-  padding: 0 ${({ theme }) => theme.space[3]};
-  border: none;
-  border-radius: ${({ theme }) => theme.radius.full};
-  background: ${({ theme }) => theme.color.surface.subtle};
-  box-shadow: 0 0 0 1.5px ${({ theme }) => theme.color.surface.border};
-  color: ${({ theme }) => theme.color.text.primary};
-  font-size: ${({ theme }) => theme.typography.size.sm};
-  font-family: inherit;
-  font-weight: ${({ theme }) => theme.typography.weight.medium};
-  cursor: pointer;
-  outline: none;
-  white-space: nowrap;
-  transition: box-shadow 150ms cubic-bezier(0.22, 1, 0.36, 1), background 150ms cubic-bezier(0.22, 1, 0.36, 1);
-
-  &:hover {
-    box-shadow: 0 0 0 1.5px ${({ theme }) => theme.color.frost.blue};
-    background: ${({ theme }) => theme.color.surface.base};
-  }
-  &[data-state='open'] {
-    box-shadow: 0 0 0 2px ${({ theme }) => theme.color.frost.blue};
-    background: ${({ theme }) => theme.color.surface.base};
-  }
-
-  @media (max-width: ${({ theme }) => theme.breakpoint.mobile}) {
-    width: 100%;
-    justify-content: space-between;
-    border-radius: ${({ theme }) => theme.radius.md};
-  }
-`;
-
-const SelectContent = styled(RadixSelect.Content)`
-  overflow: hidden;
-  background: ${({ theme }) => theme.color.surface.base};
-  border: 1.5px solid ${({ theme }) => theme.color.surface.border};
-  border-radius: ${({ theme }) => theme.radius.lg};
-  box-shadow: ${({ theme }) => theme.shadow.lg};
-  z-index: ${({ theme }) => theme.zIndex.modal};
-  min-width: var(--radix-select-trigger-width);
-  animation: popIn 130ms cubic-bezier(0.16, 1, 0.3, 1);
-
-  @keyframes popIn {
-    from { opacity: 0; transform: translateY(-6px) scale(0.97); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
-  }
-`;
-
-const SelectViewport = styled(RadixSelect.Viewport)`
-  padding: ${({ theme }) => theme.space[1]};
-`;
-
-const SelectItem = styled(RadixSelect.Item)`
-  display: flex;
-  align-items: center;
-  padding: ${({ theme }) => `${theme.space[2]} ${theme.space[3]}`};
-  border-radius: ${({ theme }) => theme.radius.md};
-  font-size: ${({ theme }) => theme.typography.size.sm};
-  font-family: inherit;
-  color: ${({ theme }) => theme.color.text.primary};
-  cursor: pointer;
-  outline: none;
-  user-select: none;
-  transition: background 80ms cubic-bezier(0.22, 1, 0.36, 1);
-
-  &[data-highlighted] { background: ${({ theme }) => theme.color.surface.muted}; }
-  &[data-state='checked'] {
-    color: ${({ theme }) => theme.color.frost.blue};
-    font-weight: ${({ theme }) => theme.typography.weight.semibold};
-  }
-`;
-
 // ── Tilt card wrapper ─────────────────────────────────────────────────────────
 
 type PriceTier = 'normal' | 'high' | 'ultra' | 'missing';
@@ -898,7 +826,7 @@ const TiltArtCard = memo(function TiltArtCard({ card, imgUrl, artLoading, price,
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -4, boxShadow: '0 20px 56px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.12)' }}
-      transition={{ duration: 0.22, delay: Math.min(index * 0.025, 0.4), ease: 'easeOut' }}
+      transition={{ duration: 0.22, delay: Math.min(index * 0.025, 0.4), ease: easeOut }}
       onClick={onClick}
     >
       {/* Skeleton — always shown until the content layer reveals itself. */}
@@ -956,7 +884,52 @@ const TiltArtCard = memo(function TiltArtCard({ card, imgUrl, artLoading, price,
   );
 });
 
-// ── CSV export ────────────────────────────────────────────────────────────────
+// ── Export / import ──────────────────────────────────────────────────────────
+
+/**
+ * Lossless JSON backup of the full collection. Round-trips via `importCollectionJson`.
+ * Version field lets us migrate between schemas if CardModel shape changes.
+ */
+function exportCollectionJson(cards: CardModel[]) {
+  const payload = {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    count: cards.length,
+    cards,
+  };
+  const json = JSON.stringify(payload, null, 2);
+  const blob = new Blob([json], { type: 'application/json;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `polardex-backup-${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * Read a JSON file picked by the user, validate its shape, and merge the cards
+ * back into Firestore via saveCard. Returns the count of imported cards, or
+ * throws on validation failure so the caller can surface a toast.
+ */
+async function importCollectionJson(file: File): Promise<number> {
+  const text = await file.text();
+  const parsed = JSON.parse(text) as { cards?: unknown };
+  if (!parsed || typeof parsed !== 'object' || !Array.isArray(parsed.cards)) {
+    throw new Error('Not a valid Polardex backup');
+  }
+  const cardsToImport = parsed.cards as CardModel[];
+  // Light validation — same shape check as useGetCardsQuery's guard
+  const valid = cardsToImport.filter(
+    (c) => c?.cardId && c?.pokemonData?.name && c?.attributes?.set,
+  );
+  // Import sequentially so a failure stops us mid-merge rather than
+  // leaving the Firestore doc partially updated.
+  for (const card of valid) {
+    await saveCard(card);
+  }
+  return valid.length;
+}
 
 function exportCollectionCsv(cards: CardModel[], audRate: number) {
   const headers = ['Name', 'Type', 'Set', 'Rarity', 'Condition', 'Quantity', 'Variants', 'Market Price (USD)', 'Market Price (AUD)', 'TCG ID'];
@@ -1009,17 +982,65 @@ const PAGE_SIZE = 48;
 
 export function Collections() {
   const { cards, loading } = useGetCardsQuery();
-  const [filters, setFilters] = useState<CollectionsFilters>(defaultFilters);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Initial state is hydrated from URL params so filters/sort/page survive
+  // refresh and can be bookmarked/shared.
+  const [filters, setFilters] = useState<CollectionsFilters>(() => ({
+    search: searchParams.get('q') ?? defaultFilters.search,
+    set: searchParams.get('set') ?? defaultFilters.set,
+    condition: searchParams.get('cond') ?? defaultFilters.condition,
+    type: searchParams.get('type') ?? defaultFilters.type,
+  }));
   const [selected, setSelected] = useState<CardModel | null>(null);
-  const [sort, setSort] = useState<SortKey>('default');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [statusFilter, setStatusFilter] = useState<'all' | 'owned' | 'wanted'>('all');
+  const [sort, setSort] = useState<SortKey>(
+    () => (searchParams.get('sort') as SortKey) || 'default',
+  );
+  const [currentPage, setCurrentPage] = useState(() => {
+    const raw = Number(searchParams.get('page'));
+    return Number.isFinite(raw) && raw > 0 ? raw : 1;
+  });
+  const [statusFilter, setStatusFilter] = useState<'all' | 'owned' | 'wishlist'>(() => {
+    const v = searchParams.get('status');
+    return v === 'owned' || v === 'wishlist' ? v : 'all';
+  });
+
+  // URL → state sync for status: external navigation (e.g., the command
+  // palette's "Show Wishlist" item) only mutates searchParams, so useState's
+  // initializer doesn't re-run. Without this, /collections?status=wishlist
+  // lands but the tab stays on "All".
+  useEffect(() => {
+    const v = searchParams.get('status');
+    const next = v === 'owned' || v === 'wishlist' ? v : 'all';
+    if (next !== statusFilter) setStatusFilter(next);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
   const [copied, setCopied] = useState(false);
   const audRate = useAudRate();
   const { currency, toggle: toggleCurrency } = useCurrency();
-  const [searchParams, setSearchParams] = useSearchParams();
   const isMobile = useIsMobile();
   const gridTopRef = useRef<HTMLDivElement>(null);
+
+  // Sync state → URL search params so back/forward and refresh preserve the
+  // user's view. We build the params from scratch each time, preserving only
+  // the `?card=` deep-link param used by the lightbox share feature.
+  useEffect(() => {
+    const next = new URLSearchParams();
+    const sharedCard = searchParams.get('card');
+    if (sharedCard) next.set('card', sharedCard);
+    if (filters.search) next.set('q', filters.search);
+    if (filters.set) next.set('set', filters.set);
+    if (filters.condition) next.set('cond', filters.condition);
+    if (filters.type) next.set('type', filters.type);
+    if (sort !== 'default') next.set('sort', sort);
+    if (statusFilter !== 'all') next.set('status', statusFilter);
+    if (currentPage > 1) next.set('page', String(currentPage));
+    // Only write if something actually changed — avoids redundant history pushes.
+    if (next.toString() !== searchParams.toString()) {
+      setSearchParams(next, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters, sort, statusFilter, currentPage]);
 
   // Live market prices
   const tcgIds = useMemo(
@@ -1073,12 +1094,12 @@ export function Collections() {
   // Counts per status (derived before search/filter is applied — reflects totals)
   const statusCounts = useMemo(() => {
     let owned = 0;
-    let wanted = 0;
+    let wishlist = 0;
     for (const c of cards) {
-      if ((c.status ?? 'owned') === 'wanted') wanted++;
+      if ((c.status ?? 'owned') === 'wishlist') wishlist++;
       else owned++;
     }
-    return { all: cards.length, owned, wanted };
+    return { all: cards.length, owned, wishlist };
   }, [cards]);
 
   // Art lookup for all card names
@@ -1088,17 +1109,24 @@ export function Collections() {
   );
   const { artMap, loading: artLoading } = useTcgArtLookup(cardNames, true);
 
-  // Total collection value (sum of usd market price × quantity)
-  const collectionValueUsd = useMemo(() => {
-    let total = 0;
+  // Totals keyed by status — the hero card picks which one to show based on
+  // the active status tab (all / owned / wishlist) so the headline number
+  // always matches what's being filtered.
+  const valueByStatus = useMemo(() => {
+    let owned = 0;
+    let wishlist = 0;
     for (const c of cards) {
       const id = c.attributes.tcgId;
       if (!id) continue;
       const p = priceMap.get(id);
-      if (p) total += p * (c.quantity ?? 1);
+      if (!p) continue;
+      const line = p * (c.quantity ?? 1);
+      if ((c.status ?? 'owned') === 'wishlist') wishlist += line;
+      else owned += line;
     }
-    return total;
+    return { owned, wishlist, all: owned + wishlist };
   }, [cards, priceMap]);
+  const collectionValueUsd = valueByStatus[statusFilter];
 
   // Reset to page 1 when filters, sort, or status tab change
   useEffect(() => {
@@ -1162,7 +1190,7 @@ export function Collections() {
   const [marking, setMarking] = useState(false);
 
   const markSelectedAsOwned = useCallback(async () => {
-    if (!selected || selected.status !== 'wanted') return;
+    if (!selected || selected.status !== 'wishlist') return;
     setMarking(true);
     try {
       // Promote in-place — preserve cardId, createdAt, attributes etc.
@@ -1197,15 +1225,38 @@ export function Collections() {
     [artMap],
   );
 
+  const { toast } = useToast();
+  const importInputRef = useRef<HTMLInputElement>(null);
+
+  const onImportFileChosen = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      // Reset so picking the same file again re-fires
+      e.target.value = '';
+      try {
+        const count = await importCollectionJson(file);
+        toast({
+          message: `Imported ${count} card${count !== 1 ? 's' : ''}`,
+          tone: 'success',
+        });
+      } catch (err) {
+        toast({
+          message: (err as Error).message || 'Import failed',
+          tone: 'error',
+        });
+      }
+    },
+    [toast],
+  );
+
   // Sort control JSX (shared between desktop row and mobile filter drawer)
   const sortSelect = (
     <RadixSelect.Root value={sort} onValueChange={(v) => setSort(v as SortKey)}>
-      <SelectTrigger aria-label='Sort cards'>
+      <SelectTrigger $variant='pill' aria-label='Sort cards'>
         <IconArrowsSort size={14} stroke={2} style={{ opacity: 0.7 }} />
         <RadixSelect.Value />
-        <RadixSelect.Icon style={{ display: 'flex', opacity: 0.45 }}>
-          <IconChevronDown size={12} stroke={2} />
-        </RadixSelect.Icon>
+        <SelectChevron />
       </SelectTrigger>
       <RadixSelect.Portal>
         <SelectContent position='popper' sideOffset={6}>
@@ -1235,7 +1286,7 @@ export function Collections() {
               <HeaderActions>
                 {!isMobile && cards.length > 0 && (
                   <StatusTabs role='tablist' aria-label='Collection status'>
-                    {(['all', 'owned', 'wanted'] as const).map((key) => (
+                    {(['all', 'owned', 'wishlist'] as const).map((key) => (
                       <StatusTab
                         key={key}
                         role='tab'
@@ -1252,7 +1303,7 @@ export function Collections() {
                         <span style={{ position: 'relative', zIndex: 1 }}>
                           {key === 'all' && `All · ${statusCounts.all}`}
                           {key === 'owned' && `Owned · ${statusCounts.owned}`}
-                          {key === 'wanted' && `Wanted · ${statusCounts.wanted}`}
+                          {key === 'wishlist' && `Wishlist · ${statusCounts.wishlist}`}
                         </span>
                       </StatusTab>
                     ))}
@@ -1261,12 +1312,58 @@ export function Collections() {
                 <CurrencyToggle $active={currency === 'AUD'} onClick={toggleCurrency} title='Toggle currency'>
                   {currency}
                 </CurrencyToggle>
-                {cards.length > 0 && (
-                  <ActionBtn onClick={() => exportCollectionCsv(cards, audRate)} title='Export to CSV'>
-                    <IconDownload size={14} stroke={2} />
-                    Export
-                  </ActionBtn>
-                )}
+                <Popover
+                  align='right'
+                  maxWidth='18rem'
+                  trigger={({ onClick, isOpen }) => (
+                    <ActionBtn
+                      onClick={onClick}
+                      aria-haspopup='menu'
+                      aria-expanded={isOpen}
+                      title='Backup and restore'
+                    >
+                      <IconFileExport size={14} stroke={2} />
+                      Data
+                    </ActionBtn>
+                  )}
+                >
+                  {cards.length > 0 && (
+                    <>
+                      <MenuItem
+                        onClick={() => exportCollectionCsv(cards, audRate)}
+                      >
+                        <IconDownload size={16} stroke={2} />
+                        <div>
+                          Export as CSV
+                          <MenuItemHint>For spreadsheets</MenuItemHint>
+                        </div>
+                      </MenuItem>
+                      <MenuItem
+                        onClick={() => exportCollectionJson(cards)}
+                      >
+                        <IconFileDownload size={16} stroke={2} />
+                        <div>
+                          Export as JSON
+                          <MenuItemHint>Full lossless backup</MenuItemHint>
+                        </div>
+                      </MenuItem>
+                    </>
+                  )}
+                  <MenuItem onClick={() => importInputRef.current?.click()}>
+                    <IconFileUpload size={16} stroke={2} />
+                    <div>
+                      Import JSON backup
+                      <MenuItemHint>Merge cards into collection</MenuItemHint>
+                    </div>
+                  </MenuItem>
+                </Popover>
+                <input
+                  ref={importInputRef}
+                  type='file'
+                  accept='application/json'
+                  onChange={onImportFileChosen}
+                  style={{ display: 'none' }}
+                />
               </HeaderActions>
             </PageHeaderRow>
 
@@ -1280,14 +1377,20 @@ export function Collections() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ type: 'spring', stiffness: 260, damping: 26, delay: 0.05 }}
               >
-                <SummaryCard>
-                  <SummaryLabel>Total value</SummaryLabel>
+                <HeroCard accent='teal' noAnimation>
+                  <HeroLabel>
+                    {statusFilter === 'wishlist'
+                      ? 'Wishlist value'
+                      : statusFilter === 'owned'
+                        ? 'Owned value'
+                        : 'Total value'}
+                  </HeroLabel>
                   <SummaryValueRow>
-                    <SummaryValue>
+                    <HeroValue>
                       {collectionValueUsd > 0
                         ? fmtPrice(collectionValueUsd, currency, audRate)
                         : '—'}
-                    </SummaryValue>
+                    </HeroValue>
                     <SummaryActionsMobile>
                       <CurrencyToggle
                         $active={currency === 'AUD'}
@@ -1306,20 +1409,20 @@ export function Collections() {
                     </SummaryActionsMobile>
                   </SummaryValueRow>
                   <SummaryMetaRow>
-                    <span>{cards.length} card{cards.length !== 1 ? 's' : ''}</span>
+                    <span>{statusCounts.owned} owned</span>
                     <SummaryMetaDot />
                     <span>{setOptions.length} set{setOptions.length !== 1 ? 's' : ''}</span>
-                    {statusCounts.wanted > 0 && (
+                    {statusCounts.wishlist > 0 && (
                       <>
                         <SummaryMetaDot />
-                        <span>{statusCounts.wanted} wanted</span>
+                        <span>{statusCounts.wishlist} wishlist</span>
                       </>
                     )}
                   </SummaryMetaRow>
-                </SummaryCard>
+                </HeroCard>
                 {isMobile && (
                   <StatusTabs role='tablist' aria-label='Collection status'>
-                    {(['all', 'owned', 'wanted'] as const).map((key) => (
+                    {(['all', 'owned', 'wishlist'] as const).map((key) => (
                       <StatusTab
                         key={key}
                         role='tab'
@@ -1336,7 +1439,7 @@ export function Collections() {
                         <span style={{ position: 'relative', zIndex: 1 }}>
                           {key === 'all' && `All · ${statusCounts.all}`}
                           {key === 'owned' && `Owned · ${statusCounts.owned}`}
-                          {key === 'wanted' && `Wanted · ${statusCounts.wanted}`}
+                          {key === 'wishlist' && `Wishlist · ${statusCounts.wishlist}`}
                         </span>
                       </StatusTab>
                     ))}
@@ -1364,7 +1467,7 @@ export function Collections() {
                   <ArtCardItem
                     key={i}
                     animate={{ opacity: [0.35, 0.65, 0.35] }}
-                    transition={{ duration: 1.4, repeat: Infinity, delay: (i % 8) * 0.1, ease: 'easeInOut' }}
+                    transition={{ duration: 1.4, repeat: Infinity, delay: (i % 8) * 0.1, ease: easeInOut }}
                   >
                     <ArtCardSkeleton />
                   </ArtCardItem>
@@ -1382,7 +1485,7 @@ export function Collections() {
             ) : filteredCards.length === 0 ? (
               <div key='empty' style={{ display: 'grid' }}>
                 <EmptyState>
-                  {statusFilter === 'wanted' && statusCounts.wanted === 0 ? (
+                  {statusFilter === 'wishlist' && statusCounts.wishlist === 0 ? (
                     <>
                       <span>Your wishlist is empty.</span>
                       <span style={{ fontSize: '0.9em', opacity: 0.7, textAlign: 'center', maxWidth: '24rem' }}>
@@ -1554,7 +1657,7 @@ export function Collections() {
                   transition={{ delay: 0.1, duration: 0.25 }}
                 >
                   <LightboxName>{selected.pokemonData.name}</LightboxName>
-                  {selected.status === 'wanted' && (
+                  {selected.status === 'wishlist' && (
                     <div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'center' }}>
                       <WishlistBadge>
                         <IconHeartFilled size={11} />
@@ -1578,7 +1681,7 @@ export function Collections() {
                       {tags.map((tag) => <Tag key={tag}>{tag}</Tag>)}
                     </LightboxTags>
                   )}
-                  {selected.status === 'wanted' && (
+                  {selected.status === 'wishlist' && (
                     <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'center' }}>
                       <MarkOwnedBtn
                         onClick={markSelectedAsOwned}
@@ -1591,8 +1694,18 @@ export function Collections() {
                       </MarkOwnedBtn>
                     </div>
                   )}
+                  <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                    <DetailLink
+                      to={`/collections/${encodeURIComponent(selected.cardId)}`}
+                      onClick={closeLightbox}
+                      className='icon-arr-r'
+                    >
+                      View full details
+                      <IconArrowUpRight size={13} stroke={2} />
+                    </DetailLink>
+                  </div>
                   {selected.attributes.tcgId && (
-                    <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'center' }}>
+                    <div style={{ marginTop: '0.5rem', display: 'flex', justifyContent: 'center' }}>
                       <ShareBtn
                         onClick={copyShareLink}
                         whileTap={tapPress}

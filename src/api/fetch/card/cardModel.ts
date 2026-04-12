@@ -8,8 +8,9 @@ export interface CardModel {
   pokemonData: PokemonModel;
   createdAt?: number;    // ms since epoch, set on first save
   updatedAt?: number;    // ms since epoch, set on every save
-  status?: 'owned' | 'wanted';  // defaults to 'owned' when absent
+  status?: 'owned' | 'wishlist';  // defaults to 'owned' when absent
   manualOrder?: number;  // user-drag-reorder index in Studio
+  notes?: string;        // free-form personal notes (e.g. "PSA 9", "gift from Tom")
   meta?: unknown;
 }
 

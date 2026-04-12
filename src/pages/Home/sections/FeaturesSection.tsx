@@ -1,6 +1,7 @@
 import styled from 'styled-components';
 import { useRef } from 'react';
 import { motion, useInView } from 'motion/react';
+import { easeOut } from '../../../theme/motion';
 import {
   IconCards,
   IconSparkles,
@@ -168,7 +169,7 @@ const cardVariants = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.55, ease: 'easeOut' as const },
+    transition: { duration: 0.55, ease: easeOut },
   },
 };
 
@@ -213,7 +214,7 @@ export function FeaturesSection() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
+          transition={{ duration: 0.5, ease: easeOut }}
         >
           <Header>
             <EyebrowLabel>Everything you need</EyebrowLabel>

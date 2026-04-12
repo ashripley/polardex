@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { useRef } from 'react';
 import { useInView } from 'motion/react';
 import { motion } from 'motion/react';
+import { easeOut } from '../../../theme/motion';
 import { useIsMobile } from '../../../utils';
 import {
   IconPalette,
@@ -205,7 +206,7 @@ const containerVariants = {
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' as const } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: easeOut } },
 };
 
 const cardStackVariants = {
@@ -219,7 +220,7 @@ const cardItemVariants = {
     opacity: 1,
     y: 0,
     scale: 1,
-    transition: { duration: 0.65, ease: 'easeOut' as const },
+    transition: { duration: 0.65, ease: easeOut },
   },
 };
 

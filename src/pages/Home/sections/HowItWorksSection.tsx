@@ -1,6 +1,7 @@
 import styled from 'styled-components';
 import { useRef } from 'react';
 import { motion, useInView } from 'motion/react';
+import { easeOut } from '../../../theme/motion';
 import { IconPlus, IconLayoutGrid, IconStar } from '@tabler/icons-react';
 import { SectionWrapper } from './sectionStyles';
 
@@ -193,7 +194,7 @@ const containerVariants = {
 
 const stepVariants = {
   hidden: { opacity: 0, y: 28 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: 'easeOut' as const } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: easeOut } },
 };
 
 export function HowItWorksSection() {
@@ -233,7 +234,7 @@ export function HowItWorksSection() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
+          transition={{ duration: 0.5, ease: easeOut }}
         >
           <Header>
             <EyebrowLabel>How it works</EyebrowLabel>
@@ -272,7 +273,7 @@ export function HowItWorksSection() {
           ref={factRef}
           initial={{ opacity: 0, y: 24 }}
           animate={isFactInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
-          transition={{ duration: 0.55, ease: 'easeOut' }}
+          transition={{ duration: 0.55, ease: easeOut }}
         >
           <FactStrip>
             <FactText>

@@ -12,6 +12,7 @@ import {
 } from '@tabler/icons-react';
 import * as RadixSelect from '@radix-ui/react-select';
 import { Button } from '../../../components';
+import { tapPress } from '../../../theme/motion';
 import { useGetCardsQuery } from '../../../api';
 import { CardModel } from '../../../api/fetch/card/cardModel';
 import { CardDraft, AttributeDraft } from './StudioModal';
@@ -160,88 +161,16 @@ const Footer = styled.div`
   gap: ${({ theme }) => theme.space[2]};
 `;
 
-// ── Radix Select ──────────────────────────────────────────────────────────────
-
-const SelectTrigger = styled(RadixSelect.Trigger)`
-  display: inline-flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: ${({ theme }) => theme.space[2]};
-  height: 2.5rem;
-  padding: 0 ${({ theme }) => theme.space[3]};
-  border: none;
-  border-radius: ${({ theme }) => theme.radius.md};
-  background: ${({ theme }) => theme.color.surface.subtle};
-  box-shadow: 0 0 0 1.5px ${({ theme }) => theme.color.surface.border};
-  color: ${({ theme }) => theme.color.text.primary};
-  font-size: ${({ theme }) => theme.typography.size.sm};
-  font-family: inherit;
-  cursor: pointer;
-  outline: none;
-  width: 100%;
-  transition: box-shadow 150ms cubic-bezier(0.22, 1, 0.36, 1), background-color 150ms cubic-bezier(0.22, 1, 0.36, 1);
-  box-sizing: border-box;
-
-  &[data-placeholder] { color: ${({ theme }) => theme.color.text.tertiary}; }
-
-  &:hover {
-    box-shadow: 0 0 0 1.5px ${({ theme }) => theme.color.frost.blue};
-    background: ${({ theme }) => theme.color.surface.base};
-  }
-  &:focus, &[data-state='open'] {
-    box-shadow: 0 0 0 2px ${({ theme }) => theme.color.frost.blue};
-    background: ${({ theme }) => theme.color.surface.base};
-  }
-`;
-
-const SelectContent = styled(RadixSelect.Content)`
-  overflow: hidden;
-  background-color: ${({ theme }) => theme.color.surface.base};
-  border: 1.5px solid ${({ theme }) => theme.color.surface.muted};
-  border-radius: ${({ theme }) => theme.radius.lg};
-  box-shadow: ${({ theme }) => theme.shadow.lg};
-  z-index: 200;
-  min-width: var(--radix-select-trigger-width);
-  max-height: 16rem;
-  animation: popIn 150ms cubic-bezier(0.16, 1, 0.3, 1);
-
-  @keyframes popIn {
-    from { opacity: 0; transform: translateY(-4px) scale(0.97); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
-  }
-`;
-
-const SelectViewport = styled(RadixSelect.Viewport)`
-  padding: ${({ theme }) => theme.space[1]};
-`;
-
-const SelectItem = styled(RadixSelect.Item)`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: ${({ theme }) => theme.space[2]};
-  padding: ${({ theme }) => `${theme.space[2]} ${theme.space[3]}`};
-  border-radius: ${({ theme }) => theme.radius.md};
-  font-size: ${({ theme }) => theme.typography.size.sm};
-  font-family: inherit;
-  color: ${({ theme }) => theme.color.text.primary};
-  cursor: pointer;
-  outline: none;
-  user-select: none;
-  transition: background-color 80ms cubic-bezier(0.22, 1, 0.36, 1);
-
-  &[data-highlighted] { background-color: ${({ theme }) => theme.color.surface.muted}; }
-  &[data-state='checked'] {
-    color: ${({ theme }) => theme.color.frost.blue};
-    font-weight: ${({ theme }) => theme.typography.weight.semibold};
-  }
-`;
-
-const CheckIcon = styled(RadixSelect.ItemIndicator)`
-  display: flex;
-  align-items: center;
-  color: ${({ theme }) => theme.color.frost.blue};
-`;
+// Radix Select primitives are imported from the shared component module —
+// there used to be a copy of them here. The local CheckIcon alias is kept
+// for backwards compat with existing JSX call sites.
+import {
+  SelectTrigger,
+  SelectContent,
+  SelectViewport,
+  SelectItem,
+  SelectCheckIndicator as CheckIcon,
+} from '../../../components/Select';
 
 // ── Card search dropdown ───────────────────────────────────────────────────────
 
@@ -1178,7 +1107,7 @@ export function StudioModalDialog({
             </Field>
           </Row>
 
-          {/* Collection status (Owned vs Wanted) */}
+          {/* Collection status (Owned vs Wishlist) */}
           <Field label='Status'>
             <VariantToggleRow>
               <VariantToggle
@@ -1190,10 +1119,10 @@ export function StudioModalDialog({
               </VariantToggle>
               <VariantToggle
                 type='button'
-                $active={cardDraft.status === 'wanted'}
-                onClick={() => onCardDraftChange({ ...cardDraft, status: 'wanted' })}
+                $active={cardDraft.status === 'wishlist'}
+                onClick={() => onCardDraftChange({ ...cardDraft, status: 'wishlist' })}
               >
-                Wanted
+                Wishlist
               </VariantToggle>
             </VariantToggleRow>
           </Field>
@@ -1345,7 +1274,7 @@ export function StudioModalDialog({
                           $selected={cardDraft.tcgImageUrl === result.image}
                           onClick={() => selectArt(result)}
                           whileHover={{ y: -2 }}
-                          whileTap={{ scale: 0.97 }}
+                          whileTap={tapPress}
                           initial={{ opacity: 0, y: 8 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: i * 0.03 }}

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { motion, AnimatePresence } from 'motion/react';
 import { IconCheck, IconX, IconAlertTriangle, IconPlus } from '@tabler/icons-react';
+import { tapPress } from '../../../theme/motion';
 import { toSpriteName } from '../../../utils';
 import { Modal } from '../../../components';
 import { CardModel } from '../../../api/fetch/card/cardModel';
@@ -29,7 +30,7 @@ export interface CardDraft {
   tcgImageUrl: string;
   hasNormal: boolean;
   hasReverseHolo: boolean;
-  status: 'owned' | 'wanted';
+  status: 'owned' | 'wishlist';
 }
 
 export interface AttributeDraft {
@@ -442,15 +443,15 @@ export function StudioModal({ isOpen, onClose, actionType, preselectedCard, pref
     // If the pending draft is for an owned card but the existing record is
     // wishlist-only, promote it — don't leave it as wanted.
     const incomingStatus = pendingDraft?.status ?? 'owned';
-    const nextStatus: 'owned' | 'wanted' =
-      duplicateMatch.status === 'wanted' && incomingStatus === 'owned'
+    const nextStatus: 'owned' | 'wishlist' =
+      duplicateMatch.status === 'wishlist' && incomingStatus === 'owned'
         ? 'owned'
         : duplicateMatch.status ?? 'owned';
     const bumped: CardModel = {
       ...duplicateMatch,
       status: nextStatus,
       // Wishlist entries start at qty 1; don't "double" when promoting
-      quantity: duplicateMatch.status === 'wanted' && incomingStatus === 'owned'
+      quantity: duplicateMatch.status === 'wishlist' && incomingStatus === 'owned'
         ? (pendingDraft?.quantity ?? 1)
         : (duplicateMatch.quantity ?? 1) + (pendingDraft?.quantity ?? 1),
     };
@@ -552,10 +553,10 @@ export function StudioModal({ isOpen, onClose, actionType, preselectedCard, pref
                 <IconAlertTriangle size={32} stroke={2.5} />
               </WarnRing>
               <DupTitle>
-                {duplicateMatch.status === 'wanted' ? 'Already on your wishlist' : 'Duplicate card detected'}
+                {duplicateMatch.status === 'wishlist' ? 'Already on your wishlist' : 'Duplicate card detected'}
               </DupTitle>
               <DupSubtext>
-                {duplicateMatch.status === 'wanted' ? (
+                {duplicateMatch.status === 'wishlist' ? (
                   <>
                     <strong>{duplicateMatch.pokemonData.name}</strong>
                     {duplicateMatch.attributes.set ? <> from <strong>{duplicateMatch.attributes.set}</strong></> : null}
@@ -572,24 +573,24 @@ export function StudioModal({ isOpen, onClose, actionType, preselectedCard, pref
               <DupActions>
                 <DupBtnPrimary
                   onClick={resolveIncrement}
-                  whileTap={{ scale: 0.96 }}
+                  whileTap={tapPress}
                   transition={{ type: 'spring', stiffness: 400, damping: 24 }}
                 >
                   <IconPlus size={14} stroke={2.5} />
-                  {duplicateMatch.status === 'wanted'
+                  {duplicateMatch.status === 'wishlist'
                     ? 'Move to collection'
                     : `Increment to ×${(duplicateMatch.quantity ?? 1) + (pendingDraft?.quantity ?? 1)}`}
                 </DupBtnPrimary>
                 <DupBtnSecondary
                   onClick={resolveAddAnyway}
-                  whileTap={{ scale: 0.96 }}
+                  whileTap={tapPress}
                   transition={{ type: 'spring', stiffness: 400, damping: 24 }}
                 >
                   Add as new
                 </DupBtnSecondary>
                 <DupBtnSecondary
                   onClick={resolveCancel}
-                  whileTap={{ scale: 0.96 }}
+                  whileTap={tapPress}
                   transition={{ type: 'spring', stiffness: 400, damping: 24 }}
                 >
                   Cancel

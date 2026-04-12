@@ -1,7 +1,8 @@
 import { Route, BrowserRouter as Router, Routes, useLocation, useNavigate } from 'react-router-dom';
 import styled, { createGlobalStyle } from 'styled-components';
-import { NavigationBar, PageFooter, PwaInstallBanner } from './components';
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { NavigationBar, PageFooter, PwaInstallBanner, CommandPalette, PriceCheck, Celebrate } from './components';
+import { useKeyboardShortcut, useMilestones } from './hooks';
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './services/firebase.config';
@@ -14,6 +15,9 @@ import { Home } from './pages';
 // because all the page modules use named exports and React.lazy requires default.
 const Collections = lazy(() =>
   import('./pages/Collections/Collections').then((m) => ({ default: m.Collections })),
+);
+const CardDetail = lazy(() =>
+  import('./pages/CardDetail/CardDetail').then((m) => ({ default: m.CardDetail })),
 );
 const Studio = lazy(() =>
   import('./pages/Studio/Studio').then((m) => ({ default: m.Studio })),
@@ -98,6 +102,19 @@ const GlobalStyle = createGlobalStyle`
   /* Close / X — rotate 90° */
   .icon-close:hover svg { transform: rotate(90deg) !important; }
   .icon-close:active svg { transform: rotate(90deg) scale(0.82) !important; }
+
+  /* Respect the user's reduced-motion preference. Motion (framer) already
+     honors it via MotionConfig reducedMotion='user', but raw CSS keyframes
+     and transitions need this fallback. We slam durations to near-zero so
+     animated states still reach their final value without the motion. */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 `;
 
 const AppContainer = styled.div`
@@ -151,6 +168,7 @@ function AnimatedRoutes() {
             <Route path='/'        element={<Home />} />
             <Route path='/home'    element={<Home />} />
             <Route path='/collections' element={<Collections />} />
+            <Route path='/collections/:cardId' element={<CardDetail />} />
             {/* Legacy redirect for old /gallery links */}
             <Route path='/gallery' element={<Collections />} />
             <Route path='/studio'  element={<Studio />} />
@@ -163,6 +181,13 @@ function AnimatedRoutes() {
   );
 }
 
+// Mounted only after auth is ready, so useGetCardsQuery inside useMilestones
+// doesn't run against an unauthenticated Firestore.
+function MilestoneWatcher() {
+  const { celebrate, onDone } = useMilestones();
+  return <Celebrate active={celebrate} onDone={onDone} />;
+}
+
 function AppContent() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
@@ -171,6 +196,26 @@ function AppContent() {
   // Session check: guest flag (sessionStorage) or Firebase auth
   const hasGuestSession = sessionStorage.getItem('polardex_session') === 'true';
   const [sessionReady, setSessionReady] = useState(isStandalone || hasGuestSession);
+
+  // Command palette — ⌘K / Ctrl+K to toggle open, Escape to close
+  const [cmdkOpen, setCmdkOpen] = useState(false);
+  const openCmdk = useCallback(() => setCmdkOpen(true), []);
+  useKeyboardShortcut('k', openCmdk, { meta: true, ignoreInInputs: false });
+
+  // Price check ("Rare Candy") — ⌘P / Ctrl+P
+  const [priceCheckOpen, setPriceCheckOpen] = useState(false);
+  const openPriceCheck = useCallback((e?: KeyboardEvent) => {
+    e?.preventDefault(); // suppress browser's Print dialog
+    setPriceCheckOpen(true);
+  }, []);
+  useKeyboardShortcut('p', openPriceCheck, { meta: true, ignoreInInputs: false });
+
+  // Listen for the cross-component open-price-check event fired by CommandPalette
+  useEffect(() => {
+    const handler = () => setPriceCheckOpen(true);
+    window.addEventListener('polardex:open-price-check', handler);
+    return () => window.removeEventListener('polardex:open-price-check', handler);
+  }, []);
 
   useEffect(() => {
     if (sessionReady) return;
@@ -237,6 +282,9 @@ function AppContent() {
         </Main>
         <PageFooter />
         <PwaInstallBanner />
+        <CommandPalette open={cmdkOpen} onClose={() => setCmdkOpen(false)} />
+        <PriceCheck open={priceCheckOpen} onClose={() => setPriceCheckOpen(false)} />
+        <MilestoneWatcher />
       </AppContainer>
     </MotionConfig>
   );

@@ -1,15 +1,17 @@
-import styled, { useTheme } from 'styled-components';
+import styled from 'styled-components';
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { hoverLiftLg, tapPressSoft, tapPress, tapPressFirm } from '../../theme/motion';
+import { HeroCard, HeroStat, HeroStatValue, HeroStatLabel } from '../../components/HeroCard';
 import { IconSearch, IconPlus, IconX, IconPencil, IconTrash, IconCheck } from '@tabler/icons-react';
 import { toSpriteName } from '../../utils';
 import { SectionWrapper } from '../Home/sections/sectionStyles';
 import { useGetCardsQuery } from '../../api';
-import { removeCard } from '../../api/mutations';
+import { removeCard, saveCard as restoreCard } from '../../api/mutations';
 import { CardModel } from '../../api/fetch/card/cardModel';
 import { useTcgArtLookup } from '../../api/tcg/useTcgArtLookup';
 import { StudioModal } from './StudioModal';
+import { useToast } from '../../providers/ToastProvider';
 
 // ── Shell ─────────────────────────────────────────────────────────────────────
 
@@ -32,70 +34,19 @@ const PageHeader = styled.div`
 
 // ── Hero summary card — unified across viewports ────────────────────────────
 
-const StudioSummaryCard = styled(motion.div)`
+// Studio summary uses HeroCard primitives — see components/HeroCard
+
+const HorizontalStatsRow = styled.div`
   display: flex;
   align-items: center;
-  gap: ${({ theme }) => theme.space[4]};
-  margin: ${({ theme }) => `${theme.space[3]} 0 ${theme.space[4]}`};
-  padding: ${({ theme }) => `${theme.space[4]} ${theme.space[5]}`};
-  border-radius: ${({ theme }) => theme.radius.xl};
-  background: linear-gradient(135deg,
-    ${({ theme }) => `${theme.color.frost.teal}14`} 0%,
-    ${({ theme }) => `${theme.color.frost.blue}14`} 100%);
-  border: 1.5px solid ${({ theme }) => `${theme.color.frost.teal}40`};
-  backdrop-filter: blur(10px);
-  overflow: hidden;
-  position: relative;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: -60%;
-    right: -10%;
-    width: 50%;
-    height: 220%;
-    background: radial-gradient(
-      circle,
-      ${({ theme }) => `${theme.color.frost.teal}22`} 0%,
-      transparent 70%
-    );
-    pointer-events: none;
-  }
-
-  @media (min-width: calc(${({ theme }) => theme.breakpoint.mobile} + 1px)) {
-    padding: ${({ theme }) => `${theme.space[5]} ${theme.space[8]}`};
-    gap: ${({ theme }) => theme.space[8]};
-    margin: ${({ theme }) => `${theme.space[2]} 0 ${theme.space[5]}`};
-  }
-`;
-
-const SummaryStat = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+  gap: ${({ theme }) => theme.space[5]};
   position: relative;
   z-index: 1;
-`;
-
-const SummaryStatValue = styled.span`
-  font-size: 1.5rem;
-  font-weight: ${({ theme }) => theme.typography.weight.bold};
-  color: ${({ theme }) => theme.color.text.primary};
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
-  letter-spacing: -0.02em;
+  width: 100%;
 
   @media (min-width: calc(${({ theme }) => theme.breakpoint.mobile} + 1px)) {
-    font-size: 2.25rem;
+    gap: ${({ theme }) => theme.space[8]};
   }
-`;
-
-const SummaryStatLabel = styled.span`
-  font-size: ${({ theme }) => theme.typography.size.xxs};
-  font-weight: ${({ theme }) => theme.typography.weight.bold};
-  color: ${({ theme }) => theme.color.text.secondary};
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
 `;
 
 const SummaryDivider = styled.div`
@@ -497,7 +448,6 @@ const AddFirstButton = styled(motion.button)`
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function Studio() {
-  const theme = useTheme();
   const { cards, loading } = useGetCardsQuery();
   const cardNames = useMemo(() => cards.map((c) => c.pokemonData.name), [cards]);
   const { artMap } = useTcgArtLookup(cardNames, true);
@@ -510,7 +460,6 @@ export function Studio() {
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [deleting, setDeleting] = useState(false);
-  const [deleteToast, setDeleteToast] = useState<string | null>(null);
 
   const filteredCards = useMemo(() => {
     if (!search.trim()) return cards;
@@ -558,14 +507,24 @@ export function Studio() {
     });
   };
 
+  const { toast } = useToast();
+
   const handleDeleteSelected = async () => {
     if (selectedIds.size === 0) return;
     setDeleting(true);
     const count = selectedIds.size;
+    // Snapshot the full card records so we can restore them if the user hits undo.
+    const snapshot = cards.filter((c) => selectedIds.has(c.cardId));
     try {
       await Promise.all([...selectedIds].map((id) => removeCard(id)));
-      setDeleteToast(`${count} card${count !== 1 ? 's' : ''} deleted`);
-      setTimeout(() => setDeleteToast(null), 3000);
+      toast({
+        message: `${count} card${count !== 1 ? 's' : ''} deleted`,
+        tone: 'success',
+        undo: async () => {
+          await Promise.all(snapshot.map((c) => restoreCard(c)));
+          toast({ message: 'Restored', tone: 'info' });
+        },
+      });
     } finally {
       setDeleting(false);
       setSelectedIds(new Set());
@@ -603,32 +562,29 @@ export function Studio() {
             </HeaderActions>
           </PageHeader>
 
-          {/* Mobile-only hero summary + select-mode toggle */}
           {cards.length > 0 && (
-            <StudioSummaryCard
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ type: 'spring', stiffness: 260, damping: 26, delay: 0.05 }}
-            >
-              <SummaryStat>
-                <SummaryStatValue>{studioStats.totalCount}</SummaryStatValue>
-                <SummaryStatLabel>Cards</SummaryStatLabel>
-              </SummaryStat>
-              <SummaryDivider />
-              <SummaryStat>
-                <SummaryStatValue>{studioStats.setCount}</SummaryStatValue>
-                <SummaryStatLabel>Sets</SummaryStatLabel>
-              </SummaryStat>
-              <MobileSelectIconBtn
-                $active={selectMode}
-                onClick={toggleSelectMode}
-                whileTap={tapPressFirm}
-                aria-label={selectMode ? 'Cancel selection' : 'Select cards'}
-                title={selectMode ? 'Cancel selection' : 'Select cards'}
-              >
-                {selectMode ? <IconX size={16} stroke={2.2} /> : <IconTrash size={16} stroke={2} />}
-              </MobileSelectIconBtn>
-            </StudioSummaryCard>
+            <HeroCard accent='teal'>
+              <HorizontalStatsRow>
+                <HeroStat>
+                  <HeroStatValue>{studioStats.totalCount}</HeroStatValue>
+                  <HeroStatLabel>Cards</HeroStatLabel>
+                </HeroStat>
+                <SummaryDivider />
+                <HeroStat>
+                  <HeroStatValue>{studioStats.setCount}</HeroStatValue>
+                  <HeroStatLabel>Sets</HeroStatLabel>
+                </HeroStat>
+                <MobileSelectIconBtn
+                  $active={selectMode}
+                  onClick={toggleSelectMode}
+                  whileTap={tapPressFirm}
+                  aria-label={selectMode ? 'Cancel selection' : 'Select cards'}
+                  title={selectMode ? 'Cancel selection' : 'Select cards'}
+                >
+                  {selectMode ? <IconX size={16} stroke={2.2} /> : <IconTrash size={16} stroke={2} />}
+                </MobileSelectIconBtn>
+              </HorizontalStatsRow>
+            </HeroCard>
           )}
 
           <SearchWrapper>
@@ -672,7 +628,7 @@ export function Studio() {
                 <DeleteBarActions>
                   <CancelSelectBtn
                     onClick={toggleSelectMode}
-                    whileTap={{ scale: 0.95 }}
+                    whileTap={tapPress}
                   >
                     Cancel
                   </CancelSelectBtn>
@@ -680,7 +636,7 @@ export function Studio() {
                     <DeleteConfirmBtn
                       onClick={handleDeleteSelected}
                       whileHover={{ scale: 1.04 }}
-                      whileTap={{ scale: 0.95 }}
+                      whileTap={tapPress}
                       transition={{ type: 'spring', stiffness: 400, damping: 25 }}
                       style={{ opacity: deleting ? 0.6 : 1 }}
                     >
@@ -702,7 +658,7 @@ export function Studio() {
                   <AddFirstButton
                     onClick={openAdd}
                     whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.97 }}
+                    whileTap={tapPress}
                   >
                     <IconPlus size={14} stroke={2.5} />
                     Add your first card
@@ -714,7 +670,7 @@ export function Studio() {
                   <AddFirstButton
                     onClick={openAdd}
                     whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.97 }}
+                    whileTap={tapPress}
                   >
                     <IconPlus size={14} stroke={2.5} />
                     Add "{search}" to your collection
@@ -800,7 +756,7 @@ export function Studio() {
           initial={{ opacity: 0, y: 24, scale: 0.85 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 24, scale: 0.85 }}
-          whileTap={{ scale: 0.92 }}
+          whileTap={tapPressFirm}
           transition={{ type: 'spring', stiffness: 360, damping: 26 }}
         >
           <IconPlus size={20} stroke={2.5} />
@@ -815,39 +771,6 @@ export function Studio() {
         preselectedCard={preselectedCard}
       />
 
-      <AnimatePresence>
-        {deleteToast && (
-          <motion.div
-            key='delete-toast'
-            initial={{ opacity: 0, y: 16, x: '-50%' }}
-            animate={{ opacity: 1, y: 0, x: '-50%' }}
-            exit={{ opacity: 0, y: 16, x: '-50%' }}
-            transition={{ duration: 0.2 }}
-            style={{
-              position: 'fixed',
-              bottom: '2rem',
-              left: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.75rem',
-              padding: '0.6rem 1.25rem',
-              background: theme.color.surface.base,
-              border: `1.5px solid ${theme.color.surface.border}`,
-              borderRadius: '999px',
-              boxShadow: theme.shadow.lg,
-              fontSize: '0.875rem',
-              fontWeight: 500,
-              color: theme.color.text.secondary,
-              zIndex: 9999,
-              whiteSpace: 'nowrap',
-              pointerEvents: 'none',
-            }}
-          >
-            <IconTrash size={14} stroke={2} />
-            {deleteToast}
-          </motion.div>
-        )}
-      </AnimatePresence>
     </Main>
   );
 }

@@ -66,6 +66,13 @@ export const easeOut = [0.22, 1, 0.36, 1] as const;
 /** Sharp ease-in for exit animations. */
 export const easeIn = [0.4, 0, 1, 1] as const;
 
+/** Symmetric ease-in-out — gentle on both sides. cubic-bezier(0.65, 0, 0.35, 1). */
+export const easeInOut = [0.65, 0, 0.35, 1] as const;
+
+/** Standard stagger delay constants — use these instead of magic numbers. */
+export const STAGGER_DELAY = 0.025;
+export const STAGGER_CAP = 0.4;
+
 /** Standard fade transition — 220ms with the project easing. */
 export const easeFade: Transition = {
   duration: 0.22,

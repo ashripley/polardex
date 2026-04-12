@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
 import styled from 'styled-components';
 import { motion } from 'motion/react';
-import { hoverScale, tapPress } from '../../theme/motion';
+import { hoverScale, tapPress, easeOut } from '../../theme/motion';
+import { HeroCard, HeroLabel, HeroValue } from '../../components/HeroCard';
 import { SectionWrapper } from '../Home/sections/sectionStyles';
 import { useGetCardsQuery } from '../../api';
 import { usePokemonSetsQuery } from '../../api/tcg/usePokemonSetsQuery';
@@ -74,69 +75,7 @@ const CardTitle = styled.h2`
   margin: 0 0 ${({ theme }) => theme.space[4]} 0;
 `;
 
-// ── Hero summary — unified across viewports ─────────────────────────────────
-
-const Hero = styled(motion.div)`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.space[4]};
-  margin-bottom: ${({ theme }) => theme.space[4]};
-  padding: ${({ theme }) => `${theme.space[5]} ${theme.space[5]} ${theme.space[4]}`};
-  border-radius: ${({ theme }) => theme.radius.xl};
-  background: linear-gradient(135deg,
-    ${({ theme }) => `${theme.color.aurora.green}1c`} 0%,
-    ${({ theme }) => `${theme.color.frost.teal}14`} 100%);
-  border: 1.5px solid ${({ theme }) => `${theme.color.aurora.green}40`};
-  backdrop-filter: blur(10px);
-  overflow: hidden;
-  position: relative;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -10%;
-    width: 50%;
-    height: 200%;
-    background: radial-gradient(
-      circle,
-      ${({ theme }) => `${theme.color.aurora.green}22`} 0%,
-      transparent 70%
-    );
-    pointer-events: none;
-  }
-
-  @media (min-width: calc(${({ theme }) => theme.breakpoint.mobile} + 1px)) {
-    padding: ${({ theme }) => `${theme.space[6]} ${theme.space[8]}`};
-    gap: ${({ theme }) => theme.space[5]};
-    margin-bottom: ${({ theme }) => theme.space[5]};
-  }
-`;
-
-const HeroLabel = styled.span`
-  font-size: ${({ theme }) => theme.typography.size.xxs};
-  font-weight: ${({ theme }) => theme.typography.weight.bold};
-  color: ${({ theme }) => theme.color.text.secondary};
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  position: relative;
-  z-index: 1;
-`;
-
-const HeroValue = styled.span`
-  font-size: 2.25rem;
-  font-weight: ${({ theme }) => theme.typography.weight.bold};
-  color: ${({ theme }) => theme.color.text.primary};
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.025em;
-  line-height: 1;
-  position: relative;
-  z-index: 1;
-
-  @media (min-width: calc(${({ theme }) => theme.breakpoint.mobile} + 1px)) {
-    font-size: 3rem;
-  }
-`;
+// Hero card uses the shared HeroCard component — Overview-specific chips below.
 
 const HeroChips = styled.div`
   display: flex;
@@ -370,7 +309,7 @@ function BarChart({
                 $color={colorFn(key)}
                 initial={{ width: 0 }}
                 animate={{ width: `${(count / (setTotal ?? max)) * 100}%` }}
-                transition={{ duration: 0.55, delay: i * 0.04, ease: 'easeOut' }}
+                transition={{ duration: 0.55, delay: i * 0.04, ease: easeOut }}
               />
             </BarTrack>
             <BarCount>{setTotal ? `${count} / ${setTotal}` : count}</BarCount>
@@ -472,12 +411,15 @@ export function Overview() {
     visible: (i: number) => ({ opacity: 1, y: 0, transition: { duration: 0.3, delay: i * 0.07 } }),
   };
 
-  // Collection value — quantity × price, in AUD
+  // Collection value — quantity × price, owned only. Wishlist entries are
+  // tracked but don't contribute to the "what I own" valuation, matching
+  // Collections.tsx so the two pages always agree.
   const collectionValue = useMemo(() => {
     if (!cards.length || !priceMap.size) return null;
     let total = 0;
     let priced = 0;
     for (const card of cards) {
+      if ((card.status ?? 'owned') === 'wishlist') continue;
       const price = card.attributes.tcgId ? priceMap.get(card.attributes.tcgId) : undefined;
       if (price != null) {
         total += price * Math.max(1, Number(card.quantity) || 1);
@@ -485,6 +427,21 @@ export function Overview() {
       }
     }
     return priced > 0 ? { total, priced } : null;
+  }, [cards, priceMap]);
+
+  // Wishlist value — separate running total for "what I still want". Shown
+  // alongside the owned total so users can see the cost of completing.
+  const wishlistValue = useMemo(() => {
+    if (!cards.length || !priceMap.size) return null;
+    let total = 0;
+    let count = 0;
+    for (const card of cards) {
+      if ((card.status ?? 'owned') !== 'wishlist') continue;
+      count++;
+      const price = card.attributes.tcgId ? priceMap.get(card.attributes.tcgId) : undefined;
+      if (price != null) total += price * Math.max(1, Number(card.quantity) || 1);
+    }
+    return count > 0 ? { total, count } : null;
   }, [cards, priceMap]);
 
   // Top 10 most expensive cards by TCGPlayer market price
@@ -554,12 +511,7 @@ export function Overview() {
             </Grid>
           ) : (
             <>
-              {/* Unified hero — same design on mobile and desktop */}
-              <Hero
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ type: 'spring', stiffness: 260, damping: 26, delay: 0.05 }}
-              >
+              <HeroCard accent='green'>
                 <HeroLabel>Estimated value</HeroLabel>
                 <HeroValue>
                   {collectionValue
@@ -585,8 +537,14 @@ export function Overview() {
                       <HeroChipLabel>graded</HeroChipLabel>
                     </HeroChip>
                   )}
+                  {wishlistValue && (
+                    <HeroChip>
+                      <HeroChipValue>{fmtPrice(wishlistValue.total, currency, audRate)}</HeroChipValue>
+                      <HeroChipLabel>wishlist ({wishlistValue.count})</HeroChipLabel>
+                    </HeroChip>
+                  )}
                 </HeroChips>
-              </Hero>
+              </HeroCard>
 
               <Grid>
                 {/* ── Type breakdown ── */}

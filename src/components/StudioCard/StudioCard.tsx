@@ -2,6 +2,7 @@ import { IconPhotoScan } from '@tabler/icons-react';
 import styled from 'styled-components';
 import { spriteUrl, spriteUrlFallback } from '../../utils';
 import { motion } from 'motion/react';
+import { easeOut } from '../../theme/motion';
 import { Card } from '../Card';
 import { SearchField } from '../Input';
 import {
@@ -130,7 +131,7 @@ export function StudioCard(props: StudioCardProps) {
                 src={spriteUrl(pokemonData?.name ?? '')}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3, ease: 'easeOut' as const }}
+                transition={{ duration: 0.3, ease: easeOut }}
                 onError={(e) => {
                   const img = e.target as HTMLImageElement;
                   const fallback = spriteUrlFallback(pokemonData?.name ?? '');

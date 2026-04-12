@@ -1,6 +1,7 @@
 import styled, { keyframes } from 'styled-components';
 import { useRef } from 'react';
 import { motion, useInView } from 'motion/react';
+import { easeOut } from '../../../theme/motion';
 import { SectionWrapper, SectionText, SectionParagraph } from './sectionStyles';
 import { DisplayCard } from '../../../components';
 import { useTheme } from 'styled-components';
@@ -149,12 +150,12 @@ const containerVariants = {
 
 const itemVariants = {
   hidden: { opacity: 0, y: 24 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' as const } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: easeOut } },
 };
 
 const statVariants = {
   hidden: { opacity: 0, scale: 0.85 },
-  visible: { opacity: 1, scale: 1, transition: { duration: 0.5, ease: 'easeOut' as const } },
+  visible: { opacity: 1, scale: 1, transition: { duration: 0.5, ease: easeOut } },
 };
 
 interface Stat {
@@ -191,7 +192,7 @@ export function DetailSection() {
               initial={{ opacity: 0, x: -28 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.65, ease: 'easeOut' as const }}
+              transition={{ duration: 0.65, ease: easeOut }}
             >
               <ImageContainer>
                 <FloatingCard>
@@ -243,7 +244,7 @@ export function DetailSection() {
               initial={{ opacity: 0, x: 28 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.65, ease: 'easeOut' as const }}
+              transition={{ duration: 0.65, ease: easeOut }}
             >
               <ImageContainer>
                 <FloatingCard style={{ animationDelay: '1.2s' }}>
@@ -271,7 +272,7 @@ export function DetailSection() {
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.6, ease: 'easeOut' as const }}
+              transition={{ duration: 0.6, ease: easeOut }}
             >
               <TextContainer>
                 <SectionText>Hunt the rares.</SectionText>

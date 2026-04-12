@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { motion, AnimatePresence } from 'motion/react';
 import { IconDownload, IconX, IconShare2, IconSquarePlus } from '@tabler/icons-react';
+import { tapPress } from '../../theme/motion';
 
 /**
  * The Web-standard `beforeinstallprompt` event isn't typed in lib.dom yet.
@@ -265,7 +266,7 @@ export function PwaInstallBanner() {
           </Body>
           <InstallBtn
             onClick={install}
-            whileTap={{ scale: 0.96 }}
+            whileTap={tapPress}
             transition={{ type: 'spring', stiffness: 400, damping: 24 }}
           >
             <IconDownload size={13} stroke={2.5} />

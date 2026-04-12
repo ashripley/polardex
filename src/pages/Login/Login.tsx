@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import styled, { keyframes, useTheme } from 'styled-components';
 import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from 'motion/react';
+import { easeOut, easeInOut, tapPress } from '../../theme/motion';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../../services/firebase.config';
@@ -377,7 +378,7 @@ const containerVariants = {
 
 const itemVariants = {
   hidden: { opacity: 0, y: 18 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: 'easeOut' as const } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: easeOut } },
 };
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -472,7 +473,7 @@ export function Login() {
                 onHoverStart={() => setLogoHovered(true)}
                 onHoverEnd={() => setLogoHovered(false)}
                 animate={logoHovered ? { rotate: [0, -20, 20, -10, 0], scale: 1.3 } : { rotate: 0, scale: 1 }}
-                transition={{ duration: 0.5, ease: 'easeInOut' }}
+                transition={{ duration: 0.5, ease: easeInOut }}
               >
                 <IconSparkles size={20} />
               </SparkleIcon>
@@ -537,7 +538,7 @@ export function Login() {
                 type='submit'
                 disabled={loading}
                 whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.97 }}
+                whileTap={tapPress}
                 transition={{ type: 'spring', stiffness: 400, damping: 25 }}
               >
                 {loading ? 'Signing in…' : 'Sign In'}
@@ -552,7 +553,7 @@ export function Login() {
                   navigate('/');
                 }}
                 whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.97 }}
+                whileTap={tapPress}
                 transition={{ type: 'spring', stiffness: 400, damping: 25 }}
               >
                 Enter as Guest

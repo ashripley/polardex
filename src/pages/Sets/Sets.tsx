@@ -1,12 +1,22 @@
 import { useState, useMemo, useEffect, useCallback, useRef, memo } from 'react';
+import { useToast } from '../../providers/ToastProvider';
 import styled, { keyframes } from 'styled-components';
 import { motion, AnimatePresence } from 'motion/react';
-import { hoverLiftLg, tapPress, tapPressFirm } from '../../theme/motion';
+import { hoverLiftLg, tapPress, tapPressFirm, tapPressSoft, easeOut, easeInOut } from '../../theme/motion';
 import { useTheme } from 'styled-components';
-import { IconSearch, IconX, IconChevronLeft, IconPackage, IconPlus, IconCheck, IconSortAscending, IconSortDescending, IconRefresh, IconEye, IconHeart, IconHeartFilled } from '@tabler/icons-react';
+import { IconSearch, IconX, IconChevronLeft, IconPackage, IconPlus, IconSortAscending, IconSortDescending, IconRefresh, IconEye, IconHeart, IconHeartFilled } from '@tabler/icons-react';
 import { SectionWrapper } from '../Home/sections/sectionStyles';
 import { usePokemonSetsQuery } from '../../api/tcg/usePokemonSetsQuery';
 import { useUpcomingSetsQuery } from '../../api/tcg/useUpcomingSetsQuery';
+import {
+  HeroCard,
+  HeroStatsRow,
+  HeroStat,
+  HeroStatValue,
+  HeroStatLabel,
+  HeroProgressBar,
+  HeroProgressFill,
+} from '../../components/HeroCard';
 import { usePokemonSetCardsQuery } from '../../api/tcg/usePokemonSetCardsQuery';
 import { useTcgPrices } from '../../api/tcg/useTcgPrices';
 import { useGetCardsQuery } from '../../api';
@@ -32,109 +42,7 @@ const PageHeader = styled.div`
   padding: ${({ theme }) => `${theme.space[6]} 0 ${theme.space[2]}`};
 `;
 
-// Sets summary card — same hero design on both mobile and desktop. Desktop just
-// gets more breathing room (wider padding, larger stat values) but the visual
-// language is identical so the page feels coherent across viewports.
-const SetsSummary = styled(motion.div)`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.space[3]};
-  margin: ${({ theme }) => `${theme.space[3]} 0 ${theme.space[4]}`};
-  padding: ${({ theme }) => `${theme.space[5]} ${theme.space[6]}`};
-  border-radius: ${({ theme }) => theme.radius.xl};
-  background: linear-gradient(135deg,
-    ${({ theme }) => `${theme.color.aurora.purple}14`} 0%,
-    ${({ theme }) => `${theme.color.frost.blue}14`} 100%);
-  border: 1.5px solid ${({ theme }) => `${theme.color.frost.blue}40`};
-  backdrop-filter: blur(10px);
-  overflow: hidden;
-  position: relative;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: -60%;
-    right: -10%;
-    width: 45%;
-    height: 220%;
-    background: radial-gradient(
-      circle,
-      ${({ theme }) => `${theme.color.aurora.purple}22`} 0%,
-      transparent 70%
-    );
-    pointer-events: none;
-  }
-
-  @media (min-width: calc(${({ theme }) => theme.breakpoint.mobile} + 1px)) {
-    /* Desktop tweaks — more breathing room and a slightly tighter top margin
-       since the page header sits directly above. */
-    margin: ${({ theme }) => `${theme.space[2]} 0 ${theme.space[5]}`};
-    padding: ${({ theme }) => `${theme.space[6]} ${theme.space[8]}`};
-    gap: ${({ theme }) => theme.space[4]};
-  }
-`;
-
-const SetsSummaryStatsRow = styled.div`
-  display: flex;
-  align-items: flex-end;
-  gap: ${({ theme }) => theme.space[5]};
-  position: relative;
-  z-index: 1;
-
-  @media (min-width: calc(${({ theme }) => theme.breakpoint.mobile} + 1px)) {
-    gap: ${({ theme }) => theme.space[10]};
-  }
-`;
-
-const SetsSummaryStat = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-`;
-
-const SetsSummaryStatValue = styled.span`
-  font-size: 1.5rem;
-  font-weight: ${({ theme }) => theme.typography.weight.bold};
-  color: ${({ theme }) => theme.color.text.primary};
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
-  letter-spacing: -0.02em;
-
-  @media (min-width: calc(${({ theme }) => theme.breakpoint.mobile} + 1px)) {
-    font-size: 2.25rem;
-  }
-`;
-
-const SetsSummaryStatLabel = styled.span`
-  font-size: ${({ theme }) => theme.typography.size.xxs};
-  font-weight: ${({ theme }) => theme.typography.weight.bold};
-  color: ${({ theme }) => theme.color.text.secondary};
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-`;
-
-const SetsProgressBar = styled.div`
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  height: 6px;
-  border-radius: ${({ theme }) => theme.radius.full};
-  background: ${({ theme }) => theme.color.surface.muted};
-  overflow: hidden;
-
-  @media (min-width: calc(${({ theme }) => theme.breakpoint.mobile} + 1px)) {
-    height: 8px;
-  }
-`;
-
-const SetsProgressFill = styled(motion.div)`
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg,
-    ${({ theme }) => theme.color.frost.teal} 0%,
-    ${({ theme }) => theme.color.frost.blue} 100%);
-  box-shadow: 0 0 8px ${({ theme }) => `${theme.color.frost.blue}66`};
-`;
+// Sets list summary uses the shared HeroCard primitives — see components/HeroCard.
 
 const SyncIconBtn = styled(motion.button)<{ $loading: boolean }>`
   display: none;
@@ -662,41 +570,7 @@ function formatUpcomingDate(iso: string): string {
 
 // ── Set detail hero — unified across viewports ──────────────────────────────
 
-const SetDetailHero = styled(motion.div)`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.space[4]};
-  margin: ${({ theme }) => `${theme.space[2]} 0 ${theme.space[4]}`};
-  padding: ${({ theme }) => `${theme.space[5]} ${theme.space[5]} ${theme.space[4]}`};
-  border-radius: ${({ theme }) => theme.radius.xl};
-  background: linear-gradient(135deg,
-    ${({ theme }) => `${theme.color.frost.deep}1c`} 0%,
-    ${({ theme }) => `${theme.color.frost.blue}1a`} 100%);
-  border: 1.5px solid ${({ theme }) => `${theme.color.frost.blue}40`};
-  backdrop-filter: blur(10px);
-  overflow: hidden;
-  position: relative;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: -60%;
-    right: -10%;
-    width: 50%;
-    height: 220%;
-    background: radial-gradient(
-      circle,
-      ${({ theme }) => `${theme.color.frost.blue}22`} 0%,
-      transparent 70%
-    );
-    pointer-events: none;
-  }
-
-  @media (min-width: calc(${({ theme }) => theme.breakpoint.mobile} + 1px)) {
-    padding: ${({ theme }) => `${theme.space[6]} ${theme.space[8]}`};
-    gap: ${({ theme }) => theme.space[5]};
-  }
-`;
+// Set-detail specific subcomponents — the rest of the hero uses shared HeroCard primitives.
 
 const DetailHeroLogoRow = styled.div`
   display: flex;
@@ -739,7 +613,7 @@ const DetailHeroNameBlock = styled.div`
   gap: 4px;
 `;
 
-const DetailHeroName = styled.h2`
+const DetailHeroName = styled.h1`
   font-size: 1.25rem;
   font-weight: ${({ theme }) => theme.typography.weight.bold};
   color: ${({ theme }) => theme.color.text.primary};
@@ -756,60 +630,6 @@ const DetailHeroSubtitle = styled.span`
   font-size: ${({ theme }) => theme.typography.size.xs};
   color: ${({ theme }) => theme.color.text.secondary};
   font-variant-numeric: tabular-nums;
-`;
-
-const DetailHeroStatsRow = styled.div`
-  display: flex;
-  align-items: flex-end;
-  gap: ${({ theme }) => theme.space[5]};
-  position: relative;
-  z-index: 1;
-`;
-
-const DetailHeroStat = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-`;
-
-const DetailHeroStatValue = styled.span`
-  font-size: 1.4rem;
-  font-weight: ${({ theme }) => theme.typography.weight.bold};
-  color: ${({ theme }) => theme.color.text.primary};
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
-  letter-spacing: -0.02em;
-
-  @media (min-width: calc(${({ theme }) => theme.breakpoint.mobile} + 1px)) {
-    font-size: 2rem;
-  }
-`;
-
-const DetailHeroStatLabel = styled.span`
-  font-size: ${({ theme }) => theme.typography.size.xxs};
-  font-weight: ${({ theme }) => theme.typography.weight.bold};
-  color: ${({ theme }) => theme.color.text.secondary};
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-`;
-
-const DetailHeroProgressBar = styled.div`
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  height: 6px;
-  border-radius: ${({ theme }) => theme.radius.full};
-  background: ${({ theme }) => theme.color.surface.muted};
-  overflow: hidden;
-`;
-
-const DetailHeroProgressFill = styled(motion.div)`
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg,
-    ${({ theme }) => theme.color.frost.teal} 0%,
-    ${({ theme }) => theme.color.frost.blue} 100%);
-  box-shadow: 0 0 10px ${({ theme }) => `${theme.color.frost.blue}66`};
 `;
 
 // Unified back button — same on both viewports, sits above the hero card.
@@ -1280,51 +1100,17 @@ const EmptyBody = styled.p`
   margin: 0;
 `;
 
-// ── Toast ─────────────────────────────────────────────────────────────────────
-
-const Toast = styled(motion.div)`
-  position: fixed;
-  bottom: ${({ theme }) => theme.space[8]};
-  left: 50%;
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.space[3]};
-  padding: ${({ theme }) => `${theme.space[3]} ${theme.space[5]}`};
-  background: ${({ theme }) => theme.color.surface.base};
-  border: 1.5px solid ${({ theme }) => theme.color.surface.border};
-  border-radius: ${({ theme }) => theme.radius.full};
-  box-shadow: ${({ theme }) => theme.shadow.lg};
-  font-size: ${({ theme }) => theme.typography.size.sm};
-  font-weight: ${({ theme }) => theme.typography.weight.medium};
-  color: ${({ theme }) => theme.color.text.primary};
-  z-index: 9999;
-  white-space: nowrap;
-  pointer-events: none;
-`;
-
-const ToastIcon = styled.span`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.25rem;
-  height: 1.25rem;
-  border-radius: 50%;
-  background: ${({ theme }) => theme.color.aurora.green};
-  color: #fff;
-  flex-shrink: 0;
-`;
-
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function Sets() {
   const theme = useTheme();
+  const { toast } = useToast();
   const [search, setSearch] = useState('');
   const [searchMode, setSearchMode] = useState<'sets' | 'pokemon'>('sets');
   const [newestFirst, setNewestFirst] = useState(false);
   const [activeSeries, setActiveSeries] = useState('');
   const [selectedSet, setSelectedSet] = useState<TcgSet | null>(null);
   const [justAddedId, setJustAddedId] = useState<string | null>(null);
-  const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [cardSearch, setCardSearch] = useState('');
   const [pendingCard, setPendingCard] = useState<string | null>(null);
   const [pendingVariant, setPendingVariant] = useState<'normal' | 'alternate' | 'both' | null>(null);
@@ -1385,11 +1171,11 @@ export function Sets() {
   // Wishlist (wanted) cards are tracked separately via `wantedTcgIds` so they
   // don't accidentally render as owned in the set grid.
   const ownedCards = useMemo(
-    () => myCards.filter((c) => (c.status ?? 'owned') !== 'wanted'),
+    () => myCards.filter((c) => (c.status ?? 'owned') !== 'wishlist'),
     [myCards],
   );
   const wantedCards = useMemo(
-    () => myCards.filter((c) => c.status === 'wanted'),
+    () => myCards.filter((c) => c.status === 'wishlist'),
     [myCards],
   );
 
@@ -1420,37 +1206,66 @@ export function Sets() {
 
   const isOnWishlist = (card: TcgCard) => wantedTcgIds.has(card.id);
 
-  const findOwnedCard = (card: TcgCard) =>
-    myCards.find(
-      (c) =>
-        c.attributes.tcgId === card.id ||
-        (!c.attributes.tcgId &&
-          c.pokemonData.name.toLowerCase() === card.name.toLowerCase() &&
-          selectedSet &&
-          c.attributes.set.toLowerCase() === selectedSet.name.toLowerCase())
-    );
+  // O(1) lookup map for owned-card-by-tcg-id. Was a linear scan before — for
+  // a 250-card set with 500+ owned cards in the user's collection that was
+  // O(n²) per render. Memoized on myCards/selectedSet so it's stable across
+  // re-renders of individual card items.
+  const cardByTcgId = useMemo(() => {
+    const map = new Map<string, CardModel>();
+    for (const c of myCards) {
+      if (c.attributes.tcgId) map.set(c.attributes.tcgId, c);
+    }
+    return map;
+  }, [myCards]);
+
+  const cardByNameInSet = useMemo(() => {
+    if (!selectedSet) return new Map<string, CardModel>();
+    const map = new Map<string, CardModel>();
+    const setName = selectedSet.name.toLowerCase();
+    for (const c of myCards) {
+      if (c.attributes.tcgId) continue;
+      if (c.attributes.set.toLowerCase() !== setName) continue;
+      map.set(c.pokemonData.name.toLowerCase(), c);
+    }
+    return map;
+  }, [myCards, selectedSet]);
+
+  const findOwnedCard = useCallback(
+    (card: TcgCard): CardModel | undefined => {
+      return cardByTcgId.get(card.id) ?? cardByNameInSet.get(card.name.toLowerCase());
+    },
+    [cardByTcgId, cardByNameInSet],
+  );
 
   const handleWishlistToggle = useCallback(async (card: TcgCard) => {
     if (isReadOnly) return;
     const existing = findOwnedCard(card);
-    // Already on wishlist — remove it
-    if (existing && existing.status === 'wanted') {
+    // Already on wishlist — remove it with undo
+    if (existing && existing.status === 'wishlist') {
+      const snapshot = existing;
       await removeCard(existing.cardId);
-      setToastMsg(`${card.name} removed from wishlist.`);
-      setTimeout(() => setToastMsg(null), 3000);
+      toast({
+        message: `${card.name} removed from wishlist`,
+        tone: 'info',
+        undo: async () => {
+          await saveCard(snapshot);
+        },
+      });
       return;
     }
     // Already owned — don't overwrite; bail out
-    if (existing && existing.status !== 'wanted') {
-      setToastMsg(`${card.name} is already in your collection.`);
-      setTimeout(() => setToastMsg(null), 3000);
+    if (existing && existing.status !== 'wishlist') {
+      toast({
+        message: `${card.name} is already in your collection`,
+        tone: 'warning',
+      });
       return;
     }
     // Create a new card as wanted
     const setName = selectedSet?.name ?? card.set.name;
     const wanted: CardModel = {
       cardId: generateCardId(),
-      status: 'wanted',
+      status: 'wishlist',
       quantity: 1,
       setNumber: card.number ? parseInt(card.number, 10) || 0 : 0,
       attributes: {
@@ -1473,10 +1288,8 @@ export function Sets() {
       },
     };
     await saveCard(wanted);
-    setToastMsg(`${card.name} added to wishlist!`);
-    setTimeout(() => setToastMsg(null), 3000);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedSet, isReadOnly, myCards]);
+    toast({ message: `${card.name} added to wishlist`, tone: 'success' });
+  }, [selectedSet, isReadOnly, myCards, findOwnedCard, toast]);
 
   const handleQuickAdd = useCallback(async (
     card: TcgCard,
@@ -1498,7 +1311,7 @@ export function Sets() {
     // to owned in-place (preserving its cardId + createdAt) rather than creating
     // a duplicate row. This is the common "I wanted it, now I got it" flow.
     const existingWanted = myCards.find(
-      (c) => c.attributes.tcgId === card.id && c.status === 'wanted',
+      (c) => c.attributes.tcgId === card.id && c.status === 'wishlist',
     );
     if (existingWanted) {
       await saveCard({
@@ -1519,9 +1332,11 @@ export function Sets() {
         },
       });
       setJustAddedId(card.id);
-      setToastMsg(`${card.name} — moved from wishlist to collection!`);
+      toast({
+        message: `${card.name} — moved from wishlist to collection`,
+        tone: 'success',
+      });
       setTimeout(() => setJustAddedId(null), 700);
-      setTimeout(() => setToastMsg(null), 3000);
       return;
     }
 
@@ -1556,11 +1371,9 @@ export function Sets() {
     };
     setJustAddedId(card.id);
     await saveCard(cardModel);
-    setToastMsg(`${card.name} added to your collection!`);
+    toast({ message: `${card.name} added to your collection`, tone: 'success' });
     setTimeout(() => setJustAddedId(null), 700);
-    setTimeout(() => setToastMsg(null), 3000);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedSet, isReadOnly, myCards]);
+  }, [selectedSet, isReadOnly, myCards, toast]);
 
   const getVariantState = (card: CardModel): 'normal' | 'alternate' | 'both' => {
     const v = card.attributes.variants;
@@ -1580,9 +1393,8 @@ export function Sets() {
       quantity: Math.max(owned.quantity ?? 1, 2),
       attributes: { ...owned.attributes, variants: { normal: true, alternate: true } },
     });
-    setToastMsg(`${card.name} — both variants noted!`);
-    setTimeout(() => setToastMsg(null), 3000);
-  }, [myCards, selectedSet, isReadOnly]); // eslint-disable-line react-hooks/exhaustive-deps
+    toast({ message: `${card.name} — both variants noted`, tone: 'success' });
+  }, [isReadOnly, findOwnedCard, toast]);
 
   const handleUpdateQuantity = useCallback(async (card: TcgCard, delta: number) => {
     if (isReadOnly) return;
@@ -1590,13 +1402,17 @@ export function Sets() {
     if (!owned) return;
     const newQty = (owned.quantity ?? 1) + delta;
     if (newQty <= 0) {
+      const snapshot = owned;
       await removeCard(owned.cardId);
-      setToastMsg(`${card.name} removed from your collection.`);
+      toast({
+        message: `${card.name} removed from your collection`,
+        tone: 'info',
+        undo: async () => { await saveCard(snapshot); },
+      });
     } else {
       await saveCard({ ...owned, quantity: newQty });
     }
-    setTimeout(() => setToastMsg(null), 3000);
-  }, [myCards, selectedSet, isReadOnly]);
+  }, [isReadOnly, findOwnedCard, toast]);
 
   const series = useMemo(
     () => ['', ...new Set(sets.map((s) => s.series))],
@@ -1629,7 +1445,7 @@ export function Sets() {
     let possible = 0;
     for (const s of sets) {
       const count = myCards.filter(
-        (c) => c.attributes.set.toLowerCase() === s.name.toLowerCase() && (c.status ?? 'owned') !== 'wanted',
+        (c) => c.attributes.set.toLowerCase() === s.name.toLowerCase() && (c.status ?? 'owned') !== 'wishlist',
       ).length;
       possible += s.total;
       if (count > 0) {
@@ -1696,12 +1512,7 @@ export function Sets() {
                 All Sets
               </DetailBackBtn>
 
-              {/* Unified hero — same design on mobile and desktop */}
-              <SetDetailHero
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ type: 'spring', stiffness: 260, damping: 26, delay: 0.05 }}
-              >
+              <HeroCard accent='blue'>
                 <DetailHeroLogoRow>
                   {selectedSet.images?.logo && (
                     <DetailHeroLogoBubble>
@@ -1715,37 +1526,37 @@ export function Sets() {
                     </DetailHeroSubtitle>
                   </DetailHeroNameBlock>
                 </DetailHeroLogoRow>
-                <DetailHeroStatsRow>
-                  <DetailHeroStat>
-                    <DetailHeroStatValue>{ownedInSet.length}</DetailHeroStatValue>
-                    <DetailHeroStatLabel>Owned</DetailHeroStatLabel>
-                  </DetailHeroStat>
-                  <DetailHeroStat>
-                    <DetailHeroStatValue>{selectedSet.total}</DetailHeroStatValue>
-                    <DetailHeroStatLabel>Total</DetailHeroStatLabel>
-                  </DetailHeroStat>
-                  <DetailHeroStat style={{ marginLeft: 'auto', alignItems: 'flex-end' }}>
-                    <DetailHeroStatValue>
+                <HeroStatsRow>
+                  <HeroStat>
+                    <HeroStatValue>{ownedInSet.length}</HeroStatValue>
+                    <HeroStatLabel>Owned</HeroStatLabel>
+                  </HeroStat>
+                  <HeroStat>
+                    <HeroStatValue>{selectedSet.total}</HeroStatValue>
+                    <HeroStatLabel>Total</HeroStatLabel>
+                  </HeroStat>
+                  <HeroStat style={{ marginLeft: 'auto', alignItems: 'flex-end' }}>
+                    <HeroStatValue>
                       {Math.min(100, Math.round((ownedInSet.length / Math.max(1, selectedSet.total)) * 100))}%
-                    </DetailHeroStatValue>
-                    <DetailHeroStatLabel>Complete</DetailHeroStatLabel>
-                  </DetailHeroStat>
-                </DetailHeroStatsRow>
-                <DetailHeroProgressBar>
-                  <DetailHeroProgressFill
+                    </HeroStatValue>
+                    <HeroStatLabel>Complete</HeroStatLabel>
+                  </HeroStat>
+                </HeroStatsRow>
+                <HeroProgressBar>
+                  <HeroProgressFill
                     initial={{ width: 0 }}
                     animate={{
                       width: `${Math.min(100, Math.round((ownedInSet.length / Math.max(1, selectedSet.total)) * 100))}%`,
                     }}
                     transition={{ type: 'spring', stiffness: 60, damping: 18, delay: 0.2 }}
                   />
-                </DetailHeroProgressBar>
+                </HeroProgressBar>
                 {ownedInSet.length > 0 && setOwnedValue != null && (
                   <DetailHeroSubtitle style={{ position: 'relative', zIndex: 1 }}>
                     Est. value · {fmtPrice(setOwnedValue, currency, audRate)}
                   </DetailHeroSubtitle>
                 )}
-              </SetDetailHero>
+              </HeroCard>
 
               <SearchWrapper>
                 <SearchIcon><IconSearch size={16} stroke={2} /></SearchIcon>
@@ -1916,7 +1727,7 @@ export function Sets() {
                                 }}
                                 initial={{ scale: 1, opacity: 1 }}
                                 animate={{ scale: 1.18, opacity: 0 }}
-                                transition={{ duration: 0.65, ease: 'easeOut' }}
+                                transition={{ duration: 0.65, ease: easeOut }}
                               />
                             )}
                             {/* Bottom action bar: eye (preview) + plus (add) + heart (wishlist) */}
@@ -1961,21 +1772,6 @@ export function Sets() {
             </SectionWrapper>
           </section>
         </Main>
-        <AnimatePresence>
-          {toastMsg && (
-            <Toast
-              key='toast'
-              initial={{ opacity: 0, y: 16, x: '-50%' }}
-              animate={{ opacity: 1, y: 0, x: '-50%' }}
-              exit={{ opacity: 0, y: 16, x: '-50%' }}
-              transition={{ duration: 0.2 }}
-            >
-              <ToastIcon><IconCheck size={10} stroke={3} /></ToastIcon>
-              {toastMsg}
-            </Toast>
-          )}
-        </AnimatePresence>
-
         {/* Card preview lightbox */}
         <AnimatePresence>
           {previewCard && (
@@ -1997,7 +1793,8 @@ export function Sets() {
                 <PreviewCloseBtn
                   className='icon-close'
                   onClick={() => setPreviewCard(null)}
-                  whileTap={{ scale: 0.9 }}
+                  whileTap={tapPressFirm}
+                  aria-label='Close preview'
                 >
                   <IconX size={14} stroke={2.5} />
                 </PreviewCloseBtn>
@@ -2059,35 +1856,30 @@ export function Sets() {
             </SyncIconBtn>
           </PageHeader>
 
-          {/* Mobile-only hero summary */}
           {!setsLoading && setsSummary.total > 0 && (
-            <SetsSummary
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ type: 'spring', stiffness: 260, damping: 26, delay: 0.05 }}
-            >
-              <SetsSummaryStatsRow>
-                <SetsSummaryStat>
-                  <SetsSummaryStatValue>{setsSummary.started}</SetsSummaryStatValue>
-                  <SetsSummaryStatLabel>Started</SetsSummaryStatLabel>
-                </SetsSummaryStat>
-                <SetsSummaryStat>
-                  <SetsSummaryStatValue>{setsSummary.complete}</SetsSummaryStatValue>
-                  <SetsSummaryStatLabel>Complete</SetsSummaryStatLabel>
-                </SetsSummaryStat>
-                <SetsSummaryStat style={{ marginLeft: 'auto' }}>
-                  <SetsSummaryStatValue>{setsSummary.pct}%</SetsSummaryStatValue>
-                  <SetsSummaryStatLabel>Collected</SetsSummaryStatLabel>
-                </SetsSummaryStat>
-              </SetsSummaryStatsRow>
-              <SetsProgressBar>
-                <SetsProgressFill
+            <HeroCard accent='purple'>
+              <HeroStatsRow>
+                <HeroStat>
+                  <HeroStatValue>{setsSummary.started}</HeroStatValue>
+                  <HeroStatLabel>Started</HeroStatLabel>
+                </HeroStat>
+                <HeroStat>
+                  <HeroStatValue>{setsSummary.complete}</HeroStatValue>
+                  <HeroStatLabel>Complete</HeroStatLabel>
+                </HeroStat>
+                <HeroStat style={{ marginLeft: 'auto' }}>
+                  <HeroStatValue>{setsSummary.pct}%</HeroStatValue>
+                  <HeroStatLabel>Collected</HeroStatLabel>
+                </HeroStat>
+              </HeroStatsRow>
+              <HeroProgressBar>
+                <HeroProgressFill
                   initial={{ width: 0 }}
                   animate={{ width: `${setsSummary.pct}%` }}
                   transition={{ type: 'spring', stiffness: 60, damping: 18, delay: 0.2 }}
                 />
-              </SetsProgressBar>
-            </SetsSummary>
+              </HeroProgressBar>
+            </HeroCard>
           )}
 
           <SearchRow>
@@ -2138,7 +1930,7 @@ export function Sets() {
                   key={s || 'all'}
                   $active={activeSeries === s}
                   onClick={() => setActiveSeries(s)}
-                  whileTap={{ scale: 0.93 }}
+                  whileTap={tapPressFirm}
                   transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                 >
                   {s || 'All'}
@@ -2249,7 +2041,7 @@ export function Sets() {
                               style={{ position: 'absolute', inset: 0, borderRadius: 'inherit', border: `3px solid ${theme.color.aurora.green}`, pointerEvents: 'none' }}
                               initial={{ scale: 1, opacity: 1 }}
                               animate={{ scale: 1.18, opacity: 0 }}
-                              transition={{ duration: 0.65, ease: 'easeOut' }}
+                              transition={{ duration: 0.65, ease: easeOut }}
                             />
                           )}
                           {/* Bottom action bar */}
@@ -2310,7 +2102,7 @@ export function Sets() {
                     <UpcomingTitle>
                       <PulseDot
                         animate={{ opacity: [0.5, 1, 0.5], scale: [0.9, 1.1, 0.9] }}
-                        transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+                        transition={{ duration: 1.8, repeat: Infinity, ease: easeInOut }}
                       />
                       Coming soon
                     </UpcomingTitle>
@@ -2348,7 +2140,7 @@ export function Sets() {
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2, delay: Math.min(i * 0.03, 0.5) }}
-                    whileTap={{ scale: 0.985 }}
+                    whileTap={tapPressSoft}
                     onClick={() => setSelectedSet(set)}
                   >
                     <LogoRing pct={pct}>

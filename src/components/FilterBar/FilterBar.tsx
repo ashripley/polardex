@@ -2,15 +2,14 @@ import styled from 'styled-components';
 import {
   IconSearch,
   IconX,
-  IconChevronDown,
-  IconCheck,
   IconAdjustments,
 } from '@tabler/icons-react';
 import { motion, AnimatePresence } from 'motion/react';
-import * as RadixSelect from '@radix-ui/react-select';
+import { easeInOut, tapPress } from '../../theme/motion';
 import { CollectionsFilters, defaultFilters, hasActiveFilters } from './filterTypes';
 import { useState, type ReactNode } from 'react';
 import { Popover } from '../Popover';
+import { SimpleSelect } from '../Select';
 
 export type ViewMode = 'cards' | 'art';
 
@@ -282,133 +281,6 @@ const ClearAllPill = styled(motion.button)`
   &:hover { color: ${({ theme }) => theme.color.aurora.red}; }
 `;
 
-// ── Radix Select (used inside the Filters popover and as the Sort trigger) ──
-
-const SelectTrigger = styled(RadixSelect.Trigger)`
-  display: inline-flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: ${({ theme }) => theme.space[2]};
-  width: 100%;
-  height: ${H};
-  padding: 0 ${({ theme }) => theme.space[3]};
-  border: none;
-  border-radius: ${({ theme }) => theme.radius.md};
-  background: ${({ theme }) => theme.color.surface.subtle};
-  box-shadow: 0 0 0 1.5px ${({ theme }) => theme.color.surface.border};
-  color: ${({ theme }) => theme.color.text.primary};
-  font-size: ${({ theme }) => theme.typography.size.sm};
-  font-family: inherit;
-  font-weight: ${({ theme }) => theme.typography.weight.medium};
-  cursor: pointer;
-  outline: none;
-  text-transform: capitalize;
-  transition:
-    box-shadow 180ms cubic-bezier(0.22, 1, 0.36, 1),
-    background 180ms cubic-bezier(0.22, 1, 0.36, 1);
-
-  &[data-placeholder] { color: ${({ theme }) => theme.color.text.secondary}; }
-  &:hover {
-    box-shadow: 0 0 0 1.5px ${({ theme }) => theme.color.frost.blue};
-    background: ${({ theme }) => theme.color.surface.base};
-  }
-  &[data-state='open'] {
-    box-shadow: 0 0 0 2px ${({ theme }) => theme.color.frost.blue};
-    background: ${({ theme }) => theme.color.surface.base};
-  }
-`;
-
-const SelectContent = styled(RadixSelect.Content)`
-  overflow: hidden;
-  background: ${({ theme }) => theme.color.surface.base};
-  border: 1.5px solid ${({ theme }) => theme.color.surface.border};
-  border-radius: ${({ theme }) => theme.radius.lg};
-  box-shadow: ${({ theme }) => theme.shadow.lg};
-  z-index: ${({ theme }) => theme.zIndex.modal};
-  min-width: var(--radix-select-trigger-width);
-  animation: popIn 130ms cubic-bezier(0.16, 1, 0.3, 1);
-
-  @keyframes popIn {
-    from { opacity: 0; transform: translateY(-6px) scale(0.97); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
-  }
-`;
-
-const SelectViewport = styled(RadixSelect.Viewport)`
-  padding: ${({ theme }) => theme.space[1]};
-  max-height: 280px;
-`;
-
-const SelectItem = styled(RadixSelect.Item)`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: ${({ theme }) => theme.space[2]};
-  padding: ${({ theme }) => `${theme.space[2]} ${theme.space[3]}`};
-  border-radius: ${({ theme }) => theme.radius.md};
-  font-size: ${({ theme }) => theme.typography.size.sm};
-  font-family: inherit;
-  color: ${({ theme }) => theme.color.text.primary};
-  cursor: pointer;
-  outline: none;
-  user-select: none;
-  text-transform: capitalize;
-  transition: background 80ms cubic-bezier(0.22, 1, 0.36, 1);
-
-  &[data-highlighted] { background: ${({ theme }) => theme.color.surface.muted}; }
-  &[data-state='checked'] {
-    color: ${({ theme }) => theme.color.frost.blue};
-    font-weight: ${({ theme }) => theme.typography.weight.semibold};
-  }
-`;
-
-const CheckIndicator = styled(RadixSelect.ItemIndicator)`
-  display: flex;
-  align-items: center;
-  color: ${({ theme }) => theme.color.frost.blue};
-`;
-
-function FilterSelect({
-  value,
-  onValueChange,
-  placeholder,
-  options,
-}: {
-  value: string;
-  onValueChange: (v: string) => void;
-  placeholder: string;
-  options: string[];
-}) {
-  return (
-    <RadixSelect.Root
-      value={value || ''}
-      onValueChange={(v) => onValueChange(v === '__all__' ? '' : v)}
-    >
-      <SelectTrigger>
-        <RadixSelect.Value placeholder={`All ${placeholder.toLowerCase()}s`} />
-        <RadixSelect.Icon style={{ display: 'flex', opacity: 0.5 }}>
-          <IconChevronDown size={12} stroke={2} />
-        </RadixSelect.Icon>
-      </SelectTrigger>
-      <RadixSelect.Portal>
-        <SelectContent position='popper' sideOffset={6}>
-          <SelectViewport>
-            <SelectItem value='__all__'>
-              <RadixSelect.ItemText>{`All ${placeholder.toLowerCase()}s`}</RadixSelect.ItemText>
-            </SelectItem>
-            {options.map((opt) => (
-              <SelectItem key={opt} value={opt}>
-                <RadixSelect.ItemText>{opt}</RadixSelect.ItemText>
-                <CheckIndicator><IconCheck size={12} stroke={2.5} /></CheckIndicator>
-              </SelectItem>
-            ))}
-          </SelectViewport>
-        </SelectContent>
-      </RadixSelect.Portal>
-    </RadixSelect.Root>
-  );
-}
-
 // ── Main component ────────────────────────────────────────────────────────────
 
 export function FilterBar({
@@ -440,7 +312,7 @@ export function FilterBar({
           <SearchIconWrap
             key={searchFocusCount}
             animate={{ rotate: searchFocusCount > 0 ? [0, -12, 10, -6, 0] : 0 }}
-            transition={{ duration: 0.4, ease: 'easeInOut' }}
+            transition={{ duration: 0.4, ease: easeInOut }}
           >
             <IconSearch size={14} stroke={2} />
           </SearchIconWrap>
@@ -461,6 +333,7 @@ export function FilterBar({
                 exit={{ opacity: 0, scale: 0.6 }}
                 transition={{ duration: 0.12 }}
                 onClick={() => update('search', '')}
+                aria-label='Clear search'
               >
                 <IconX size={9} stroke={3} />
               </SearchClearBtn>
@@ -477,7 +350,7 @@ export function FilterBar({
               <PillBtn
                 $active={activeFilterCount > 0 || isOpen}
                 onClick={onClick}
-                whileTap={{ scale: 0.96 }}
+                whileTap={tapPress}
                 aria-haspopup='dialog'
                 aria-expanded={isOpen}
               >
@@ -499,34 +372,37 @@ export function FilterBar({
             </PopoverHeader>
             {setOptions.length > 0 && (
               <FieldRow>
-                <FieldLabel>Set</FieldLabel>
-                <FilterSelect
+                <FieldLabel id='filter-set-label'>Set</FieldLabel>
+                <SimpleSelect
                   value={filters.set}
                   onValueChange={(s) => update('set', s)}
-                  placeholder='Set'
                   options={setOptions}
+                  allLabel='All sets'
+                  ariaLabel='Filter by set'
                 />
               </FieldRow>
             )}
             {conditionOptions.length > 0 && (
               <FieldRow>
-                <FieldLabel>Condition</FieldLabel>
-                <FilterSelect
+                <FieldLabel id='filter-condition-label'>Condition</FieldLabel>
+                <SimpleSelect
                   value={filters.condition}
                   onValueChange={(c) => update('condition', c)}
-                  placeholder='Condition'
                   options={conditionOptions}
+                  allLabel='All conditions'
+                  ariaLabel='Filter by condition'
                 />
               </FieldRow>
             )}
             {typeOptions.length > 0 && (
               <FieldRow>
-                <FieldLabel>Type</FieldLabel>
-                <FilterSelect
+                <FieldLabel id='filter-type-label'>Type</FieldLabel>
+                <SimpleSelect
                   value={filters.type}
                   onValueChange={(t) => update('type', t)}
-                  placeholder='Type'
                   options={typeOptions}
+                  allLabel='All types'
+                  ariaLabel='Filter by type'
                 />
               </FieldRow>
             )}
@@ -551,7 +427,7 @@ export function FilterBar({
               <Chip
                 key={chip.key}
                 onClick={() => update(chip.key, '' as never)}
-                whileTap={{ scale: 0.96 }}
+                whileTap={tapPress}
                 initial={{ opacity: 0, scale: 0.92 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.92 }}
@@ -567,7 +443,7 @@ export function FilterBar({
             ))}
             <ClearAllPill
               onClick={() => onChange({ ...defaultFilters, search: filters.search })}
-              whileTap={{ scale: 0.96 }}
+              whileTap={tapPress}
             >
               Clear all
             </ClearAllPill>

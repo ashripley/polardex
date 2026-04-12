@@ -2,8 +2,15 @@ import { useEffect, useState } from 'react';
 
 const BASE = 'https://api.pokemontcg.io/v2';
 const CHUNK_SIZE = 50;
-const CACHE_KEY = 'polardex_prices_v2';
+const CACHE_KEY = 'polardex_prices_v3';
 const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+
+/**
+ * Rough static EUR→USD conversion. We only use this for the fallback to
+ * Cardmarket prices when TCGPlayer is unavailable. Refreshed occasionally;
+ * good-enough precision for display purposes (vs the user's actual portfolio).
+ */
+const EUR_TO_USD = 1.08;
 
 interface PriceCache {
   prices: Record<string, number>;
@@ -33,26 +40,52 @@ function writeCache(prices: Map<string, number>) {
   }
 }
 
+/**
+ * Picks the best available price for a card. Priority:
+ *   1. TCGPlayer market price (USD) — most relevant for US/AU users
+ *   2. Cardmarket average sell price (EUR) — converted to USD as a fallback
+ *      so cards without TCGPlayer coverage still get a value. Many European
+ *      sets and older runs have cardmarket data but no tcgplayer data.
+ */
 function pickPrice(card: {
   tcgplayer?: {
     prices?: Record<string, { market?: number | null } | undefined>;
   };
+  cardmarket?: {
+    prices?: {
+      averageSellPrice?: number | null;
+      trendPrice?: number | null;
+      avg30?: number | null;
+    };
+  };
 }): number | null {
-  const p = card.tcgplayer?.prices;
-  if (!p) return null;
-  return (
-    p['normal']?.market ??
-    p['holofoil']?.market ??
-    p['reverseHolofoil']?.market ??
-    p['1stEditionHolofoil']?.market ??
-    p['1stEditionNormal']?.market ??
-    null
-  );
+  // 1. TCGPlayer USD
+  const tp = card.tcgplayer?.prices;
+  if (tp) {
+    const usd =
+      tp['normal']?.market ??
+      tp['holofoil']?.market ??
+      tp['reverseHolofoil']?.market ??
+      tp['1stEditionHolofoil']?.market ??
+      tp['1stEditionNormal']?.market ??
+      null;
+    if (usd != null && usd > 0) return usd;
+  }
+
+  // 2. Cardmarket EUR → USD
+  const cm = card.cardmarket?.prices;
+  if (cm) {
+    const eur = cm.averageSellPrice ?? cm.trendPrice ?? cm.avg30 ?? null;
+    if (eur != null && eur > 0) return eur * EUR_TO_USD;
+  }
+
+  return null;
 }
 
 /**
- * Fetches TCGPlayer market prices for the given list of TCG card IDs.
- * Results are cached in localStorage for 24 hours.
+ * Fetches market prices for the given list of TCG card IDs. Uses TCGPlayer
+ * by default and falls back to Cardmarket (EUR converted to USD) for cards
+ * without TCGPlayer coverage. Results are cached in localStorage for 24h.
  * Only fetches IDs not already in cache.
  */
 export function useTcgPrices(tcgIds: string[]) {
@@ -88,8 +121,9 @@ export function useTcgPrices(tcgIds: string[]) {
         chunks.map(async (chunk) => {
           try {
             const query = chunk.map((id) => `id:${id}`).join(' OR ');
+            // Request both tcgplayer and cardmarket fields so we can fall back.
             const res = await fetch(
-              `${BASE}/cards?q=${encodeURIComponent(query)}&pageSize=${CHUNK_SIZE}&select=id,tcgplayer`,
+              `${BASE}/cards?q=${encodeURIComponent(query)}&pageSize=${CHUNK_SIZE}&select=id,tcgplayer,cardmarket`,
             );
             if (!res.ok) return;
             const json = await res.json();

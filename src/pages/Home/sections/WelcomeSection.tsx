@@ -1,6 +1,7 @@
 import styled, { keyframes } from 'styled-components';
 import { useRef } from 'react';
 import { motion, useInView } from 'motion/react';
+import { easeOut } from '../../../theme/motion';
 import { SectionWrapper } from './sectionStyles';
 import { Button, CardCollection } from '../../../components';
 import { Link } from 'react-router-dom';
@@ -173,7 +174,7 @@ const containerVariants = {
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: 'easeOut' as const } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: easeOut } },
 };
 
 export function WelcomeSection() {

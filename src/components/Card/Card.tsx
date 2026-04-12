@@ -3,6 +3,7 @@ import { useState, useRef, memo } from 'react';
 import styled, { css } from 'styled-components';
 import { CardModel } from './cardModel';
 import { motion, useMotionValue, useSpring, useTransform } from 'motion/react';
+import { easeOut } from '../../theme/motion';
 import { spriteUrl, spriteUrlFallback } from '../../utils';
 import {
   BaseCardWrapper,
@@ -275,7 +276,7 @@ function CardInner(props: CardProps) {
                 src={pokemonData.imageUrl}
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3, ease: 'easeOut' as const }}
+                transition={{ duration: 0.3, ease: easeOut }}
                 onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
               />
             ) : pokemonData?.name ? (
@@ -283,7 +284,7 @@ function CardInner(props: CardProps) {
                 src={spriteUrl(pokemonData.name ?? '')}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3, ease: 'easeOut' as const }}
+                transition={{ duration: 0.3, ease: easeOut }}
                 onError={(e) => {
                   const img = e.target as HTMLImageElement;
                   const fallback = spriteUrlFallback(pokemonData.name ?? '');
