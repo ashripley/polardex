@@ -8,7 +8,7 @@ const Container = styled.section`
   border-top: 1px solid ${({ theme }) => theme.color.surface.border};
   transition: background-color 200ms cubic-bezier(0.22, 1, 0.36, 1), border-color 200ms cubic-bezier(0.22, 1, 0.36, 1);
 
-  @media (max-width: 759px) {
+  @media (max-width: ${({ theme }) => theme.breakpoint.mobile}) {
     /* Sit above the fixed bottom tab bar */
     padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
   }
@@ -30,7 +30,7 @@ const NavLinks = styled.nav`
   justify-content: center;
   gap: ${({ theme }) => `${theme.space[1]} ${theme.space[6]}`};
 
-  @media (max-width: 759px) {
+  @media (max-width: ${({ theme }) => theme.breakpoint.mobile}) {
     display: none;
   }
 `;

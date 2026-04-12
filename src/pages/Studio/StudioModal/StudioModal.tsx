@@ -184,7 +184,7 @@ const CanvasPane = styled.div`
   overflow: hidden;
   min-width: 0;
 
-  @media (max-width: 56.25em) {
+  @media (max-width: ${({ theme }) => theme.breakpoint.md}) {
     display: none;
   }
 `;

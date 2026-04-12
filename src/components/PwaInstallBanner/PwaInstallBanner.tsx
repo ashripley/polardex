@@ -109,7 +109,7 @@ const Title = styled.p`
 
 const Subtitle = styled.p`
   color: rgba(236, 239, 244, 0.7);
-  font-size: 0.72rem;
+  font-size: ${({ theme }) => theme.typography.size.xs};
   margin: 0;
   line-height: 1.35;
 `;
@@ -165,7 +165,7 @@ const Step = styled.li`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.space[2]};
-  font-size: 0.78rem;
+  font-size: ${({ theme }) => theme.typography.size.xs};
   color: rgba(236, 239, 244, 0.85);
   line-height: 1.4;
   counter-increment: step;
@@ -206,15 +206,17 @@ export function PwaInstallBanner() {
 
     if (isIosSafari()) {
       // iOS will never fire beforeinstallprompt — show our static instructions.
-      const t = window.setTimeout(() => setIosVisible(true), 3000);
-      return () => window.clearTimeout(t);
+      // Delayed via motion's transition.delay (no JS setTimeout) so the wait
+      // is part of the same animation frame as mount.
+      setIosVisible(true);
+      return;
     }
 
     function onPrompt(e: Event) {
       e.preventDefault();
       setDeferred(e as BeforeInstallPromptEvent);
-      // Small delay so it doesn't bombard the user on first load
-      window.setTimeout(() => setVisible(true), 2500);
+      // Show immediately — the motion transition.delay handles the visual wait.
+      setVisible(true);
     }
 
     window.addEventListener('beforeinstallprompt', onPrompt);
@@ -252,7 +254,7 @@ export function PwaInstallBanner() {
           initial={{ opacity: 0, y: 24, x: '-50%' }}
           animate={{ opacity: 1, y: 0, x: '-50%' }}
           exit={{ opacity: 0, y: 24, x: '-50%' }}
-          transition={{ type: 'spring', stiffness: 260, damping: 26 }}
+          transition={{ type: 'spring', stiffness: 260, damping: 26, delay: 2.5 }}
         >
           <IconBubble>
             <IconImg src='/dragonite-192.png' alt='Polardex' />
@@ -281,7 +283,7 @@ export function PwaInstallBanner() {
           initial={{ opacity: 0, y: 24, x: '-50%' }}
           animate={{ opacity: 1, y: 0, x: '-50%' }}
           exit={{ opacity: 0, y: 24, x: '-50%' }}
-          transition={{ type: 'spring', stiffness: 260, damping: 26 }}
+          transition={{ type: 'spring', stiffness: 260, damping: 26, delay: 3 }}
         >
           <IosHeader>
             <IconBubble>

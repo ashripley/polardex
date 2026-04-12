@@ -10,24 +10,9 @@ import { motion, AnimatePresence } from 'motion/react';
 import * as RadixSelect from '@radix-ui/react-select';
 import { CollectionsFilters, defaultFilters, hasActiveFilters } from './filterTypes';
 import { useState, type ReactNode } from 'react';
+import { Popover } from '../Popover';
 
 export type ViewMode = 'cards' | 'art';
-
-// Mobile sort row label
-const MobileSortLabel = styled.span`
-  font-size: ${({ theme }) => theme.typography.size.xs};
-  font-weight: ${({ theme }) => theme.typography.weight.semibold};
-  color: ${({ theme }) => theme.color.text.secondary};
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  padding: ${({ theme }) => `${theme.space[1]} 0`};
-`;
-
-const MobileSortRow = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.space[1]};
-`;
 
 interface FilterBarProps {
   filters: CollectionsFilters;
@@ -35,106 +20,36 @@ interface FilterBarProps {
   typeOptions: string[];
   setOptions: string[];
   conditionOptions: string[];
-  totalCount: number;
-  filteredCount: number;
-  /** Optional sort control rendered inside the mobile filter drawer */
+  /**
+   * The total card count and current filtered count are no longer rendered
+   * inside the FilterBar — the page-level summary card and the pagination
+   * footer already show this. We keep these props in the API for now in case
+   * we want to bring back a contextual count indicator later, but they're
+   * intentionally unused.
+   */
+  totalCount?: number;
+  filteredCount?: number;
+  /** Sort control rendered inside the Sort popover trigger as a Radix Select. */
   sortControl?: ReactNode;
 }
 
 // ── Shell ─────────────────────────────────────────────────────────────────────
 
-// Control height - everything shares this so the row sits on one baseline
 const H = '2.25rem';
 
 const Bar = styled.div`
   width: 100%;
-  padding: ${({ theme }) => `${theme.space[5]} 0 ${theme.space[4]}`};
+  padding: ${({ theme }) => `${theme.space[5]} 0 ${theme.space[2]}`};
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.space[2]};
+  gap: ${({ theme }) => theme.space[3]};
 `;
 
-// Primary row - search + filters + view toggle
-const PrimaryRow = styled.div`
+const ControlsRow = styled.div`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.space[2]};
   flex-wrap: wrap;
-`;
-
-// Mobile-only filter toggle button
-const FilterToggleBtn = styled.button<{ $active: boolean }>`
-  display: none;
-  align-items: center;
-  justify-content: center;
-  gap: ${({ theme }) => theme.space[1]};
-  height: 2.25rem;
-  padding: 0 ${({ theme }) => theme.space[3]};
-  border: none;
-  border-radius: ${({ theme }) => theme.radius.full};
-  background: ${({ $active, theme }) =>
-    $active ? `${theme.color.frost.blue}18` : theme.color.surface.subtle};
-  box-shadow: 0 0 0 1.5px ${({ $active, theme }) =>
-    $active ? theme.color.frost.blue : theme.color.surface.border};
-  color: ${({ $active, theme }) =>
-    $active ? theme.color.frost.blue : theme.color.text.secondary};
-  font-size: ${({ theme }) => theme.typography.size.sm};
-  font-weight: ${({ theme }) => theme.typography.weight.medium};
-  font-family: inherit;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: all 150ms cubic-bezier(0.22, 1, 0.36, 1);
-
-  @media (max-width: 759px) {
-    display: inline-flex;
-  }
-`;
-
-const FilterBadge = styled.span`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.1rem;
-  height: 1.1rem;
-  border-radius: 50%;
-  background: ${({ theme }) => theme.color.frost.blue};
-  color: #fff;
-  font-size: 0.65rem;
-  font-weight: ${({ theme }) => theme.typography.weight.bold};
-`;
-
-// Filter selects row - hidden on mobile unless open
-const FiltersRow = styled(motion.div)`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.space[2]};
-  flex-wrap: wrap;
-  overflow: hidden;
-
-  @media (max-width: 759px) {
-    flex-direction: column;
-    align-items: stretch;
-  }
-`;
-
-// Desktop: always show filter selects inline
-const DesktopFilters = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.space[2]};
-  flex-wrap: wrap;
-
-  @media (max-width: 759px) {
-    display: none;
-  }
-`;
-
-// Meta row - count + clear (only visible when filtered)
-const MetaRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.space[2]};
-  min-height: 1.25rem;
 `;
 
 // ── Search ────────────────────────────────────────────────────────────────────
@@ -143,8 +58,13 @@ const SearchWrapper = styled.div`
   position: relative;
   display: flex;
   align-items: center;
-  flex: 1;
-  min-width: 10rem;
+  flex: 1 1 100%;
+  min-width: 0;
+
+  @media (min-width: calc(${({ theme }) => theme.breakpoint.mobile} + 1px)) {
+    flex: 1 1 auto;
+    min-width: 12rem;
+  }
 `;
 
 const SearchIconWrap = styled(motion.div)`
@@ -167,7 +87,9 @@ const SearchInput = styled.input`
   font-family: inherit;
   outline: none;
   box-shadow: 0 0 0 1.5px ${({ theme }) => theme.color.surface.border};
-  transition: box-shadow 150ms cubic-bezier(0.22, 1, 0.36, 1), background 200ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition:
+    box-shadow 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    background 200ms cubic-bezier(0.22, 1, 0.36, 1);
 
   &::placeholder { color: ${({ theme }) => theme.color.text.secondary}; }
   &:focus {
@@ -176,7 +98,7 @@ const SearchInput = styled.input`
   }
 `;
 
-const ClearBtn = styled(motion.button)`
+const SearchClearBtn = styled(motion.button)`
   position: absolute;
   right: ${({ theme }) => theme.space[2]};
   width: 1.25rem;
@@ -189,38 +111,13 @@ const ClearBtn = styled(motion.button)`
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  transition: background 180ms cubic-bezier(0.22, 1, 0.36, 1);
   &:hover { background: ${({ theme }) => theme.color.surface.muted}; }
 `;
 
+// ── Trigger buttons (Filter / Sort) ──────────────────────────────────────────
 
-// ── Meta (count + clear) ──────────────────────────────────────────────────────
-
-const CountText = styled.span`
-  font-size: ${({ theme }) => theme.typography.size.xs};
-  color: ${({ theme }) => theme.color.text.secondary};
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-`;
-
-const ClearAllBtn = styled(motion.button)`
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px ${({ theme }) => theme.space[2]};
-  border: none;
-  border-radius: ${({ theme }) => theme.radius.full};
-  background: ${({ theme }) => `${theme.color.aurora.red}14`};
-  color: ${({ theme }) => theme.color.aurora.red};
-  font-size: ${({ theme }) => theme.typography.size.xs};
-  font-weight: ${({ theme }) => theme.typography.weight.medium};
-  font-family: inherit;
-  cursor: pointer;
-  &:hover { background: ${({ theme }) => `${theme.color.aurora.red}26`}; }
-`;
-
-// ── Radix Select ──────────────────────────────────────────────────────────────
-
-const SelectTrigger = styled(RadixSelect.Trigger)`
+const PillBtn = styled(motion.button)<{ $active?: boolean }>`
   display: inline-flex;
   align-items: center;
   gap: ${({ theme }) => theme.space[2]};
@@ -228,6 +125,175 @@ const SelectTrigger = styled(RadixSelect.Trigger)`
   padding: 0 ${({ theme }) => theme.space[3]};
   border: none;
   border-radius: ${({ theme }) => theme.radius.full};
+  background: ${({ $active, theme }) =>
+    $active ? `${theme.color.frost.blue}14` : theme.color.surface.subtle};
+  box-shadow: 0 0 0 1.5px ${({ $active, theme }) =>
+    $active ? theme.color.frost.blue : theme.color.surface.border};
+  color: ${({ $active, theme }) =>
+    $active ? theme.color.frost.blue : theme.color.text.secondary};
+  font-size: ${({ theme }) => theme.typography.size.sm};
+  font-weight: ${({ theme }) => theme.typography.weight.semibold};
+  font-family: inherit;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    background 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 180ms cubic-bezier(0.22, 1, 0.36, 1);
+
+  &:hover {
+    box-shadow: 0 0 0 1.5px ${({ theme }) => theme.color.frost.blue};
+    color: ${({ theme }) => theme.color.frost.blue};
+  }
+`;
+
+const Badge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.1rem;
+  height: 1.1rem;
+  padding: 0 5px;
+  border-radius: ${({ theme }) => theme.radius.full};
+  background: ${({ theme }) => theme.color.frost.blue};
+  color: #fff;
+  font-size: ${({ theme }) => theme.typography.size.xxs};
+  font-weight: ${({ theme }) => theme.typography.weight.bold};
+  font-variant-numeric: tabular-nums;
+`;
+
+// ── Filters popover content ──────────────────────────────────────────────────
+
+const PopoverHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: ${({ theme }) => `0 ${theme.space[1]} ${theme.space[2]}`};
+  border-bottom: 1px solid ${({ theme }) => theme.color.surface.border};
+  margin-bottom: ${({ theme }) => theme.space[1]};
+`;
+
+const PopoverTitle = styled.span`
+  font-size: ${({ theme }) => theme.typography.size.xxs};
+  font-weight: ${({ theme }) => theme.typography.weight.bold};
+  color: ${({ theme }) => theme.color.text.tertiary};
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+`;
+
+const PopoverClearBtn = styled.button`
+  background: none;
+  border: none;
+  color: ${({ theme }) => theme.color.aurora.red};
+  font-size: ${({ theme }) => theme.typography.size.xxs};
+  font-weight: ${({ theme }) => theme.typography.weight.bold};
+  font-family: inherit;
+  cursor: pointer;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+
+  &:hover { text-decoration: underline; }
+`;
+
+const FieldRow = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: ${({ theme }) => `${theme.space[1]} ${theme.space[1]}`};
+`;
+
+const FieldLabel = styled.label`
+  font-size: ${({ theme }) => theme.typography.size.xxs};
+  font-weight: ${({ theme }) => theme.typography.weight.bold};
+  color: ${({ theme }) => theme.color.text.secondary};
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+`;
+
+// ── Active filter chips ──────────────────────────────────────────────────────
+
+const ChipRow = styled(motion.div)`
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: ${({ theme }) => theme.space[2]};
+`;
+
+const Chip = styled(motion.button)`
+  display: inline-flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.space[1]};
+  height: 1.75rem;
+  padding: 0 ${({ theme }) => theme.space[1]} 0 ${({ theme }) => theme.space[3]};
+  border-radius: ${({ theme }) => theme.radius.full};
+  background: ${({ theme }) => `${theme.color.frost.blue}14`};
+  border: 1.5px solid ${({ theme }) => `${theme.color.frost.blue}55`};
+  color: ${({ theme }) => theme.color.frost.blue};
+  font-size: ${({ theme }) => theme.typography.size.xs};
+  font-weight: ${({ theme }) => theme.typography.weight.semibold};
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  text-transform: capitalize;
+  transition:
+    background 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 180ms cubic-bezier(0.22, 1, 0.36, 1);
+
+  &:hover { background: ${({ theme }) => `${theme.color.frost.blue}22`}; }
+`;
+
+const ChipKey = styled.span`
+  font-weight: ${({ theme }) => theme.typography.weight.medium};
+  opacity: 0.7;
+  text-transform: uppercase;
+  font-size: ${({ theme }) => theme.typography.size.xxs};
+  letter-spacing: 0.04em;
+`;
+
+const ChipDismiss = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  background: ${({ theme }) => `${theme.color.frost.blue}22`};
+  margin-left: 2px;
+`;
+
+const ClearAllPill = styled(motion.button)`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 1.75rem;
+  padding: 0 ${({ theme }) => theme.space[3]};
+  border: none;
+  border-radius: ${({ theme }) => theme.radius.full};
+  background: transparent;
+  color: ${({ theme }) => theme.color.text.tertiary};
+  font-size: ${({ theme }) => theme.typography.size.xxs};
+  font-weight: ${({ theme }) => theme.typography.weight.bold};
+  font-family: inherit;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: color 180ms cubic-bezier(0.22, 1, 0.36, 1);
+
+  &:hover { color: ${({ theme }) => theme.color.aurora.red}; }
+`;
+
+// ── Radix Select (used inside the Filters popover and as the Sort trigger) ──
+
+const SelectTrigger = styled(RadixSelect.Trigger)`
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.space[2]};
+  width: 100%;
+  height: ${H};
+  padding: 0 ${({ theme }) => theme.space[3]};
+  border: none;
+  border-radius: ${({ theme }) => theme.radius.md};
   background: ${({ theme }) => theme.color.surface.subtle};
   box-shadow: 0 0 0 1.5px ${({ theme }) => theme.color.surface.border};
   color: ${({ theme }) => theme.color.text.primary};
@@ -236,10 +302,10 @@ const SelectTrigger = styled(RadixSelect.Trigger)`
   font-weight: ${({ theme }) => theme.typography.weight.medium};
   cursor: pointer;
   outline: none;
-  white-space: nowrap;
-  flex-shrink: 0;
   text-transform: capitalize;
-  transition: box-shadow 150ms cubic-bezier(0.22, 1, 0.36, 1), background 150ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition:
+    box-shadow 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    background 180ms cubic-bezier(0.22, 1, 0.36, 1);
 
   &[data-placeholder] { color: ${({ theme }) => theme.color.text.secondary}; }
   &:hover {
@@ -249,12 +315,6 @@ const SelectTrigger = styled(RadixSelect.Trigger)`
   &[data-state='open'] {
     box-shadow: 0 0 0 2px ${({ theme }) => theme.color.frost.blue};
     background: ${({ theme }) => theme.color.surface.base};
-  }
-
-  @media (max-width: 759px) {
-    width: 100%;
-    justify-content: space-between;
-    border-radius: ${({ theme }) => theme.radius.md};
   }
 `;
 
@@ -308,15 +368,6 @@ const CheckIndicator = styled(RadixSelect.ItemIndicator)`
   color: ${({ theme }) => theme.color.frost.blue};
 `;
 
-// Active filter dot on trigger
-const ActiveDot = styled.span`
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: ${({ theme }) => theme.color.frost.blue};
-  flex-shrink: 0;
-`;
-
 function FilterSelect({
   value,
   onValueChange,
@@ -334,9 +385,8 @@ function FilterSelect({
       onValueChange={(v) => onValueChange(v === '__all__' ? '' : v)}
     >
       <SelectTrigger>
-        {value && <ActiveDot />}
-        <RadixSelect.Value placeholder={placeholder} />
-        <RadixSelect.Icon style={{ display: 'flex', opacity: 0.45 }}>
+        <RadixSelect.Value placeholder={`All ${placeholder.toLowerCase()}s`} />
+        <RadixSelect.Icon style={{ display: 'flex', opacity: 0.5 }}>
           <IconChevronDown size={12} stroke={2} />
         </RadixSelect.Icon>
       </SelectTrigger>
@@ -344,7 +394,7 @@ function FilterSelect({
         <SelectContent position='popper' sideOffset={6}>
           <SelectViewport>
             <SelectItem value='__all__'>
-              <RadixSelect.ItemText>{placeholder}</RadixSelect.ItemText>
+              <RadixSelect.ItemText>{`All ${placeholder.toLowerCase()}s`}</RadixSelect.ItemText>
             </SelectItem>
             {options.map((opt) => (
               <SelectItem key={opt} value={opt}>
@@ -367,56 +417,25 @@ export function FilterBar({
   typeOptions,
   setOptions,
   conditionOptions,
-  totalCount,
-  filteredCount,
   sortControl,
 }: FilterBarProps) {
-  const isFiltered = hasActiveFilters(filters) || filters.search !== '';
   const [searchFocusCount, setSearchFocusCount] = useState(0);
-  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   const update = <K extends keyof CollectionsFilters>(key: K, value: CollectionsFilters[K]) =>
     onChange({ ...filters, [key]: value });
 
-  const countLabel = isFiltered && filteredCount !== totalCount
-    ? `${filteredCount} of ${totalCount}`
-    : `${totalCount} Card${totalCount !== 1 ? 's' : ''}`;
-
   const activeFilterCount = [filters.set, filters.condition, filters.type].filter(Boolean).length;
+  const hasFilters = hasActiveFilters(filters);
 
-  const filterSelects = (
-    <>
-      {setOptions.length > 0 && (
-        <FilterSelect
-          value={filters.set}
-          onValueChange={(s) => update('set', s)}
-          placeholder='Set'
-          options={setOptions}
-        />
-      )}
-      {conditionOptions.length > 0 && (
-        <FilterSelect
-          value={filters.condition}
-          onValueChange={(c) => update('condition', c)}
-          placeholder='Condition'
-          options={conditionOptions}
-        />
-      )}
-      {typeOptions.length > 0 && (
-        <FilterSelect
-          value={filters.type}
-          onValueChange={(t) => update('type', t)}
-          placeholder='Type'
-          options={typeOptions}
-        />
-      )}
-    </>
-  );
+  // Active filter list for the chip row
+  const activeChips: { key: keyof CollectionsFilters; label: string; value: string }[] = [];
+  if (filters.set) activeChips.push({ key: 'set', label: 'Set', value: filters.set });
+  if (filters.condition) activeChips.push({ key: 'condition', label: 'Condition', value: filters.condition });
+  if (filters.type) activeChips.push({ key: 'type', label: 'Type', value: filters.type });
 
   return (
     <Bar>
-      {/* Search + desktop filters + mobile toggle */}
-      <PrimaryRow>
+      <ControlsRow>
         <SearchWrapper>
           <SearchIconWrap
             key={searchFocusCount}
@@ -434,79 +453,127 @@ export function FilterBar({
           />
           <AnimatePresence>
             {filters.search && (
-              <ClearBtn
+              <SearchClearBtn
                 key='clear'
                 className='icon-close'
                 initial={{ opacity: 0, scale: 0.6 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.6 }}
-                transition={{ duration: 0.1 }}
+                transition={{ duration: 0.12 }}
                 onClick={() => update('search', '')}
               >
                 <IconX size={9} stroke={3} />
-              </ClearBtn>
+              </SearchClearBtn>
             )}
           </AnimatePresence>
         </SearchWrapper>
 
-        {/* Desktop: inline filters */}
-        <DesktopFilters>{filterSelects}</DesktopFilters>
-
-        {/* Mobile: toggle button */}
-        <FilterToggleBtn
-          $active={activeFilterCount > 0 || mobileFiltersOpen}
-          onClick={() => setMobileFiltersOpen((o) => !o)}
-          aria-expanded={mobileFiltersOpen}
-        >
-          <IconAdjustments size={15} stroke={2} />
-          Filters
-          {activeFilterCount > 0 && (
-            <FilterBadge>{activeFilterCount}</FilterBadge>
-          )}
-        </FilterToggleBtn>
-      </PrimaryRow>
-
-      {/* Mobile: expandable filters */}
-      <AnimatePresence initial={false}>
-        {mobileFiltersOpen && (
-          <FiltersRow
-            key='mobile-filters'
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2, ease: 'easeInOut' }}
-          >
-            {filterSelects}
-            {sortControl && (
-              <MobileSortRow>
-                <MobileSortLabel>Sort by</MobileSortLabel>
-                {sortControl}
-              </MobileSortRow>
+        {/* Filters button — opens a popover with all available filter selects */}
+        {(setOptions.length > 0 || conditionOptions.length > 0 || typeOptions.length > 0) && (
+          <Popover
+            align='left'
+            maxWidth='18rem'
+            trigger={({ onClick, isOpen }) => (
+              <PillBtn
+                $active={activeFilterCount > 0 || isOpen}
+                onClick={onClick}
+                whileTap={{ scale: 0.96 }}
+                aria-haspopup='dialog'
+                aria-expanded={isOpen}
+              >
+                <IconAdjustments size={14} stroke={2} />
+                Filters
+                {activeFilterCount > 0 && <Badge>{activeFilterCount}</Badge>}
+              </PillBtn>
             )}
-          </FiltersRow>
+          >
+            <PopoverHeader>
+              <PopoverTitle>Filter by</PopoverTitle>
+              {hasFilters && (
+                <PopoverClearBtn
+                  onClick={() => onChange({ ...defaultFilters, search: filters.search })}
+                >
+                  Reset
+                </PopoverClearBtn>
+              )}
+            </PopoverHeader>
+            {setOptions.length > 0 && (
+              <FieldRow>
+                <FieldLabel>Set</FieldLabel>
+                <FilterSelect
+                  value={filters.set}
+                  onValueChange={(s) => update('set', s)}
+                  placeholder='Set'
+                  options={setOptions}
+                />
+              </FieldRow>
+            )}
+            {conditionOptions.length > 0 && (
+              <FieldRow>
+                <FieldLabel>Condition</FieldLabel>
+                <FilterSelect
+                  value={filters.condition}
+                  onValueChange={(c) => update('condition', c)}
+                  placeholder='Condition'
+                  options={conditionOptions}
+                />
+              </FieldRow>
+            )}
+            {typeOptions.length > 0 && (
+              <FieldRow>
+                <FieldLabel>Type</FieldLabel>
+                <FilterSelect
+                  value={filters.type}
+                  onValueChange={(t) => update('type', t)}
+                  placeholder='Type'
+                  options={typeOptions}
+                />
+              </FieldRow>
+            )}
+          </Popover>
+        )}
+
+        {/* Sort — owned by the parent and rendered as a Radix Select pill */}
+        {sortControl}
+      </ControlsRow>
+
+      {/* Active filter chips — only render when at least one filter is set */}
+      <AnimatePresence initial={false}>
+        {activeChips.length > 0 && (
+          <ChipRow
+            key='chip-row'
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {activeChips.map((chip) => (
+              <Chip
+                key={chip.key}
+                onClick={() => update(chip.key, '' as never)}
+                whileTap={{ scale: 0.96 }}
+                initial={{ opacity: 0, scale: 0.92 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.92 }}
+                transition={{ type: 'spring', stiffness: 380, damping: 28 }}
+                aria-label={`Remove ${chip.label} filter`}
+              >
+                <ChipKey>{chip.label}</ChipKey>
+                {chip.value}
+                <ChipDismiss>
+                  <IconX size={9} stroke={3} />
+                </ChipDismiss>
+              </Chip>
+            ))}
+            <ClearAllPill
+              onClick={() => onChange({ ...defaultFilters, search: filters.search })}
+              whileTap={{ scale: 0.96 }}
+            >
+              Clear all
+            </ClearAllPill>
+          </ChipRow>
         )}
       </AnimatePresence>
-
-      {/* Meta row - only takes space when needed */}
-      <MetaRow>
-        <CountText>{countLabel}</CountText>
-        <AnimatePresence>
-          {isFiltered && (
-            <ClearAllBtn
-              key='clear-all'
-              initial={{ opacity: 0, x: -4 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -4 }}
-              transition={{ duration: 0.12 }}
-              onClick={() => onChange(defaultFilters)}
-              whileTap={{ scale: 0.95 }}
-            >
-              <IconX size={9} stroke={3} />
-              Clear filters
-            </ClearAllBtn>
-          )}
-        </AnimatePresence>
-      </MetaRow>
     </Bar>
   );
 }

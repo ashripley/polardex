@@ -1,6 +1,7 @@
 import styled, { useTheme } from 'styled-components';
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { hoverLiftLg, tapPressSoft, tapPress, tapPressFirm } from '../../theme/motion';
 import { IconSearch, IconPlus, IconX, IconPencil, IconTrash, IconCheck } from '@tabler/icons-react';
 import { toSpriteName } from '../../utils';
 import { SectionWrapper } from '../Home/sections/sectionStyles';
@@ -29,6 +30,141 @@ const PageHeader = styled.div`
   flex-wrap: wrap;
 `;
 
+// ── Hero summary card — unified across viewports ────────────────────────────
+
+const StudioSummaryCard = styled(motion.div)`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.space[4]};
+  margin: ${({ theme }) => `${theme.space[3]} 0 ${theme.space[4]}`};
+  padding: ${({ theme }) => `${theme.space[4]} ${theme.space[5]}`};
+  border-radius: ${({ theme }) => theme.radius.xl};
+  background: linear-gradient(135deg,
+    ${({ theme }) => `${theme.color.frost.teal}14`} 0%,
+    ${({ theme }) => `${theme.color.frost.blue}14`} 100%);
+  border: 1.5px solid ${({ theme }) => `${theme.color.frost.teal}40`};
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -60%;
+    right: -10%;
+    width: 50%;
+    height: 220%;
+    background: radial-gradient(
+      circle,
+      ${({ theme }) => `${theme.color.frost.teal}22`} 0%,
+      transparent 70%
+    );
+    pointer-events: none;
+  }
+
+  @media (min-width: calc(${({ theme }) => theme.breakpoint.mobile} + 1px)) {
+    padding: ${({ theme }) => `${theme.space[5]} ${theme.space[8]}`};
+    gap: ${({ theme }) => theme.space[8]};
+    margin: ${({ theme }) => `${theme.space[2]} 0 ${theme.space[5]}`};
+  }
+`;
+
+const SummaryStat = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  position: relative;
+  z-index: 1;
+`;
+
+const SummaryStatValue = styled.span`
+  font-size: 1.5rem;
+  font-weight: ${({ theme }) => theme.typography.weight.bold};
+  color: ${({ theme }) => theme.color.text.primary};
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: -0.02em;
+
+  @media (min-width: calc(${({ theme }) => theme.breakpoint.mobile} + 1px)) {
+    font-size: 2.25rem;
+  }
+`;
+
+const SummaryStatLabel = styled.span`
+  font-size: ${({ theme }) => theme.typography.size.xxs};
+  font-weight: ${({ theme }) => theme.typography.weight.bold};
+  color: ${({ theme }) => theme.color.text.secondary};
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+`;
+
+const SummaryDivider = styled.div`
+  width: 1px;
+  height: 2.25rem;
+  background: ${({ theme }) => theme.color.surface.border};
+  margin: 0 ${({ theme }) => theme.space[2]};
+  position: relative;
+  z-index: 1;
+`;
+
+const MobileSelectIconBtn = styled(motion.button)<{ $active: boolean }>`
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: ${({ theme }) => theme.radius.full};
+  border: 1.5px solid ${({ $active, theme }) =>
+    $active ? theme.color.aurora.red : theme.color.surface.border};
+  background: ${({ $active, theme }) =>
+    $active ? `${theme.color.aurora.red}18` : theme.color.surface.subtle};
+  color: ${({ $active, theme }) =>
+    $active ? theme.color.aurora.red : theme.color.text.secondary};
+  cursor: pointer;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+  margin-left: auto;
+  transition: all 180ms cubic-bezier(0.22, 1, 0.36, 1);
+
+  @media (max-width: ${({ theme }) => theme.breakpoint.mobile}) {
+    display: flex;
+  }
+`;
+
+/** Floating Action Button — primary "Add Card" CTA on mobile, sits above the bottom nav. */
+const FAB = styled(motion.button)`
+  display: none;
+
+  @media (max-width: ${({ theme }) => theme.breakpoint.mobile}) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: ${({ theme }) => theme.space[2]};
+    position: fixed;
+    right: ${({ theme }) => theme.space[5]};
+    bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+    z-index: 80;
+    height: 3.5rem;
+    padding: 0 ${({ theme }) => theme.space[5]};
+    border-radius: ${({ theme }) => theme.radius.full};
+    border: none;
+    background: linear-gradient(135deg,
+      ${({ theme }) => theme.color.frost.teal} 0%,
+      ${({ theme }) => theme.color.frost.blue} 100%);
+    color: #fff;
+    font-size: ${({ theme }) => theme.typography.size.sm};
+    font-weight: ${({ theme }) => theme.typography.weight.bold};
+    font-family: inherit;
+    cursor: pointer;
+    box-shadow:
+      0 8px 24px ${({ theme }) => `${theme.color.frost.blue}55`},
+      0 0 0 1px rgba(255, 255, 255, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    -webkit-tap-highlight-color: transparent;
+  }
+`;
+
 const PageTitle = styled.h1`
   font-size: ${({ theme }) => theme.typography.size.xxl};
   font-weight: ${({ theme }) => theme.typography.weight.bold};
@@ -41,6 +177,11 @@ const HeaderActions = styled.div`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.space[2]};
+
+  /* Hidden on mobile — replaced by the FAB + select icon button */
+  @media (max-width: ${({ theme }) => theme.breakpoint.mobile}) {
+    display: none;
+  }
 `;
 
 const AddButton = styled(motion.button)`
@@ -153,7 +294,10 @@ const SearchIconWrap = styled.span`
 const SearchInput = styled.input`
   width: 100%;
   height: 2.75rem;
-  padding: 0 ${({ theme }) => theme.space[10]};
+  /* Padding is asymmetric — search icon on the left, conditional clear button
+     on the right. The 2.25rem space leaves room for both at all viewports. */
+  padding: 0 ${({ theme }) => theme.space[8]};
+  box-sizing: border-box;
   border: none;
   border-radius: ${({ theme }) => theme.radius.full};
   background-color: ${({ theme }) => theme.color.surface.subtle};
@@ -264,7 +408,7 @@ const CardName = styled.p`
 
 const CardMeta = styled.p`
   color: rgba(255,255,255,0.6);
-  font-size: 0.72rem;
+  font-size: ${({ theme }) => theme.typography.size.xs};
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -375,6 +519,13 @@ export function Studio() {
     );
   }, [cards, search]);
 
+  // Studio summary stats for the mobile hero card
+  const studioStats = useMemo(() => {
+    const totalCount = cards.reduce((s, c) => s + (c.quantity ?? 1), 0);
+    const setCount = new Set(cards.map((c) => c.attributes.set).filter(Boolean)).size;
+    return { totalCount, setCount };
+  }, [cards]);
+
   const openAdd = () => {
     setActionType('add');
     setPreselectedCard(null);
@@ -434,7 +585,7 @@ export function Studio() {
                   $active={selectMode}
                   onClick={toggleSelectMode}
                   whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.97 }}
+                  whileTap={tapPress}
                   transition={{ type: 'spring', stiffness: 400, damping: 25 }}
                 >
                   <IconTrash size={14} stroke={2} />
@@ -444,13 +595,41 @@ export function Studio() {
               <AddButton
                 onClick={openAdd}
                 whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
+                whileTap={tapPress}
               >
                 <IconPlus size={15} stroke={2.5} />
                 Add Card
               </AddButton>
             </HeaderActions>
           </PageHeader>
+
+          {/* Mobile-only hero summary + select-mode toggle */}
+          {cards.length > 0 && (
+            <StudioSummaryCard
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ type: 'spring', stiffness: 260, damping: 26, delay: 0.05 }}
+            >
+              <SummaryStat>
+                <SummaryStatValue>{studioStats.totalCount}</SummaryStatValue>
+                <SummaryStatLabel>Cards</SummaryStatLabel>
+              </SummaryStat>
+              <SummaryDivider />
+              <SummaryStat>
+                <SummaryStatValue>{studioStats.setCount}</SummaryStatValue>
+                <SummaryStatLabel>Sets</SummaryStatLabel>
+              </SummaryStat>
+              <MobileSelectIconBtn
+                $active={selectMode}
+                onClick={toggleSelectMode}
+                whileTap={tapPressFirm}
+                aria-label={selectMode ? 'Cancel selection' : 'Select cards'}
+                title={selectMode ? 'Cancel selection' : 'Select cards'}
+              >
+                {selectMode ? <IconX size={16} stroke={2.2} /> : <IconTrash size={16} stroke={2} />}
+              </MobileSelectIconBtn>
+            </StudioSummaryCard>
+          )}
 
           <SearchWrapper>
             <SearchIconWrap><IconSearch size={16} stroke={2} /></SearchIconWrap>
@@ -556,7 +735,10 @@ export function Studio() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.2, delay: Math.min(i * 0.025, 0.4) }}
-                      whileHover={selectMode ? {} : { y: -4, scale: 1.02 }}
+                      // Hover lift is unconditional — toggling whileHover targets
+                      // mid-interaction (when selectMode flips) causes a visual snap.
+                      whileHover={hoverLiftLg}
+                      whileTap={tapPressSoft}
                       onClick={() => selectMode ? toggleSelect(card.cardId) : openModify(card)}
                     >
                       {tcgArt ? (
@@ -609,6 +791,22 @@ export function Studio() {
           )}
         </SectionWrapper>
       </section>
+
+      {/* Floating Action Button — mobile only */}
+      {!modalOpen && cards.length > 0 && !selectMode && (
+        <FAB
+          onClick={openAdd}
+          aria-label='Add a new card'
+          initial={{ opacity: 0, y: 24, scale: 0.85 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 24, scale: 0.85 }}
+          whileTap={{ scale: 0.92 }}
+          transition={{ type: 'spring', stiffness: 360, damping: 26 }}
+        >
+          <IconPlus size={20} stroke={2.5} />
+          Add Card
+        </FAB>
+      )}
 
       <StudioModal
         isOpen={modalOpen}

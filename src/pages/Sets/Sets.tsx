@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useCallback, useRef, memo } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { motion, AnimatePresence } from 'motion/react';
+import { hoverLiftLg, tapPress, tapPressFirm } from '../../theme/motion';
 import { useTheme } from 'styled-components';
 import { IconSearch, IconX, IconChevronLeft, IconPackage, IconPlus, IconCheck, IconSortAscending, IconSortDescending, IconRefresh, IconEye, IconHeart, IconHeartFilled } from '@tabler/icons-react';
 import { SectionWrapper } from '../Home/sections/sectionStyles';
@@ -13,6 +14,7 @@ import { TcgSet, TcgCard } from '../../api/tcg/types';
 import { saveCard, generateCardId, removeCard } from '../../api/mutations';
 import { useReadOnly } from '../../providers';
 import { useAudRate } from '../../hooks/useAudRate';
+import { useCurrency, fmtPrice } from '../../hooks/useCurrency';
 import { toSpriteName } from '../../utils';
 import { CardModel } from '../../api/fetch/card/cardModel';
 
@@ -28,6 +30,134 @@ const Main = styled.main`
 
 const PageHeader = styled.div`
   padding: ${({ theme }) => `${theme.space[6]} 0 ${theme.space[2]}`};
+`;
+
+// Sets summary card — same hero design on both mobile and desktop. Desktop just
+// gets more breathing room (wider padding, larger stat values) but the visual
+// language is identical so the page feels coherent across viewports.
+const SetsSummary = styled(motion.div)`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.space[3]};
+  margin: ${({ theme }) => `${theme.space[3]} 0 ${theme.space[4]}`};
+  padding: ${({ theme }) => `${theme.space[5]} ${theme.space[6]}`};
+  border-radius: ${({ theme }) => theme.radius.xl};
+  background: linear-gradient(135deg,
+    ${({ theme }) => `${theme.color.aurora.purple}14`} 0%,
+    ${({ theme }) => `${theme.color.frost.blue}14`} 100%);
+  border: 1.5px solid ${({ theme }) => `${theme.color.frost.blue}40`};
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -60%;
+    right: -10%;
+    width: 45%;
+    height: 220%;
+    background: radial-gradient(
+      circle,
+      ${({ theme }) => `${theme.color.aurora.purple}22`} 0%,
+      transparent 70%
+    );
+    pointer-events: none;
+  }
+
+  @media (min-width: calc(${({ theme }) => theme.breakpoint.mobile} + 1px)) {
+    /* Desktop tweaks — more breathing room and a slightly tighter top margin
+       since the page header sits directly above. */
+    margin: ${({ theme }) => `${theme.space[2]} 0 ${theme.space[5]}`};
+    padding: ${({ theme }) => `${theme.space[6]} ${theme.space[8]}`};
+    gap: ${({ theme }) => theme.space[4]};
+  }
+`;
+
+const SetsSummaryStatsRow = styled.div`
+  display: flex;
+  align-items: flex-end;
+  gap: ${({ theme }) => theme.space[5]};
+  position: relative;
+  z-index: 1;
+
+  @media (min-width: calc(${({ theme }) => theme.breakpoint.mobile} + 1px)) {
+    gap: ${({ theme }) => theme.space[10]};
+  }
+`;
+
+const SetsSummaryStat = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const SetsSummaryStatValue = styled.span`
+  font-size: 1.5rem;
+  font-weight: ${({ theme }) => theme.typography.weight.bold};
+  color: ${({ theme }) => theme.color.text.primary};
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: -0.02em;
+
+  @media (min-width: calc(${({ theme }) => theme.breakpoint.mobile} + 1px)) {
+    font-size: 2.25rem;
+  }
+`;
+
+const SetsSummaryStatLabel = styled.span`
+  font-size: ${({ theme }) => theme.typography.size.xxs};
+  font-weight: ${({ theme }) => theme.typography.weight.bold};
+  color: ${({ theme }) => theme.color.text.secondary};
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+`;
+
+const SetsProgressBar = styled.div`
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 6px;
+  border-radius: ${({ theme }) => theme.radius.full};
+  background: ${({ theme }) => theme.color.surface.muted};
+  overflow: hidden;
+
+  @media (min-width: calc(${({ theme }) => theme.breakpoint.mobile} + 1px)) {
+    height: 8px;
+  }
+`;
+
+const SetsProgressFill = styled(motion.div)`
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg,
+    ${({ theme }) => theme.color.frost.teal} 0%,
+    ${({ theme }) => theme.color.frost.blue} 100%);
+  box-shadow: 0 0 8px ${({ theme }) => `${theme.color.frost.blue}66`};
+`;
+
+const SyncIconBtn = styled(motion.button)<{ $loading: boolean }>`
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: ${({ theme }) => theme.radius.full};
+  background: ${({ theme }) => theme.color.surface.subtle};
+  border: 1.5px solid ${({ theme }) => theme.color.surface.border};
+  color: ${({ theme }) => theme.color.text.secondary};
+  cursor: ${({ $loading }) => ($loading ? 'default' : 'pointer')};
+  opacity: ${({ $loading }) => ($loading ? 0.55 : 1)};
+  transition: all 180ms cubic-bezier(0.22, 1, 0.36, 1);
+  flex-shrink: 0;
+
+  svg {
+    animation: ${({ $loading }) => ($loading ? spin : 'none')} 0.9s linear infinite;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoint.mobile}) {
+    display: flex;
+  }
 `;
 
 const PageTitle = styled.h1`
@@ -64,7 +194,8 @@ const SearchIcon = styled.span`
 const SearchInput = styled.input`
   width: 100%;
   height: 2.75rem;
-  padding: 0 ${({ theme }) => theme.space[10]};
+  padding: 0 ${({ theme }) => theme.space[8]};
+  box-sizing: border-box;
   border: none;
   border-radius: ${({ theme }) => theme.radius.full};
   background-color: ${({ theme }) => theme.color.surface.subtle};
@@ -144,6 +275,11 @@ const SyncBtn = styled.button<{ $loading: boolean }>`
   &:hover:not(:disabled) {
     border-color: ${({ theme }) => theme.color.frost.blue};
     color: ${({ theme }) => theme.color.frost.blue};
+  }
+
+  /* On mobile, the icon-only SyncIconBtn is rendered instead */
+  @media (max-width: ${({ theme }) => theme.breakpoint.mobile}) {
+    display: none;
   }
 `;
 
@@ -498,7 +634,7 @@ const UpcomingDate = styled.span`
 const UpcomingBadge = styled.span<{ $rumored: boolean }>`
   padding: 2px ${({ theme }) => theme.space[2]};
   border-radius: ${({ theme }) => theme.radius.full};
-  font-size: 0.65rem;
+  font-size: ${({ theme }) => theme.typography.size.xxs};
   font-weight: ${({ theme }) => theme.typography.weight.bold};
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -524,83 +660,180 @@ function formatUpcomingDate(iso: string): string {
   return nice;
 }
 
-// ── Set detail (cards view) ───────────────────────────────────────────────────
+// ── Set detail hero — unified across viewports ──────────────────────────────
 
-const DetailHeader = styled.div`
+const SetDetailHero = styled(motion.div)`
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.space[3]};
-  padding: ${({ theme }) => `${theme.space[5]} 0 ${theme.space[4]}`};
+  gap: ${({ theme }) => theme.space[4]};
+  margin: ${({ theme }) => `${theme.space[2]} 0 ${theme.space[4]}`};
+  padding: ${({ theme }) => `${theme.space[5]} ${theme.space[5]} ${theme.space[4]}`};
+  border-radius: ${({ theme }) => theme.radius.xl};
+  background: linear-gradient(135deg,
+    ${({ theme }) => `${theme.color.frost.deep}1c`} 0%,
+    ${({ theme }) => `${theme.color.frost.blue}1a`} 100%);
+  border: 1.5px solid ${({ theme }) => `${theme.color.frost.blue}40`};
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -60%;
+    right: -10%;
+    width: 50%;
+    height: 220%;
+    background: radial-gradient(
+      circle,
+      ${({ theme }) => `${theme.color.frost.blue}22`} 0%,
+      transparent 70%
+    );
+    pointer-events: none;
+  }
+
+  @media (min-width: calc(${({ theme }) => theme.breakpoint.mobile} + 1px)) {
+    padding: ${({ theme }) => `${theme.space[6]} ${theme.space[8]}`};
+    gap: ${({ theme }) => theme.space[5]};
+  }
 `;
 
-const DetailHeaderTop = styled.div`
+const DetailHeroLogoRow = styled.div`
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: ${({ theme }) => theme.space[3]};
+  gap: ${({ theme }) => theme.space[4]};
+  position: relative;
+  z-index: 1;
 `;
 
-const DetailHeaderBody = styled.div`
+const DetailHeroLogoBubble = styled.div`
+  flex-shrink: 0;
+  width: 4.5rem;
+  height: 4.5rem;
   display: flex;
   align-items: center;
-  gap: ${({ theme }) => theme.space[3]};
+  justify-content: center;
+  background: ${({ theme }) => theme.color.surface.base};
+  border: 1px solid ${({ theme }) => theme.color.surface.border};
+  border-radius: ${({ theme }) => theme.radius.lg};
+  padding: ${({ theme }) => theme.space[2]};
+
+  @media (min-width: calc(${({ theme }) => theme.breakpoint.mobile} + 1px)) {
+    width: 6rem;
+    height: 6rem;
+    padding: ${({ theme }) => theme.space[3]};
+  }
 `;
 
-const BackButton = styled.button`
+const DetailHeroLogoImg = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+`;
+
+const DetailHeroNameBlock = styled.div`
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const DetailHeroName = styled.h2`
+  font-size: 1.25rem;
+  font-weight: ${({ theme }) => theme.typography.weight.bold};
+  color: ${({ theme }) => theme.color.text.primary};
+  margin: 0;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+
+  @media (min-width: calc(${({ theme }) => theme.breakpoint.mobile} + 1px)) {
+    font-size: 1.75rem;
+  }
+`;
+
+const DetailHeroSubtitle = styled.span`
+  font-size: ${({ theme }) => theme.typography.size.xs};
+  color: ${({ theme }) => theme.color.text.secondary};
+  font-variant-numeric: tabular-nums;
+`;
+
+const DetailHeroStatsRow = styled.div`
+  display: flex;
+  align-items: flex-end;
+  gap: ${({ theme }) => theme.space[5]};
+  position: relative;
+  z-index: 1;
+`;
+
+const DetailHeroStat = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+`;
+
+const DetailHeroStatValue = styled.span`
+  font-size: 1.4rem;
+  font-weight: ${({ theme }) => theme.typography.weight.bold};
+  color: ${({ theme }) => theme.color.text.primary};
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: -0.02em;
+
+  @media (min-width: calc(${({ theme }) => theme.breakpoint.mobile} + 1px)) {
+    font-size: 2rem;
+  }
+`;
+
+const DetailHeroStatLabel = styled.span`
+  font-size: ${({ theme }) => theme.typography.size.xxs};
+  font-weight: ${({ theme }) => theme.typography.weight.bold};
+  color: ${({ theme }) => theme.color.text.secondary};
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+`;
+
+const DetailHeroProgressBar = styled.div`
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 6px;
+  border-radius: ${({ theme }) => theme.radius.full};
+  background: ${({ theme }) => theme.color.surface.muted};
+  overflow: hidden;
+`;
+
+const DetailHeroProgressFill = styled(motion.div)`
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg,
+    ${({ theme }) => theme.color.frost.teal} 0%,
+    ${({ theme }) => theme.color.frost.blue} 100%);
+  box-shadow: 0 0 10px ${({ theme }) => `${theme.color.frost.blue}66`};
+`;
+
+// Unified back button — same on both viewports, sits above the hero card.
+const DetailBackBtn = styled.button`
   display: inline-flex;
+  align-self: flex-start;
   align-items: center;
-  gap: ${({ theme }) => theme.space[1]};
-  padding: ${({ theme }) => `${theme.space[1]} ${theme.space[3]}`};
+  gap: 4px;
+  padding: ${({ theme }) => `${theme.space[1]} ${theme.space[3]} ${theme.space[1]} ${theme.space[2]}`};
   border: 1.5px solid ${({ theme }) => theme.color.surface.border};
   border-radius: ${({ theme }) => theme.radius.full};
-  background: transparent;
+  background: ${({ theme }) => theme.color.surface.subtle};
   color: ${({ theme }) => theme.color.text.secondary};
-  font-size: ${({ theme }) => theme.typography.size.sm};
+  font-size: ${({ theme }) => theme.typography.size.xs};
+  font-weight: ${({ theme }) => theme.typography.weight.semibold};
   font-family: inherit;
   cursor: pointer;
-  flex-shrink: 0;
-  transition: border-color ${({ theme }) => theme.transition.fast},
-    color ${({ theme }) => theme.transition.fast};
+  margin: ${({ theme }) => `${theme.space[5]} 0 0`};
+  transition: border-color 180ms cubic-bezier(0.22, 1, 0.36, 1), color 180ms cubic-bezier(0.22, 1, 0.36, 1);
 
   &:hover {
     border-color: ${({ theme }) => theme.color.frost.blue};
     color: ${({ theme }) => theme.color.frost.blue};
   }
-`;
-
-const DetailTitle = styled.div`
-  flex: 1;
-  min-width: 0;
-`;
-
-const DetailName = styled.h2`
-  font-size: ${({ theme }) => theme.typography.size.xl};
-  font-weight: ${({ theme }) => theme.typography.weight.bold};
-  color: ${({ theme }) => theme.color.text.primary};
-  margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-
-  @media (min-width: ${({ theme }) => theme.breakpoint.md}) {
-    font-size: ${({ theme }) => theme.typography.size.xxl};
-  }
-`;
-
-const DetailMetaRow = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: ${({ theme }) => `${theme.space[1]} ${theme.space[3]}`};
-  margin-top: ${({ theme }) => theme.space[1]};
-`;
-
-const DetailMetaChip = styled.span`
-  font-size: ${({ theme }) => theme.typography.size.xs};
-  color: ${({ theme }) => theme.color.text.secondary};
-  background: ${({ theme }) => theme.color.surface.muted};
-  border-radius: ${({ theme }) => theme.radius.full};
-  padding: ${({ theme }) => `2px ${theme.space[2]}`};
-  white-space: nowrap;
 `;
 
 
@@ -640,7 +873,7 @@ const WishlistRibbon = styled.div`
   border-radius: ${({ theme }) => theme.radius.full};
   background: ${({ theme }) => `${theme.color.aurora.red}e6`};
   color: #fff;
-  font-size: 0.65rem;
+  font-size: ${({ theme }) => theme.typography.size.xxs};
   font-weight: ${({ theme }) => theme.typography.weight.bold};
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -830,7 +1063,7 @@ const OwnedBadge = styled.div`
 `;
 
 const TcgCardName = styled.p`
-  font-size: 0.72rem;
+  font-size: ${({ theme }) => theme.typography.size.xs};
   color: ${({ theme }) => theme.color.text.secondary};
   text-align: center;
   margin: ${({ theme }) => theme.space[1]} 0;
@@ -998,19 +1231,6 @@ const PreviewCloseBtn = styled(motion.button)`
   &:hover { background: rgba(255,255,255,0.25); }
 `;
 
-// ── Set value chip ─────────────────────────────────────────────────────────────
-
-const ValueChip = styled.span`
-  font-size: ${({ theme }) => theme.typography.size.xs};
-  color: #a3be8c;
-  background: rgba(163,190,140,0.12);
-  border: 1px solid rgba(163,190,140,0.3);
-  border-radius: ${({ theme }) => theme.radius.full};
-  padding: ${({ theme }) => `2px ${theme.space[2]}`};
-  font-weight: ${({ theme }) => theme.typography.weight.semibold};
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-`;
 
 // ── Pokemon cross-set search results ─────────────────────────────────────────
 
@@ -1118,6 +1338,7 @@ export function Sets() {
 
   const { isReadOnly } = useReadOnly();
   const audRate = useAudRate();
+  const { currency } = useCurrency();
 
   const { sets, loading: setsLoading, refresh: refreshSets } = usePokemonSetsQuery();
   const { upcoming: upcomingSets } = useUpcomingSetsQuery();
@@ -1399,6 +1620,28 @@ export function Sets() {
     return Math.min(100, Math.round((count / set.total) * 100));
   };
 
+  // Aggregate stats for the mobile hero summary card
+  const setsSummary = useMemo(() => {
+    if (!sets.length) return { total: 0, started: 0, complete: 0, pct: 0 };
+    let started = 0;
+    let complete = 0;
+    let owned = 0;
+    let possible = 0;
+    for (const s of sets) {
+      const count = myCards.filter(
+        (c) => c.attributes.set.toLowerCase() === s.name.toLowerCase() && (c.status ?? 'owned') !== 'wanted',
+      ).length;
+      possible += s.total;
+      if (count > 0) {
+        started++;
+        owned += count;
+        if (count >= s.total) complete++;
+      }
+    }
+    const pct = possible > 0 ? Math.round((owned / possible) * 100) : 0;
+    return { total: sets.length, started, complete, pct };
+  }, [sets, myCards]);
+
   // Prices for owned cards in selected set only
   const ownedSetTcgIds = useMemo(
     () => (selectedSet
@@ -1445,42 +1688,64 @@ export function Sets() {
         <Main>
           <section>
             <SectionWrapper>
-              <DetailHeader>
-                <DetailHeaderTop>
-                  <BackButton onClick={() => { setSelectedSet(null); setCardSearch(''); setSetViewFilter('all'); setPreviewCard(null); }}>
-                    <IconChevronLeft size={14} stroke={2} />
-                    All Sets
-                  </BackButton>
-                  {selectedSet.images?.logo && (
-                    <img
-                      src={selectedSet.images.logo}
-                      alt={selectedSet.name}
-                      style={{ height: '2rem', objectFit: 'contain', maxWidth: '8rem' }}
-                    />
-                  )}
-                </DetailHeaderTop>
+              <DetailBackBtn
+                onClick={() => { setSelectedSet(null); setCardSearch(''); setSetViewFilter('all'); setPreviewCard(null); }}
+                aria-label='Back to all sets'
+              >
+                <IconChevronLeft size={14} stroke={2.5} />
+                All Sets
+              </DetailBackBtn>
 
-                <DetailHeaderBody>
-                  <DetailTitle>
-                    <DetailName>{selectedSet.name}</DetailName>
-                    <DetailMetaRow>
-                      <DetailMetaChip>{selectedSet.series}</DetailMetaChip>
-                      <DetailMetaChip>{selectedSet.releaseDate}</DetailMetaChip>
-                      <DetailMetaChip>{selectedSet.total} cards</DetailMetaChip>
-                      {ownedInSet.length > 0 && (
-                        <DetailMetaChip>{ownedInSet.length} owned</DetailMetaChip>
-                      )}
-                      {ownedInSet.length > 0 && (
-                        <ValueChip>
-                          {setOwnedValue != null
-                            ? `A$${(setOwnedValue * audRate).toFixed(0)} est. value`
-                            : 'Est. value loading…'}
-                        </ValueChip>
-                      )}
-                    </DetailMetaRow>
-                  </DetailTitle>
-                </DetailHeaderBody>
-              </DetailHeader>
+              {/* Unified hero — same design on mobile and desktop */}
+              <SetDetailHero
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ type: 'spring', stiffness: 260, damping: 26, delay: 0.05 }}
+              >
+                <DetailHeroLogoRow>
+                  {selectedSet.images?.logo && (
+                    <DetailHeroLogoBubble>
+                      <DetailHeroLogoImg src={selectedSet.images.logo} alt={selectedSet.name} />
+                    </DetailHeroLogoBubble>
+                  )}
+                  <DetailHeroNameBlock>
+                    <DetailHeroName>{selectedSet.name}</DetailHeroName>
+                    <DetailHeroSubtitle>
+                      {selectedSet.series} · {selectedSet.releaseDate}
+                    </DetailHeroSubtitle>
+                  </DetailHeroNameBlock>
+                </DetailHeroLogoRow>
+                <DetailHeroStatsRow>
+                  <DetailHeroStat>
+                    <DetailHeroStatValue>{ownedInSet.length}</DetailHeroStatValue>
+                    <DetailHeroStatLabel>Owned</DetailHeroStatLabel>
+                  </DetailHeroStat>
+                  <DetailHeroStat>
+                    <DetailHeroStatValue>{selectedSet.total}</DetailHeroStatValue>
+                    <DetailHeroStatLabel>Total</DetailHeroStatLabel>
+                  </DetailHeroStat>
+                  <DetailHeroStat style={{ marginLeft: 'auto', alignItems: 'flex-end' }}>
+                    <DetailHeroStatValue>
+                      {Math.min(100, Math.round((ownedInSet.length / Math.max(1, selectedSet.total)) * 100))}%
+                    </DetailHeroStatValue>
+                    <DetailHeroStatLabel>Complete</DetailHeroStatLabel>
+                  </DetailHeroStat>
+                </DetailHeroStatsRow>
+                <DetailHeroProgressBar>
+                  <DetailHeroProgressFill
+                    initial={{ width: 0 }}
+                    animate={{
+                      width: `${Math.min(100, Math.round((ownedInSet.length / Math.max(1, selectedSet.total)) * 100))}%`,
+                    }}
+                    transition={{ type: 'spring', stiffness: 60, damping: 18, delay: 0.2 }}
+                  />
+                </DetailHeroProgressBar>
+                {ownedInSet.length > 0 && setOwnedValue != null && (
+                  <DetailHeroSubtitle style={{ position: 'relative', zIndex: 1 }}>
+                    Est. value · {fmtPrice(setOwnedValue, currency, audRate)}
+                  </DetailHeroSubtitle>
+                )}
+              </SetDetailHero>
 
               <SearchWrapper>
                 <SearchIcon><IconSearch size={16} stroke={2} /></SearchIcon>
@@ -1511,7 +1776,7 @@ export function Sets() {
                 <ViewFilterBtn $active={setViewFilter === 'notOwned'} onClick={() => setSetViewFilter('notOwned')}>Not Owned</ViewFilterBtn>
               </ViewFilter>
 
-              <AnimatePresence mode='wait'>
+              <AnimatePresence>
                 {cardsLoading ? (
                   <CardsGrid key='skeleton'>
                     {Array.from({ length: 20 }).map((_, i) => (
@@ -1565,8 +1830,8 @@ export function Sets() {
                             initial={{ opacity: 0, y: 12 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.2, delay: Math.min(i * 0.02, 0.4) }}
-                            whileHover={{ y: -4, scale: 1.03 }}
-                            whileTap={{ scale: 0.97 }}
+                            whileHover={hoverLiftLg}
+                            whileTap={tapPress}
                             style={{ cursor: 'default' }}
                           >
                             <TcgCardImg
@@ -1782,7 +2047,48 @@ export function Sets() {
               <IconRefresh size={14} stroke={2} />
               Sync
             </SyncBtn>
+            <SyncIconBtn
+              $loading={setsLoading}
+              onClick={refreshSets}
+              disabled={setsLoading}
+              whileTap={tapPressFirm}
+              aria-label='Sync sets'
+              title='Check for new sets'
+            >
+              <IconRefresh size={14} stroke={2} />
+            </SyncIconBtn>
           </PageHeader>
+
+          {/* Mobile-only hero summary */}
+          {!setsLoading && setsSummary.total > 0 && (
+            <SetsSummary
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ type: 'spring', stiffness: 260, damping: 26, delay: 0.05 }}
+            >
+              <SetsSummaryStatsRow>
+                <SetsSummaryStat>
+                  <SetsSummaryStatValue>{setsSummary.started}</SetsSummaryStatValue>
+                  <SetsSummaryStatLabel>Started</SetsSummaryStatLabel>
+                </SetsSummaryStat>
+                <SetsSummaryStat>
+                  <SetsSummaryStatValue>{setsSummary.complete}</SetsSummaryStatValue>
+                  <SetsSummaryStatLabel>Complete</SetsSummaryStatLabel>
+                </SetsSummaryStat>
+                <SetsSummaryStat style={{ marginLeft: 'auto' }}>
+                  <SetsSummaryStatValue>{setsSummary.pct}%</SetsSummaryStatValue>
+                  <SetsSummaryStatLabel>Collected</SetsSummaryStatLabel>
+                </SetsSummaryStat>
+              </SetsSummaryStatsRow>
+              <SetsProgressBar>
+                <SetsProgressFill
+                  initial={{ width: 0 }}
+                  animate={{ width: `${setsSummary.pct}%` }}
+                  transition={{ type: 'spring', stiffness: 60, damping: 18, delay: 0.2 }}
+                />
+              </SetsProgressBar>
+            </SetsSummary>
+          )}
 
           <SearchRow>
             <SearchWrapper style={{ margin: 0, flex: 1 }}>
@@ -1842,7 +2148,7 @@ export function Sets() {
           )}
 
           {searchMode === 'pokemon' ? (
-            <AnimatePresence mode='wait'>
+            <AnimatePresence>
               {!search.trim() ? (
                 <EmptyState key='idle' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
                   <EmptyIcon>🔍</EmptyIcon>
@@ -1876,8 +2182,8 @@ export function Sets() {
                           initial={{ opacity: 0, y: 12 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.2, delay: Math.min(i * 0.015, 0.4) }}
-                          whileHover={{ y: -4, scale: 1.03 }}
-                          whileTap={{ scale: 0.97 }}
+                          whileHover={hoverLiftLg}
+                          whileTap={tapPress}
                           style={{ cursor: 'default' }}
                         >
                           <TcgCardImg src={card.images.small} alt={card.name} $owned={owned || wanted} loading='lazy' />
@@ -2006,7 +2312,7 @@ export function Sets() {
                         animate={{ opacity: [0.5, 1, 0.5], scale: [0.9, 1.1, 0.9] }}
                         transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
                       />
-                      Upcoming sets
+                      Coming soon
                     </UpcomingTitle>
                   </UpcomingHeader>
                   <UpcomingStrip>

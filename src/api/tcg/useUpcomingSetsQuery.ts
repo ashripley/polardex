@@ -7,16 +7,23 @@ export interface UpcomingSet extends TcgSet {
   rumoredSource?: string;
 }
 
+export interface UseUpcomingSetsResult {
+  /** Future-dated and/or rumored sets only. Empty when there's nothing upcoming. */
+  upcoming: UpcomingSet[];
+  loading: boolean;
+  error: string | null;
+}
+
 /**
  * Hardcoded rumored / leaked sets. The Pokémon TCG API only lists officially
  * released sets, so truly upcoming sets need to be curated manually from news
  * sources (PokeBeach, Bulbanews, LimitlessTCG news).
  *
- * Each entry becomes a rumored card in the upcoming strip with a source link.
- * Keep this list short and remove entries once they're added to the TCG API.
+ * Keep this list short and prune entries as they get added to the TCG API
+ * (or pass their release date — the upcoming filter handles that automatically).
  */
 const RUMORED_SETS: UpcomingSet[] = [
-  // Example shape — populate as leaks surface:
+  // Example shape:
   // {
   //   id: 'rumored-sv11',
   //   name: 'Black Bolt',
@@ -30,32 +37,33 @@ const RUMORED_SETS: UpcomingSet[] = [
   // },
 ];
 
+function parseReleaseMs(iso: string): number {
+  // Pokemon TCG API uses "YYYY/MM/DD"; Date.parse expects "YYYY-MM-DD"
+  return Date.parse(iso.replace(/\//g, '-'));
+}
+
 /**
- * Derives the list of upcoming sets from the existing sets query.
- * Combines:
- *  - TCG API sets where releaseDate is in the future (confirmed)
- *  - Hardcoded rumored sets (tagged with isRumored)
- * Sorted by nearest release date first.
+ * Returns the list of sets to show in the "upcoming" strip on the Sets page.
+ * Only includes sets that haven't been released yet — already-released sets
+ * live in the main grid below, so duplicating them here would just be noise.
  */
-export function useUpcomingSetsQuery() {
+export function useUpcomingSetsQuery(): UseUpcomingSetsResult {
   const { sets, loading, error } = usePokemonSetsQuery();
 
   const upcoming = useMemo<UpcomingSet[]>(() => {
     const todayMs = Date.now();
+
     const confirmed = sets
       .filter((s) => {
         if (!s.releaseDate) return false;
-        // Pokemon TCG API dates use "YYYY/MM/DD"
-        const parsed = Date.parse(s.releaseDate.replace(/\//g, '-'));
-        return Number.isFinite(parsed) && parsed > todayMs;
+        const ms = parseReleaseMs(s.releaseDate);
+        return Number.isFinite(ms) && ms > todayMs;
       })
       .map((s) => ({ ...s } as UpcomingSet));
 
-    const combined = [...confirmed, ...RUMORED_SETS];
-
-    return combined.sort((a, b) => {
-      const pa = Date.parse(a.releaseDate.replace(/\//g, '-')) || Infinity;
-      const pb = Date.parse(b.releaseDate.replace(/\//g, '-')) || Infinity;
+    return [...confirmed, ...RUMORED_SETS].sort((a, b) => {
+      const pa = parseReleaseMs(a.releaseDate) || Infinity;
+      const pb = parseReleaseMs(b.releaseDate) || Infinity;
       return pa - pb;
     });
   }, [sets]);

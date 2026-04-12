@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import styled from 'styled-components';
 import { motion } from 'motion/react';
+import { hoverScale, tapPress } from '../../theme/motion';
 import { SectionWrapper } from '../Home/sections/sectionStyles';
 import { useGetCardsQuery } from '../../api';
 import { usePokemonSetsQuery } from '../../api/tcg/usePokemonSetsQuery';
@@ -73,35 +74,112 @@ const CardTitle = styled.h2`
   margin: 0 0 ${({ theme }) => theme.space[4]} 0;
 `;
 
-// ── Overview stats ────────────────────────────────────────────────────────────
+// ── Hero summary — unified across viewports ─────────────────────────────────
 
-const StatRow = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: ${({ theme }) => theme.space[3]};
-`;
-
-const StatBox = styled(motion.div)`
+const Hero = styled(motion.div)`
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.space[1]};
-  padding: ${({ theme }) => theme.space[3]};
-  background: ${({ theme }) => theme.color.surface.muted};
-  border-radius: ${({ theme }) => theme.radius.md};
-  min-width: 5rem;
+  gap: ${({ theme }) => theme.space[4]};
+  margin-bottom: ${({ theme }) => theme.space[4]};
+  padding: ${({ theme }) => `${theme.space[5]} ${theme.space[5]} ${theme.space[4]}`};
+  border-radius: ${({ theme }) => theme.radius.xl};
+  background: linear-gradient(135deg,
+    ${({ theme }) => `${theme.color.aurora.green}1c`} 0%,
+    ${({ theme }) => `${theme.color.frost.teal}14`} 100%);
+  border: 1.5px solid ${({ theme }) => `${theme.color.aurora.green}40`};
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 50%;
+    height: 200%;
+    background: radial-gradient(
+      circle,
+      ${({ theme }) => `${theme.color.aurora.green}22`} 0%,
+      transparent 70%
+    );
+    pointer-events: none;
+  }
+
+  @media (min-width: calc(${({ theme }) => theme.breakpoint.mobile} + 1px)) {
+    padding: ${({ theme }) => `${theme.space[6]} ${theme.space[8]}`};
+    gap: ${({ theme }) => theme.space[5]};
+    margin-bottom: ${({ theme }) => theme.space[5]};
+  }
 `;
 
-const StatValue = styled.span`
-  font-size: clamp(1.25rem, 4vw, ${({ theme }) => theme.typography.size.xxl});
+const HeroLabel = styled.span`
+  font-size: ${({ theme }) => theme.typography.size.xxs};
   font-weight: ${({ theme }) => theme.typography.weight.bold};
-  color: ${({ theme }) => theme.color.frost.blue};
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
+  color: ${({ theme }) => theme.color.text.secondary};
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  position: relative;
+  z-index: 1;
 `;
+
+const HeroValue = styled.span`
+  font-size: 2.25rem;
+  font-weight: ${({ theme }) => theme.typography.weight.bold};
+  color: ${({ theme }) => theme.color.text.primary};
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.025em;
+  line-height: 1;
+  position: relative;
+  z-index: 1;
+
+  @media (min-width: calc(${({ theme }) => theme.breakpoint.mobile} + 1px)) {
+    font-size: 3rem;
+  }
+`;
+
+const HeroChips = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${({ theme }) => theme.space[2]};
+  position: relative;
+  z-index: 1;
+`;
+
+const HeroChip = styled.div`
+  display: inline-flex;
+  align-items: baseline;
+  gap: ${({ theme }) => theme.space[2]};
+  padding: ${({ theme }) => `${theme.space[1]} ${theme.space[3]}`};
+  border-radius: ${({ theme }) => theme.radius.full};
+  background: ${({ theme }) => theme.color.surface.base};
+  border: 1px solid ${({ theme }) => theme.color.surface.border};
+`;
+
+const HeroChipValue = styled.span`
+  font-size: 0.95rem;
+  font-weight: ${({ theme }) => theme.typography.weight.bold};
+  color: ${({ theme }) => theme.color.text.primary};
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+`;
+
+const HeroChipLabel = styled.span`
+  font-size: 0.7rem;
+  color: ${({ theme }) => theme.color.text.secondary};
+  letter-spacing: 0.02em;
+`;
+
+// ── Overview stats ────────────────────────────────────────────────────────────
 
 const StatLabel = styled.span`
   font-size: ${({ theme }) => theme.typography.size.xs};
   color: ${({ theme }) => theme.color.text.secondary};
+`;
+
+// Muted variant of StatLabel — used to label rows in TopList ("Set name" etc).
+const StatLabelMuted = styled(StatLabel)`
+  opacity: 0.7;
 `;
 
 // ── Bar chart ─────────────────────────────────────────────────────────────────
@@ -174,6 +252,11 @@ const PillLabel = styled.span<{ $accent: string }>`
   color: ${({ $accent }) => $accent};
   font-weight: ${({ theme }) => theme.typography.weight.medium};
   text-transform: capitalize;
+`;
+
+// Tighter chip variant used inline in list items (rarity tag, pokemon type).
+const InlineChip = styled(PillLabel)`
+  font-size: ${({ theme }) => theme.typography.size.xxs};
 `;
 
 const PillCount = styled.span`
@@ -471,43 +554,39 @@ export function Overview() {
             </Grid>
           ) : (
             <>
-              {/* ── Overview ── */}
-              <Card custom={0} variants={cardVariants} initial='hidden' animate='visible' style={{ marginBottom: '1rem' }}>
-                <CardTitle>Overview</CardTitle>
-                <StatRow>
-                  {[
-                    { label: 'Total Cards', value: stats.total },
-                    { label: 'Unique Pokémon', value: stats.unique },
-                    { label: 'Sets', value: stats.sets },
-                    { label: 'Graded', value: stats.graded },
-                  ].map(({ label, value }, i) => (
-                    <StatBox
-                      key={label}
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 0.1 + i * 0.06 }}
-                    >
-                      <StatValue>{value}</StatValue>
-                      <StatLabel>{label}</StatLabel>
-                    </StatBox>
-                  ))}
-                  {collectionValue && (
-                    <StatBox
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 0.34 }}
-                      style={{ flex: '1 1 100%' }}
-                    >
-                      <StatValue style={{ fontSize: '1.5rem', color: '#a3be8c' }}>
-                        {fmtPrice(collectionValue.total, currency, audRate)}
-                      </StatValue>
-                      <StatLabel>
-                        Est. Collection Value · {collectionValue.priced} cards priced · qty included
-                      </StatLabel>
-                    </StatBox>
+              {/* Unified hero — same design on mobile and desktop */}
+              <Hero
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ type: 'spring', stiffness: 260, damping: 26, delay: 0.05 }}
+              >
+                <HeroLabel>Estimated value</HeroLabel>
+                <HeroValue>
+                  {collectionValue
+                    ? fmtPrice(collectionValue.total, currency, audRate)
+                    : '—'}
+                </HeroValue>
+                <HeroChips>
+                  <HeroChip>
+                    <HeroChipValue>{stats.total}</HeroChipValue>
+                    <HeroChipLabel>cards</HeroChipLabel>
+                  </HeroChip>
+                  <HeroChip>
+                    <HeroChipValue>{stats.unique}</HeroChipValue>
+                    <HeroChipLabel>unique</HeroChipLabel>
+                  </HeroChip>
+                  <HeroChip>
+                    <HeroChipValue>{stats.sets}</HeroChipValue>
+                    <HeroChipLabel>sets</HeroChipLabel>
+                  </HeroChip>
+                  {stats.graded > 0 && (
+                    <HeroChip>
+                      <HeroChipValue>{stats.graded}</HeroChipValue>
+                      <HeroChipLabel>graded</HeroChipLabel>
+                    </HeroChip>
                   )}
-                </StatRow>
-              </Card>
+                </HeroChips>
+              </Hero>
 
               <Grid>
                 {/* ── Type breakdown ── */}
@@ -527,7 +606,7 @@ export function Overview() {
                     {stats.condEntries.map(([cond, count]) => {
                       const color = conditionColors[cond] ?? '#81a1c1';
                       return (
-                        <StatPill key={cond} $accent={color} whileHover={{ scale: 1.04 }}>
+                        <StatPill key={cond} $accent={color} whileHover={hoverScale} whileTap={tapPress}>
                           <PillLabel $accent={color}>{cond || '-'}</PillLabel>
                           <PillCount>{count}</PillCount>
                         </StatPill>
@@ -555,7 +634,7 @@ export function Overview() {
                           >
                             <Rank>#{i + 1}</Rank>
                             <TopName>{card.pokemonData.name}</TopName>
-                            <StatLabel style={{ fontSize: '0.7rem', opacity: 0.7 }}>{card.attributes.set}</StatLabel>
+                            <StatLabelMuted>{card.attributes.set}</StatLabelMuted>
                             <PriceBadge $tier={tier}>{fmtPrice(price, currency, audRate)}</PriceBadge>
                           </TopItem>
                         );
@@ -578,10 +657,10 @@ export function Overview() {
                         >
                           <Rank>#{i + 1}</Rank>
                           <TopName>{card.pokemonData.name}</TopName>
-                          <StatLabel style={{ fontSize: '0.7rem', opacity: 0.7 }}>{card.attributes.set}</StatLabel>
-                          <PillLabel $accent='#d08770' style={{ fontSize: '0.66rem', textTransform: 'capitalize' }}>
+                          <StatLabelMuted>{card.attributes.set}</StatLabelMuted>
+                          <InlineChip $accent={'#d08770'}>
                             {rarity}
-                          </PillLabel>
+                          </InlineChip>
                         </TopItem>
                       ))}
                     </TopList>
@@ -626,9 +705,9 @@ export function Overview() {
                           }}
                         />
                         <TopName>{pokemon.name}</TopName>
-                        <PillLabel $accent='#81a1c1' style={{ textTransform: 'capitalize', fontSize: '0.72rem' }}>
+                        <InlineChip $accent={'#81a1c1'}>
                           {pokemon.type}
-                        </PillLabel>
+                        </InlineChip>
                         <TopBadge>×{pokemon.total}</TopBadge>
                       </TopItem>
                     ))}

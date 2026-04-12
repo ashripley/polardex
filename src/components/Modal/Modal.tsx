@@ -51,8 +51,8 @@ const Overlay = styled(Dialog.Overlay)`
   backdrop-filter: blur(4px);
   z-index: ${({ theme }) => theme.zIndex.modal};
 
-  &[data-state='open']   { animation: ${overlayShow} 200ms ease; }
-  &[data-state='closed'] { animation: ${overlayHide} 150ms ease; }
+  &[data-state='open']   { animation: ${overlayShow} 220ms cubic-bezier(0.22, 1, 0.36, 1); }
+  &[data-state='closed'] { animation: ${overlayHide} 180ms cubic-bezier(0.22, 1, 0.36, 1); }
 `;
 
 const Handle = styled.div`
@@ -64,7 +64,7 @@ const Handle = styled.div`
   margin: 0 auto ${({ theme }) => theme.space[2]};
   flex-shrink: 0;
 
-  @media (max-width: 56.25em) {
+  @media (max-width: ${({ theme }) => theme.breakpoint.md}) {
     display: block;
   }
 `;
@@ -86,10 +86,10 @@ const Content = styled(Dialog.Content)`
 
   &:focus { outline: none; }
 
-  &[data-state='open']   { animation: ${contentShow} 250ms cubic-bezier(0.16, 1, 0.3, 1); }
-  &[data-state='closed'] { animation: ${contentHide} 150ms ease-in; }
+  &[data-state='open']   { animation: ${contentShow} 260ms cubic-bezier(0.22, 1, 0.36, 1); }
+  &[data-state='closed'] { animation: ${contentHide} 180ms cubic-bezier(0.4, 0, 1, 1); }
 
-  @media (max-width: 56.25em) {
+  @media (max-width: ${({ theme }) => theme.breakpoint.md}) {
     top: auto;
     left: 0;
     right: 0;
@@ -100,8 +100,8 @@ const Content = styled(Dialog.Content)`
     border-radius: ${({ theme }) => theme.radius.xl} ${({ theme }) => theme.radius.xl} 0 0;
     padding-top: ${({ theme }) => theme.space[2]};
 
-    &[data-state='open']   { animation: ${slideUp} 350ms cubic-bezier(0.16, 1, 0.3, 1); }
-    &[data-state='closed'] { animation: ${slideDown} 200ms ease-in; }
+    &[data-state='open']   { animation: ${slideUp} 360ms cubic-bezier(0.22, 1, 0.36, 1); }
+    &[data-state='closed'] { animation: ${slideDown} 220ms cubic-bezier(0.4, 0, 1, 1); }
   }
 `;
 

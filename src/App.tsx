@@ -1,11 +1,32 @@
 import { Route, BrowserRouter as Router, Routes, useLocation, useNavigate } from 'react-router-dom';
 import styled, { createGlobalStyle } from 'styled-components';
-import { Collections, Home, Studio, Sets, Overview, Login } from './pages';
 import { NavigationBar, PageFooter, PwaInstallBanner } from './components';
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './services/firebase.config';
+
+// Eager-load Home — it's the default landing route, no value in deferring it.
+import { Home } from './pages';
+
+// Lazy-load every other page so each becomes its own chunk and the initial JS
+// bundle stays small. The named-export → default-export adapter is necessary
+// because all the page modules use named exports and React.lazy requires default.
+const Collections = lazy(() =>
+  import('./pages/Collections/Collections').then((m) => ({ default: m.Collections })),
+);
+const Studio = lazy(() =>
+  import('./pages/Studio/Studio').then((m) => ({ default: m.Studio })),
+);
+const Sets = lazy(() =>
+  import('./pages/Sets/Sets').then((m) => ({ default: m.Sets })),
+);
+const Overview = lazy(() =>
+  import('./pages/Overview/Overview').then((m) => ({ default: m.Overview })),
+);
+const Login = lazy(() =>
+  import('./pages/Login/Login').then((m) => ({ default: m.Login })),
+);
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -18,7 +39,7 @@ const GlobalStyle = createGlobalStyle`
   }
 
   /* Native-app feel on mobile */
-  @media (max-width: 759px) {
+  @media (max-width: ${({ theme }) => theme.breakpoint.mobile}) {
     /* Disable callout on long-press for non-text elements */
     button, a, [role="button"] {
       -webkit-touch-callout: none;
@@ -90,7 +111,7 @@ const AppContainer = styled.div`
 const Main = styled.main`
   flex: 1;
 
-  @media (max-width: 759px) {
+  @media (max-width: ${({ theme }) => theme.breakpoint.mobile}) {
     padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
   }
 `;
@@ -103,6 +124,14 @@ const pageVariants = {
 
 // Custom iOS-style easing — snappier than easeInOut
 const pageTransition = { duration: 0.18, ease: [0.25, 0.46, 0.45, 0.94] as const };
+
+// Suspense fallback while a lazy chunk is downloading. Kept deliberately
+// minimal — the app shell (nav, footer) is already painted, so this only fills
+// the page area for a few hundred ms during the first navigation to a chunk.
+const RouteFallback = styled.div`
+  min-height: 60dvh;
+  background-color: ${({ theme }) => theme.color.surface.muted};
+`;
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -117,16 +146,18 @@ function AnimatedRoutes() {
         exit='exit'
         transition={pageTransition}
       >
-        <Routes location={location}>
-          <Route path='/'        element={<Home />} />
-          <Route path='/home'    element={<Home />} />
-          <Route path='/collections' element={<Collections />} />
-          {/* Legacy redirect for old /gallery links */}
-          <Route path='/gallery' element={<Collections />} />
-          <Route path='/studio'  element={<Studio />} />
-          <Route path='/sets'    element={<Sets />} />
-          <Route path='/overview' element={<Overview />} />
-        </Routes>
+        <Suspense fallback={<RouteFallback />}>
+          <Routes location={location}>
+            <Route path='/'        element={<Home />} />
+            <Route path='/home'    element={<Home />} />
+            <Route path='/collections' element={<Collections />} />
+            {/* Legacy redirect for old /gallery links */}
+            <Route path='/gallery' element={<Collections />} />
+            <Route path='/studio'  element={<Studio />} />
+            <Route path='/sets'    element={<Sets />} />
+            <Route path='/overview' element={<Overview />} />
+          </Routes>
+        </Suspense>
       </motion.div>
     </AnimatePresence>
   );
@@ -185,9 +216,11 @@ function AppContent() {
     return (
       <MotionConfig reducedMotion='user'>
         <GlobalStyle />
-        <Routes>
-          <Route path='/login' element={<Login />} />
-        </Routes>
+        <Suspense fallback={null}>
+          <Routes>
+            <Route path='/login' element={<Login />} />
+          </Routes>
+        </Suspense>
       </MotionConfig>
     );
   }

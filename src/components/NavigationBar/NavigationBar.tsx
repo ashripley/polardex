@@ -13,6 +13,7 @@ import {
   IconLockOpen,
 } from '@tabler/icons-react';
 import { useThemeMode, useReadOnly } from '../../providers';
+import { tapPress, springSnappy } from '../../theme/motion';
 
 // ── Root shell ────────────────────────────────────────────────────────────────
 
@@ -402,8 +403,8 @@ export function NavigationBar() {
                             <StyledLink to={to}>
                               <NavButton
                                 whileHover={{ y: -1 }}
-                                whileTap={{ scale: 0.97 }}
-                                transition={{ duration: 0.15, ease: 'easeOut' }}
+                                whileTap={tapPress}
+                                transition={springSnappy}
                               >
                                 {label}
                               </NavButton>

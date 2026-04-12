@@ -20,7 +20,18 @@ export function useCurrency() {
   return { currency, toggle };
 }
 
+// Intl formatters are cached at module load — re-creating them per call is
+// surprisingly expensive when called inside hot lists.
+const usdFormatter = new Intl.NumberFormat('en-US', {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+const audFormatter = new Intl.NumberFormat('en-AU', {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
 export function fmtPrice(usd: number, currency: Currency, audRate: number): string {
-  if (currency === 'AUD') return `A$${(usd * audRate).toFixed(2)}`;
-  return `$${usd.toFixed(2)}`;
+  if (currency === 'AUD') return `A$${audFormatter.format(usd * audRate)}`;
+  return `$${usdFormatter.format(usd)}`;
 }

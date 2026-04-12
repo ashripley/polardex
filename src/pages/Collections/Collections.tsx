@@ -1,11 +1,14 @@
 import styled from 'styled-components';
 import { useMemo, useState, useEffect, useRef, useCallback, memo } from 'react';
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'motion/react';
-import { IconPhotoScan, IconX, IconDownload, IconChevronDown, IconChevronLeft, IconChevronRight, IconChevronsLeft, IconChevronsRight, IconLink, IconCoin } from '@tabler/icons-react';
+import { tapPress, tapPressFirm } from '../../theme/motion';
+import { useIsMobile } from '../../utils';
+import { IconPhotoScan, IconX, IconDownload, IconChevronDown, IconChevronLeft, IconChevronRight, IconChevronsLeft, IconChevronsRight, IconLink, IconHeartFilled, IconCheck, IconArrowsSort } from '@tabler/icons-react';
 import { useSearchParams } from 'react-router-dom';
 import { SectionWrapper } from '../Home/sections/sectionStyles';
 import { FilterBar, CollectionsFilters, defaultFilters } from '../../components';
 import { useGetCardsQuery } from '../../api';
+import { saveCard } from '../../api/mutations';
 import { useTcgArtLookup } from '../../api/tcg/useTcgArtLookup';
 import { useTcgPrices } from '../../api/tcg/useTcgPrices';
 import { CardModel } from '../../api/fetch/card/cardModel';
@@ -107,7 +110,7 @@ const ArtCardName = styled.p`
 
 const ArtCardMeta = styled.p`
   color: rgba(255, 255, 255, 0.65);
-  font-size: 0.72rem;
+  font-size: ${({ theme }) => theme.typography.size.xs};
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -127,8 +130,8 @@ const RecencyDot = styled.div`
   background: rgba(0, 0, 0, 0.62);
   backdrop-filter: blur(6px);
   border: 1px solid rgba(163, 210, 140, 0.7);
-  color: #e6f0d8;
-  font-size: 0.65rem;
+  color: ${({ theme }) => theme.color.aurora.greenLight};
+  font-size: ${({ theme }) => theme.typography.size.xxs};
   font-weight: ${({ theme }) => theme.typography.weight.bold};
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -140,7 +143,7 @@ const RecencyDot = styled.div`
     width: 5px;
     height: 5px;
     border-radius: 50%;
-    background: #c8e6a0;
+    background: ${({ theme }) => theme.color.aurora.greenLight};
     box-shadow: 0 0 6px rgba(200, 230, 160, 0.8);
   }
 `;
@@ -169,7 +172,7 @@ const QtyBadge = styled.div`
   backdrop-filter: blur(6px);
   border: 1px solid rgba(255, 255, 255, 0.15);
   color: #fff;
-  font-size: 0.72rem;
+  font-size: ${({ theme }) => theme.typography.size.xs};
   font-weight: ${({ theme }) => theme.typography.weight.bold};
   z-index: 2;
   letter-spacing: 0.02em;
@@ -193,11 +196,11 @@ const ArtPriceBadge = styled.div<{ $tier: 'normal' | 'high' | 'ultra' | 'missing
     $tier === 'high'    ? 'rgba(255, 210, 120, 0.75)' :
     $tier === 'missing' ? 'rgba(255,255,255,0.14)' :
                           'rgba(163, 210, 140, 0.7)'};
-  color: ${({ $tier }) =>
-    $tier === 'ultra'   ? '#ffd89a' :
-    $tier === 'high'    ? '#ffd266' :
+  color: ${({ $tier, theme }) =>
+    $tier === 'ultra'   ? theme.color.aurora.orangeLight :
+    $tier === 'high'    ? theme.color.aurora.yellowLight :
     $tier === 'missing' ? 'rgba(255,255,255,0.5)' :
-                          '#c8e6a0'};
+                          theme.color.aurora.greenLight};
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
   box-shadow: ${({ $tier }) =>
     $tier === 'ultra' ? '0 2px 10px rgba(255, 180, 80, 0.22)' :
@@ -282,12 +285,12 @@ const PriceTag = styled.span<{ $tier?: 'normal' | 'high' | 'ultra' | 'graded' | 
     $tier === 'high'    ? 'rgba(36, 24, 6, 0.92)' :
     $tier === 'missing' ? 'rgba(255, 255, 255, 0.06)' :
                           'rgba(10, 22, 12, 0.88)'};
-  color: ${({ $tier }) =>
+  color: ${({ $tier, theme }) =>
     $tier === 'graded'  ? '#e4c6f0' :
-    $tier === 'ultra'   ? '#ffd89a' :
-    $tier === 'high'    ? '#ffd266' :
+    $tier === 'ultra'   ? theme.color.aurora.orangeLight :
+    $tier === 'high'    ? theme.color.aurora.yellowLight :
     $tier === 'missing' ? 'rgba(255, 255, 255, 0.45)' :
-                          '#c8e6a0'};
+                          theme.color.aurora.greenLight};
   font-size: ${({ theme }) => theme.typography.size.sm};
   font-weight: ${({ theme }) => theme.typography.weight.bold};
   border: 1px solid ${({ $tier }) =>
@@ -353,6 +356,7 @@ const PageHeaderRow = styled.div`
   align-items: flex-start;
   justify-content: space-between;
   gap: ${({ theme }) => theme.space[3]};
+  flex-wrap: wrap;
 `;
 
 const HeaderActions = styled.div`
@@ -360,7 +364,135 @@ const HeaderActions = styled.div`
   align-items: center;
   gap: ${({ theme }) => theme.space[2]};
   flex-shrink: 0;
+
+  /* On mobile the actions live inside the summary card, so the header row is
+     just the title. */
+  @media (max-width: ${({ theme }) => theme.breakpoint.mobile}) {
+    display: none;
+  }
 `;
+
+// ── Summary block — unified across viewports ────────────────────────────────
+
+const Summary = styled(motion.div)`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.space[3]};
+  margin-top: ${({ theme }) => theme.space[4]};
+`;
+
+const SummaryCard = styled.div`
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.space[2]};
+  padding: ${({ theme }) => `${theme.space[4]} ${theme.space[5]}`};
+  border-radius: ${({ theme }) => theme.radius.xl};
+  background: linear-gradient(135deg,
+    ${({ theme }) => `${theme.color.frost.teal}14`} 0%,
+    ${({ theme }) => `${theme.color.frost.blue}14`} 100%);
+  border: 1.5px solid ${({ theme }) => `${theme.color.frost.teal}40`};
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+
+  /* Subtle radial accent in the corner */
+  &::before {
+    content: '';
+    position: absolute;
+    top: -40%;
+    right: -10%;
+    width: 50%;
+    height: 180%;
+    background: radial-gradient(
+      circle,
+      ${({ theme }) => `${theme.color.frost.teal}22`} 0%,
+      transparent 70%
+    );
+    pointer-events: none;
+  }
+
+  @media (min-width: calc(${({ theme }) => theme.breakpoint.mobile} + 1px)) {
+    padding: ${({ theme }) => `${theme.space[6]} ${theme.space[8]}`};
+    gap: ${({ theme }) => theme.space[3]};
+  }
+`;
+
+const SummaryLabel = styled.span`
+  font-size: ${({ theme }) => theme.typography.size.xxs};
+  font-weight: ${({ theme }) => theme.typography.weight.bold};
+  color: ${({ theme }) => theme.color.text.secondary};
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+`;
+
+const SummaryValueRow = styled.div`
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.space[3]};
+`;
+
+const SummaryValue = styled.span`
+  font-size: 1.75rem;
+  font-weight: ${({ theme }) => theme.typography.weight.bold};
+  color: ${({ theme }) => theme.color.text.primary};
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1;
+
+  @media (min-width: calc(${({ theme }) => theme.breakpoint.mobile} + 1px)) {
+    font-size: 2.5rem;
+  }
+`;
+
+// On desktop, currency/export live in the page header so we hide them inside
+// the summary card to avoid duplication.
+const SummaryActionsMobile = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.space[2]};
+  flex-shrink: 0;
+
+  @media (min-width: calc(${({ theme }) => theme.breakpoint.mobile} + 1px)) {
+    display: none;
+  }
+`;
+
+const SummaryMetaRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.space[2]};
+  font-size: ${({ theme }) => theme.typography.size.xs};
+  color: ${({ theme }) => theme.color.text.secondary};
+  font-variant-numeric: tabular-nums;
+`;
+
+const SummaryMetaDot = styled.span`
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: ${({ theme }) => theme.color.text.tertiary};
+`;
+
+const IconActionBtn = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: ${({ theme }) => theme.radius.full};
+  background: ${({ theme }) => theme.color.surface.base};
+  border: 1.5px solid ${({ theme }) => theme.color.surface.border};
+  color: ${({ theme }) => theme.color.text.secondary};
+  cursor: pointer;
+  transition: all 180ms cubic-bezier(0.22, 1, 0.36, 1);
+
+  &:hover {
+    border-color: ${({ theme }) => theme.color.frost.blue};
+    color: ${({ theme }) => theme.color.frost.blue};
+  }
+`;
+
 
 // ── Pagination ────────────────────────────────────────────────────────────────
 
@@ -403,10 +535,10 @@ const PageBtn = styled.button<{ $active?: boolean }>`
   align-items: center;
   justify-content: center;
   transition:
-    background-color 150ms ease,
-    box-shadow 150ms ease,
-    color 150ms ease,
-    transform 150ms ease;
+    background-color 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
 
   &:hover:not(:disabled):not([data-active='true']) {
     box-shadow: 0 0 0 1px ${({ theme }) => theme.color.frost.blue};
@@ -445,24 +577,42 @@ const PaginationMeta = styled.span`
 `;
 
 
-const ValuePill = styled(motion.div)`
+const MarkOwnedBtn = styled(motion.button)`
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: ${({ theme }) => `${theme.space[2]} ${theme.space[3]}`};
+  padding: ${({ theme }) => `${theme.space[2]} ${theme.space[4]}`};
   border-radius: ${({ theme }) => theme.radius.full};
   background: linear-gradient(135deg,
-    ${({ theme }) => `${theme.color.frost.teal}1a`} 0%,
-    ${({ theme }) => `${theme.color.frost.blue}1a`} 100%);
-  border: 1.5px solid ${({ theme }) => `${theme.color.frost.teal}55`};
-  color: ${({ theme }) => theme.color.frost.teal};
+    ${({ theme }) => theme.color.frost.teal} 0%,
+    ${({ theme }) => theme.color.frost.blue} 100%);
+  color: #fff;
+  border: none;
   font-size: ${({ theme }) => theme.typography.size.sm};
   font-weight: ${({ theme }) => theme.typography.weight.bold};
-  font-variant-numeric: tabular-nums;
-  backdrop-filter: blur(10px);
-  white-space: nowrap;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 6px 18px ${({ theme }) => `${theme.color.frost.blue}55`};
+  transition: filter 180ms cubic-bezier(0.22, 1, 0.36, 1);
   letter-spacing: 0.01em;
-  box-shadow: 0 2px 12px ${({ theme }) => `${theme.color.frost.teal}15`};
+
+  &:hover { filter: brightness(1.1); }
+  &:disabled { opacity: 0.6; cursor: default; }
+`;
+
+const WishlistBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: ${({ theme }) => `${theme.space[1]} ${theme.space[3]}`};
+  border-radius: ${({ theme }) => theme.radius.full};
+  background: ${({ theme }) => `${theme.color.aurora.red}20`};
+  border: 1px solid ${({ theme }) => `${theme.color.aurora.red}66`};
+  color: ${({ theme }) => theme.color.aurora.red};
+  font-size: ${({ theme }) => theme.typography.size.xs};
+  font-weight: ${({ theme }) => theme.typography.weight.bold};
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 `;
 
 const ShareBtn = styled(motion.button)`
@@ -509,19 +659,6 @@ const ActionBtn = styled.button`
   }
 `;
 
-// ── Sort control ──────────────────────────────────────────────────────────────
-
-const SortRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.space[2]};
-  padding-bottom: ${({ theme }) => theme.space[2]};
-
-  @media (max-width: 759px) {
-    display: none;
-  }
-`;
-
 const StatusTabs = styled.div`
   position: relative;
   display: inline-flex;
@@ -530,6 +667,11 @@ const StatusTabs = styled.div`
   border-radius: ${({ theme }) => theme.radius.full};
   background: ${({ theme }) => theme.color.surface.subtle};
   box-shadow: 0 0 0 1.5px ${({ theme }) => theme.color.surface.border};
+  width: 100%;
+
+  @media (min-width: calc(${({ theme }) => theme.breakpoint.mobile} + 1px)) {
+    width: auto;
+  }
 `;
 
 const StatusTab = styled.button<{ $active: boolean }>`
@@ -546,6 +688,12 @@ const StatusTab = styled.button<{ $active: boolean }>`
   white-space: nowrap;
   z-index: 1;
   transition: color 240ms cubic-bezier(0.22, 1, 0.36, 1);
+
+  @media (max-width: ${({ theme }) => theme.breakpoint.mobile}) {
+    flex: 1;
+    text-align: center;
+    padding: ${({ theme }) => `${theme.space[2]} ${theme.space[2]}`};
+  }
 `;
 
 const StatusTabIndicator = styled(motion.span)`
@@ -582,12 +730,6 @@ const CurrencyToggle = styled.button<{ $active: boolean }>`
   }
 `;
 
-const SortLabel = styled.span`
-  font-size: ${({ theme }) => theme.typography.size.xs};
-  color: ${({ theme }) => theme.color.text.secondary};
-  white-space: nowrap;
-`;
-
 const SelectTrigger = styled(RadixSelect.Trigger)`
   display: inline-flex;
   align-items: center;
@@ -616,7 +758,7 @@ const SelectTrigger = styled(RadixSelect.Trigger)`
     background: ${({ theme }) => theme.color.surface.base};
   }
 
-  @media (max-width: 759px) {
+  @media (max-width: ${({ theme }) => theme.breakpoint.mobile}) {
     width: 100%;
     justify-content: space-between;
     border-radius: ${({ theme }) => theme.radius.md};
@@ -876,6 +1018,7 @@ export function Collections() {
   const audRate = useAudRate();
   const { currency, toggle: toggleCurrency } = useCurrency();
   const [searchParams, setSearchParams] = useSearchParams();
+  const isMobile = useIsMobile();
   const gridTopRef = useRef<HTMLDivElement>(null);
 
   // Live market prices
@@ -1016,6 +1159,26 @@ export function Collections() {
     setSearchParams(next, { replace: true });
   }, [searchParams, setSearchParams]);
 
+  const [marking, setMarking] = useState(false);
+
+  const markSelectedAsOwned = useCallback(async () => {
+    if (!selected || selected.status !== 'wanted') return;
+    setMarking(true);
+    try {
+      // Promote in-place — preserve cardId, createdAt, attributes etc.
+      await saveCard({
+        ...selected,
+        status: 'owned',
+        quantity: Math.max(1, selected.quantity ?? 1),
+      });
+      // Optimistically update the lightbox state so the badge flips immediately;
+      // useGetCardsQuery will catch up on the next snapshot.
+      setSelected({ ...selected, status: 'owned' });
+    } finally {
+      setMarking(false);
+    }
+  }, [selected]);
+
   const copyShareLink = useCallback(() => {
     if (!selected) return;
     const id = selected.attributes.tcgId ?? selected.cardId;
@@ -1038,6 +1201,7 @@ export function Collections() {
   const sortSelect = (
     <RadixSelect.Root value={sort} onValueChange={(v) => setSort(v as SortKey)}>
       <SelectTrigger aria-label='Sort cards'>
+        <IconArrowsSort size={14} stroke={2} style={{ opacity: 0.7 }} />
         <RadixSelect.Value />
         <RadixSelect.Icon style={{ display: 'flex', opacity: 0.45 }}>
           <IconChevronDown size={12} stroke={2} />
@@ -1067,8 +1231,9 @@ export function Collections() {
                 <PageTitle>Collection</PageTitle>
                 <PageSubtitle>Browse and filter your Pokémon card library.</PageSubtitle>
               </div>
+              {/* Desktop actions row — hidden on mobile via CSS in HeaderActions */}
               <HeaderActions>
-                {cards.length > 0 && (
+                {!isMobile && cards.length > 0 && (
                   <StatusTabs role='tablist' aria-label='Collection status'>
                     {(['all', 'owned', 'wanted'] as const).map((key) => (
                       <StatusTab
@@ -1093,17 +1258,6 @@ export function Collections() {
                     ))}
                   </StatusTabs>
                 )}
-                {cards.length > 0 && collectionValueUsd > 0 && (
-                  <ValuePill
-                    initial={{ opacity: 0, y: -4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ type: 'spring', stiffness: 260, damping: 22 }}
-                    title='Estimated total market value'
-                  >
-                    <IconCoin size={14} stroke={2} />
-                    {fmtPrice(collectionValueUsd, currency, audRate)}
-                  </ValuePill>
-                )}
                 <CurrencyToggle $active={currency === 'AUD'} onClick={toggleCurrency} title='Toggle currency'>
                   {currency}
                 </CurrencyToggle>
@@ -1115,6 +1269,81 @@ export function Collections() {
                 )}
               </HeaderActions>
             </PageHeaderRow>
+
+            {/* Unified summary card — same hero design on mobile and desktop.
+                On mobile the currency/export actions appear inside the card; on
+                desktop they live in the page header (above) so the card stays
+                clean. The status tabs render below the card on mobile only. */}
+            {cards.length > 0 && (
+              <Summary
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ type: 'spring', stiffness: 260, damping: 26, delay: 0.05 }}
+              >
+                <SummaryCard>
+                  <SummaryLabel>Total value</SummaryLabel>
+                  <SummaryValueRow>
+                    <SummaryValue>
+                      {collectionValueUsd > 0
+                        ? fmtPrice(collectionValueUsd, currency, audRate)
+                        : '—'}
+                    </SummaryValue>
+                    <SummaryActionsMobile>
+                      <CurrencyToggle
+                        $active={currency === 'AUD'}
+                        onClick={toggleCurrency}
+                        title='Toggle currency'
+                      >
+                        {currency}
+                      </CurrencyToggle>
+                      <IconActionBtn
+                        onClick={() => exportCollectionCsv(cards, audRate)}
+                        title='Export to CSV'
+                        aria-label='Export to CSV'
+                      >
+                        <IconDownload size={14} stroke={2} />
+                      </IconActionBtn>
+                    </SummaryActionsMobile>
+                  </SummaryValueRow>
+                  <SummaryMetaRow>
+                    <span>{cards.length} card{cards.length !== 1 ? 's' : ''}</span>
+                    <SummaryMetaDot />
+                    <span>{setOptions.length} set{setOptions.length !== 1 ? 's' : ''}</span>
+                    {statusCounts.wanted > 0 && (
+                      <>
+                        <SummaryMetaDot />
+                        <span>{statusCounts.wanted} wanted</span>
+                      </>
+                    )}
+                  </SummaryMetaRow>
+                </SummaryCard>
+                {isMobile && (
+                  <StatusTabs role='tablist' aria-label='Collection status'>
+                    {(['all', 'owned', 'wanted'] as const).map((key) => (
+                      <StatusTab
+                        key={key}
+                        role='tab'
+                        aria-selected={statusFilter === key}
+                        $active={statusFilter === key}
+                        onClick={() => setStatusFilter(key)}
+                      >
+                        {statusFilter === key && (
+                          <StatusTabIndicator
+                            layoutId='status-tab-indicator-mobile'
+                            transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+                          />
+                        )}
+                        <span style={{ position: 'relative', zIndex: 1 }}>
+                          {key === 'all' && `All · ${statusCounts.all}`}
+                          {key === 'owned' && `Owned · ${statusCounts.owned}`}
+                          {key === 'wanted' && `Wanted · ${statusCounts.wanted}`}
+                        </span>
+                      </StatusTab>
+                    ))}
+                  </StatusTabs>
+                )}
+              </Summary>
+            )}
           </PageHeader>
 
           <FilterBar
@@ -1127,14 +1356,6 @@ export function Collections() {
             filteredCount={filteredCards.length}
             sortControl={sortSelect}
           />
-
-          {/* Sort row — desktop only (hidden on mobile via CSS) */}
-          {!loading && cards.length > 0 && (
-            <SortRow>
-              <SortLabel>Sort:</SortLabel>
-              {sortSelect}
-            </SortRow>
-          )}
 
           <AnimatePresence mode='wait'>
             {loading ? (
@@ -1298,7 +1519,7 @@ export function Collections() {
                 <CloseButton
                   className='icon-close'
                   onClick={closeLightbox}
-                  whileTap={{ scale: 0.9 }}
+                  whileTap={tapPressFirm}
                   transition={{ type: 'spring', stiffness: 400, damping: 22 }}
                 >
                   <IconX size={14} stroke={2.5} />
@@ -1333,6 +1554,14 @@ export function Collections() {
                   transition={{ delay: 0.1, duration: 0.25 }}
                 >
                   <LightboxName>{selected.pokemonData.name}</LightboxName>
+                  {selected.status === 'wanted' && (
+                    <div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'center' }}>
+                      <WishlistBadge>
+                        <IconHeartFilled size={11} />
+                        On wishlist
+                      </WishlistBadge>
+                    </div>
+                  )}
                   <div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'center' }}>
                     {isGraded ? (
                       <PriceTag $tier='graded'>Graded — raw price not applicable</PriceTag>
@@ -1349,11 +1578,24 @@ export function Collections() {
                       {tags.map((tag) => <Tag key={tag}>{tag}</Tag>)}
                     </LightboxTags>
                   )}
+                  {selected.status === 'wanted' && (
+                    <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'center' }}>
+                      <MarkOwnedBtn
+                        onClick={markSelectedAsOwned}
+                        disabled={marking}
+                        whileTap={tapPress}
+                        transition={{ type: 'spring', stiffness: 400, damping: 22 }}
+                      >
+                        <IconCheck size={14} stroke={2.5} />
+                        {marking ? 'Marking…' : 'Mark as owned'}
+                      </MarkOwnedBtn>
+                    </div>
+                  )}
                   {selected.attributes.tcgId && (
                     <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'center' }}>
                       <ShareBtn
                         onClick={copyShareLink}
-                        whileTap={{ scale: 0.94 }}
+                        whileTap={tapPress}
                         transition={{ type: 'spring', stiffness: 400, damping: 22 }}
                       >
                         <IconLink size={13} stroke={2} />

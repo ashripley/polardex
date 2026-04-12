@@ -15,22 +15,19 @@ export const ButtonContainer = styled.div<{ isMobile?: boolean }>`
 
 export const SectionText = styled.span`
   display: block;
-  font-size: ${({ theme }) => theme.typography.size.xxl};
+  /* Fluid scale: 1.5rem at 320px viewport → xxxl on desktop */
+  font-size: clamp(1.5rem, 5vw, ${({ theme }) => theme.typography.size.xxxl});
   font-weight: ${({ theme }) => theme.typography.weight.bold};
   margin-top: 0;
   margin-bottom: 0.8em;
   line-height: ${({ theme }) => theme.typography.lineHeight.tight};
   color: ${({ theme }) => theme.color.text.primary};
-
-  @media (min-width: ${({ theme }) => theme.breakpoint.md}) {
-    font-size: ${({ theme }) => theme.typography.size.xxxl};
-  }
 `;
 
 export const SectionParagraph = styled.p`
   margin-top: 0;
   margin-bottom: 1em;
-  font-size: ${({ theme }) => theme.typography.size.md};
+  font-size: ${({ theme }) => theme.typography.size.sm};
   line-height: ${({ theme }) => theme.typography.lineHeight.relaxed};
   color: ${({ theme }) => theme.color.text.secondary};
   text-align: start;
@@ -41,7 +38,10 @@ export const SectionParagraph = styled.p`
 `;
 
 export const SectionWrapper = styled.div`
-  padding: ${({ theme }) => `${theme.space[8]} ${theme.space[4]}`};
+  /* Mobile uses tighter vertical rhythm; was space[8] (2rem). The home page
+     is the only consumer that needs the bigger padding so the marketing
+     sections breathe. Other pages use this wrapper for max-width only. */
+  padding: ${({ theme }) => `${theme.space[6]} ${theme.space[4]}`};
   width: 100%;
   margin-inline: auto;
 

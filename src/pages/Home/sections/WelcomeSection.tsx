@@ -41,12 +41,16 @@ const Content = styled.div`
   z-index: 1;
   display: grid;
   justify-items: center;
-  row-gap: ${({ theme }) => theme.space[12]};
+  /* Tighter row-gap on small viewports — was space[12] (3rem) which felt
+     excessive given the 100dvh hero on a phone. */
+  row-gap: ${({ theme }) => theme.space[6]};
+  padding: ${({ theme }) => `${theme.space[8]} 0`};
 
   @media (min-width: ${({ theme }) => theme.breakpoint.md}) {
     grid-template-columns: 1fr 1fr;
     gap: ${({ theme }) => `${theme.space[16]} ${theme.space[8]}`};
     align-items: center;
+    padding: 0;
   }
 `;
 
@@ -85,7 +89,9 @@ const BadgeDot = styled.span`
 `;
 
 const Heading = styled.h1`
-  font-size: ${({ theme }) => theme.typography.size.xxl};
+  /* Fluid sizing — scales smoothly from 1.75rem on a 320px phone to xxxl on
+     desktop without snap-points. Tested at 320px, 414px, 768px, 1280px. */
+  font-size: clamp(1.75rem, 6vw, ${({ theme }) => theme.typography.size.xxxl});
   font-weight: ${({ theme }) => theme.typography.weight.bold};
   line-height: ${({ theme }) => theme.typography.lineHeight.tight};
   color: ${({ theme }) => theme.color.text.primary};
@@ -94,7 +100,6 @@ const Heading = styled.h1`
   letter-spacing: ${({ theme }) => theme.typography.letterSpacing.tight};
 
   @media (min-width: ${({ theme }) => theme.breakpoint.md}) {
-    font-size: ${({ theme }) => theme.typography.size.xxxl};
     text-align: start;
   }
 `;
@@ -111,16 +116,17 @@ const AccentWord = styled.span`
 `;
 
 const Subheading = styled.p`
-  font-size: ${({ theme }) => theme.typography.size.md};
+  font-size: ${({ theme }) => theme.typography.size.sm};
   color: ${({ theme }) => theme.color.text.secondary};
   line-height: ${({ theme }) => theme.typography.lineHeight.relaxed};
-  margin: 0 0 ${({ theme }) => theme.space[8]} 0;
+  margin: 0 0 ${({ theme }) => theme.space[6]} 0;
   text-align: center;
   max-width: 38ch;
 
   @media (min-width: ${({ theme }) => theme.breakpoint.md}) {
     text-align: start;
     font-size: ${({ theme }) => theme.typography.size.lg};
+    margin-bottom: ${({ theme }) => theme.space[8]};
   }
 `;
 

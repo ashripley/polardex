@@ -48,7 +48,7 @@ export const BaseCardImageContainer = styled.div<{ expanded?: boolean }>`
   border: 3px solid ${({ theme }) => theme.color.surface.muted};
   margin-inline: auto;
   transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1), outline 200ms cubic-bezier(0.22, 1, 0.36, 1), background-color 200ms cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 200ms ease;
+    border-color 200ms cubic-bezier(0.22, 1, 0.36, 1);
 
   ${({ expanded }) =>
     expanded &&

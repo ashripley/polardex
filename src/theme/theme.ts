@@ -1,3 +1,7 @@
+// Single source of truth for the mobile/desktop cutoff in pixels.
+// Mirrors `theme.breakpoint.mobile` (47.5em) for use in JavaScript matchMedia queries.
+export const MOBILE_BREAKPOINT_PX = 760;
+
 export interface Theme {
   color: {
     // Surfaces - backgrounds for pages, cards, modals
@@ -13,6 +17,7 @@ export interface Theme {
       primary: string        // #4c566a   body text, headings
       secondary: string      // #7b88a1   supporting text, labels
       tertiary: string       // #d8dee9   placeholder text, dividers
+      inverse: string        // #eceff4   text on dark backgrounds (badges over images)
       primaryHover: string   // rgba(236,239,244,0.4)    hover state bg for primary actions
       secondaryHover: string // rgba(229,233,240,0.75)   hover state bg for secondary actions
     }
@@ -30,6 +35,10 @@ export interface Theme {
       yellow: string // #ebcb8b
       green: string  // #a3be8c
       purple: string // #b48ead
+      // Lighter variants used for high-contrast accent text on dark badge backgrounds
+      greenLight: string   // #c8e6a0
+      orangeLight: string  // #ffd89a
+      yellowLight: string  // #ffd266
     }
   }
 
@@ -78,6 +87,7 @@ export interface Theme {
       primary: string  // SF Pro Rounded
     }
     size: {
+      xxs: string  // 0.65rem  (10px) micro labels (badges, eyebrows)
       xs: string   // 0.75rem  (12px)
       sm: string   // 0.875rem (14px)
       md: string   // 1rem     (16px) base
@@ -126,6 +136,7 @@ export interface Theme {
 
   // Responsive breakpoints (em-based for zoom consistency)
   breakpoint: {
+    mobile: string  // 47.5em (760px)  phone vs tablet — drives bottom nav, drawer filters
     sm: string  // 36em   (576px)
     md: string  // 56.25em (900px)  two-column layouts
     lg: string  // 75em   (1200px)  max-width containers
@@ -145,6 +156,7 @@ export const lightTheme: Theme = {
       primary: '#4c566a',
       secondary: 'rgb(123, 136, 161)',
       tertiary: '#d8dee9',
+      inverse: '#eceff4',
       primaryHover: 'rgba(236, 239, 244, 0.4)',
       secondaryHover: 'rgba(229, 233, 240, 0.75)',
     },
@@ -160,6 +172,9 @@ export const lightTheme: Theme = {
       yellow: '#ebcb8b',
       green: '#a3be8c',
       purple: '#b48ead',
+      greenLight: '#c8e6a0',
+      orangeLight: '#ffd89a',
+      yellowLight: '#ffd266',
     },
   },
 
@@ -203,6 +218,7 @@ export const lightTheme: Theme = {
       primary: "'SF Pro Rounded', system-ui, -apple-system, sans-serif",
     },
     size: {
+      xxs: '0.65rem',
       xs: '0.75rem',
       sm: '0.875rem',
       md: '1rem',
@@ -254,6 +270,7 @@ export const lightTheme: Theme = {
   },
 
   breakpoint: {
+    mobile: '47.5em',
     sm: '36em',
     md: '56.25em',
     lg: '75em',
@@ -274,6 +291,9 @@ export const darkTheme: Theme = {
       primary: '#eceff4',
       secondary: '#d8dee9',
       tertiary: '#4c566a',
+      // In dark mode the inverse is the same near-white as primary — text "on dark"
+      // is just the regular foreground.
+      inverse: '#eceff4',
       primaryHover: 'rgba(76, 86, 106, 0.5)',
       secondaryHover: 'rgba(76, 86, 106, 0.8)',
     },
