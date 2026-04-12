@@ -185,6 +185,31 @@ const Label = styled.span`
   color: ${({ theme }) => theme.color.text.secondary};
 `;
 
+const VariantBadge = styled.span`
+  display: inline-block;
+  font-size: ${({ theme }) => theme.typography.size.xs};
+  color: ${({ theme }) => theme.color.aurora.purple};
+  background: ${({ theme }) => `${theme.color.aurora.purple}18`};
+  border: 1px solid ${({ theme }) => `${theme.color.aurora.purple}35`};
+  border-radius: ${({ theme }) => theme.radius.full};
+  padding: 1px ${({ theme }) => theme.space[2]};
+  font-weight: ${({ theme }) => theme.typography.weight.medium};
+  margin-top: ${({ theme }) => theme.space[1]};
+`;
+
+const PriceBadge = styled.span`
+  display: inline-block;
+  font-size: ${({ theme }) => theme.typography.size.xs};
+  color: ${({ theme }) => theme.color.aurora.green};
+  background: ${({ theme }) => `${theme.color.aurora.green}15`};
+  border: 1px solid ${({ theme }) => `${theme.color.aurora.green}30`};
+  border-radius: ${({ theme }) => theme.radius.full};
+  padding: 1px ${({ theme }) => theme.space[2]};
+  font-weight: ${({ theme }) => theme.typography.weight.semibold};
+  margin-top: ${({ theme }) => theme.space[1]};
+  font-variant-numeric: tabular-nums;
+`;
+
 const Attribute = styled.span`
   font-size: ${({ theme }) => theme.typography.size.sm};
   color: ${({ theme }) => theme.color.text.primary};
@@ -274,9 +299,9 @@ export function Card(props: CardProps) {
                 transition={{ duration: 0.3 }}
               />
             )}
-            {quantity && (
+            {quantity !== undefined && quantity > 1 && (
               <DuplicateIdentifer>
-                <IdentifierText>{quantity}</IdentifierText>
+                <IdentifierText>×{quantity}</IdentifierText>
               </DuplicateIdentifer>
             )}
           </ImageContainer>
@@ -284,6 +309,14 @@ export function Card(props: CardProps) {
           <TitleContainer>
             <Name>{pokemonData?.name}</Name>
             <Type>{pokemonData?.type}</Type>
+            {attributes?.variants?.reverseHolo && (
+              <VariantBadge>
+                {attributes.variants.normal ? 'N + Rev. Holo' : 'Rev. Holo'}
+              </VariantBadge>
+            )}
+            {attributes?.marketPrice !== undefined && attributes.marketPrice > 0 && (
+              <PriceBadge>${attributes.marketPrice.toFixed(2)}</PriceBadge>
+            )}
             <BaseUl expanded={expanded}>
               {Boolean(pokemonData?.id) && <List>{pokemonData?.id}</List>}
               {Boolean(attributes?.year) && <List>{attributes?.year}</List>}

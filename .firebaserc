@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "polardex-prod"
-  }
+    "default": "polardex-prod",
+    "polardex": "polardex-prod"
+  },
+  "targets": {},
+  "etags": {}
 }

@@ -158,17 +158,6 @@ const SecondaryLink = styled(Link)`
 const ArrowIcon = styled.span`
   display: inline-flex;
   align-items: center;
-  transform-origin: left center;
-  transition: transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1);
-
-  ${SecondaryLink}:hover & {
-    transform: scaleX(1.5);
-  }
-
-  & svg {
-    transition: none !important;
-    transform: none !important;
-  }
 `;
 
 const containerVariants = {
@@ -223,7 +212,7 @@ export function WelcomeSection() {
                   <PrimaryLink to='/gallery'>
                     <Button buttonType='primary'>View Collection</Button>
                   </PrimaryLink>
-                  <SecondaryLink to='/studio'>
+                  <SecondaryLink to='/studio' className='icon-arr-r'>
                     Open Studio
                     <ArrowIcon><IconArrowRight size={16} /></ArrowIcon>
                   </SecondaryLink>

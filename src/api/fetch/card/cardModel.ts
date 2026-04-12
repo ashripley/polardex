@@ -25,7 +25,13 @@ export interface AttributeCardModel {
   condition: string;
   grading: number;
   isGraded?: boolean;
-  tcgId?: string;       // Pokemon TCG API card ID e.g. "base1-4"
-  tcgImageUrl?: string; // Full card artwork URL from TCG API
+  tcgId?: string;         // Pokemon TCG API card ID e.g. "base1-4"
+  tcgImageUrl?: string;   // Full card artwork URL from TCG API
+  marketPrice?: number;   // TCGPlayer market price at time of adding (USD)
+  variants?: {
+    normal: boolean;        // own the standard print
+    alternate: boolean;     // own the alternate print (Rev. Holo, Full Art, Alternate Art, etc.)
+    reverseHolo?: boolean;  // legacy field — kept for backward compat with existing DB records
+  };
   meta?: unknown;
 }

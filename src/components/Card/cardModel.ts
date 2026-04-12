@@ -9,6 +9,11 @@ export interface CardModel {
     grading?: number;
     year?: number;
     isGraded?: boolean;
+    marketPrice?: number;
+    variants?: {
+      normal: boolean;
+      reverseHolo: boolean;
+    };
     meta?: unknown;
   };
   pokemonData?: {

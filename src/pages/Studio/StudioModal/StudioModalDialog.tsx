@@ -124,6 +124,33 @@ const Divider = styled.div`
   margin: ${({ theme }) => `${theme.space[1]} 0`};
 `;
 
+const VariantToggleRow = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.space[2]};
+`;
+
+const VariantToggle = styled.button<{ $active: boolean }>`
+  flex: 1;
+  height: 2.5rem;
+  border-radius: ${({ theme }) => theme.radius.md};
+  border: 1.5px solid ${({ $active, theme }) =>
+    $active ? theme.color.aurora.purple : theme.color.surface.border};
+  background: ${({ $active, theme }) =>
+    $active ? `${theme.color.aurora.purple}18` : theme.color.surface.muted};
+  color: ${({ $active, theme }) =>
+    $active ? theme.color.aurora.purple : theme.color.text.secondary};
+  font-size: ${({ theme }) => theme.typography.size.sm};
+  font-weight: ${({ theme }) => theme.typography.weight.semibold};
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease, color 150ms ease;
+
+  &:hover {
+    border-color: ${({ theme }) => theme.color.aurora.purple};
+    color: ${({ theme }) => theme.color.aurora.purple};
+  }
+`;
+
 const Footer = styled.div`
   margin-top: auto;
   padding-top: ${({ theme }) => theme.space[3]};
@@ -1145,6 +1172,26 @@ export function StudioModalDialog({
               </SearchWrapper>
             </Field>
           </Row>
+
+          {/* Print variants */}
+          <Field label='Print Variants'>
+            <VariantToggleRow>
+              <VariantToggle
+                type='button'
+                $active={cardDraft.hasNormal}
+                onClick={() => onCardDraftChange({ ...cardDraft, hasNormal: !cardDraft.hasNormal })}
+              >
+                Normal
+              </VariantToggle>
+              <VariantToggle
+                type='button'
+                $active={cardDraft.hasReverseHolo}
+                onClick={() => onCardDraftChange({ ...cardDraft, hasReverseHolo: !cardDraft.hasReverseHolo })}
+              >
+                Rev. Holo
+              </VariantToggle>
+            </VariantToggleRow>
+          </Field>
 
           {/* Condition */}
           <Field label='Condition'>

@@ -41,9 +41,14 @@ export const SectionParagraph = styled.p`
 `;
 
 export const SectionWrapper = styled.div`
-  padding: ${({ theme }) => `${theme.space[12]} ${theme.space[6]}`};
+  padding: ${({ theme }) => `${theme.space[8]} ${theme.space[4]}`};
   width: 100%;
   margin-inline: auto;
+
+  @media (min-width: ${({ theme }) => theme.breakpoint.sm}) {
+    padding-left: ${({ theme }) => theme.space[6]};
+    padding-right: ${({ theme }) => theme.space[6]};
+  }
 
   @media (min-width: ${({ theme }) => theme.breakpoint.md}) {
     padding-top: ${({ theme }) => theme.space[20]};

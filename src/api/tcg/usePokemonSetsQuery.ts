@@ -26,14 +26,22 @@ function writeCache(sets: TcgSet[]) {
 }
 
 export function usePokemonSetsQuery() {
-  const cached = readCache();
-  const [sets, setSets] = useState<TcgSet[]>(cached ?? []);
-  const [loading, setLoading] = useState(!cached);
+  const [sets, setSets] = useState<TcgSet[]>(() => readCache() ?? []);
+  const [loading, setLoading] = useState(() => readCache() === null);
   const [error, setError] = useState<string | null>(null);
+  const [fetchTick, setFetchTick] = useState(0);
 
   useEffect(() => {
-    if (cached) return; // already hydrated from cache
+    const cached = readCache();
+    if (cached && fetchTick === 0) {
+      setSets(cached);
+      setLoading(false);
+      return;
+    }
+
     const controller = new AbortController();
+    setLoading(true);
+    setError(null);
 
     async function fetchSets() {
       try {
@@ -57,8 +65,12 @@ export function usePokemonSetsQuery() {
 
     fetchSets();
     return () => controller.abort();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [fetchTick]);
 
-  return { sets, loading, error };
+  const refresh = () => {
+    localStorage.removeItem(CACHE_KEY);
+    setFetchTick((n) => n + 1);
+  };
+
+  return { sets, loading, error, refresh };
 }

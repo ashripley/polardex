@@ -1,10 +1,18 @@
 import styled from 'styled-components';
 import { Link, useLocation } from 'react-router-dom';
 import { useIsMobile } from '../../utils';
-import { useEffect, useState } from 'react';
 import { motion, AnimatePresence, LayoutGroup } from 'motion/react';
-import { IconMenu2, IconMoon, IconSun, IconX } from '@tabler/icons-react';
-import { useThemeMode } from '../../providers';
+import {
+  IconMoon,
+  IconSun,
+  IconCards,
+  IconPackage,
+  IconPencil,
+  IconChartBar,
+  IconLock,
+  IconLockOpen,
+} from '@tabler/icons-react';
+import { useThemeMode, useReadOnly } from '../../providers';
 
 // ── Root shell ────────────────────────────────────────────────────────────────
 
@@ -26,7 +34,11 @@ const NavigationContainer = styled.div`
   position: relative;
   margin-inline: auto;
   width: 100%;
-  padding-inline: ${({ theme }) => theme.space[6]};
+  padding-inline: ${({ theme }) => theme.space[4]};
+
+  @media (min-width: ${({ theme }) => theme.breakpoint.sm}) {
+    padding-inline: ${({ theme }) => theme.space[6]};
+  }
 
   @media (min-width: ${({ theme }) => theme.breakpoint.lg}) {
     max-width: ${({ theme }) => theme.breakpoint.lg};
@@ -37,7 +49,11 @@ const NavigationContainer = styled.div`
 const NavigationWrapper = styled.div`
   display: flex;
   align-items: center;
-  height: 5rem;
+  height: 4rem;
+
+  @media (min-width: ${({ theme }) => theme.breakpoint.md}) {
+    height: 5rem;
+  }
 `;
 
 const NavigationHeader = styled.header`
@@ -45,7 +61,11 @@ const NavigationHeader = styled.header`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: ${({ theme }) => theme.space[12]};
+  gap: ${({ theme }) => theme.space[3]};
+
+  @media (min-width: ${({ theme }) => theme.breakpoint.md}) {
+    gap: ${({ theme }) => theme.space[12]};
+  }
 `;
 
 // ── Logo ──────────────────────────────────────────────────────────────────────
@@ -74,9 +94,13 @@ const LogoTitle = styled.span`
 `;
 
 const ImageWrapper = styled.span`
-  display: inline-block;
+  display: none;
   position: relative;
   width: 10rem;
+
+  @media (min-width: ${({ theme }) => theme.breakpoint.md}) {
+    display: inline-block;
+  }
 `;
 
 const DragoniteImage = styled(motion.img)`
@@ -89,7 +113,7 @@ const DragoniteImage = styled(motion.img)`
   filter: ${({ theme }) => theme.dropShadow.sm};
 `;
 
-// ── Nav links ─────────────────────────────────────────────────────────────────
+// ── Nav links (desktop) ───────────────────────────────────────────────────────
 
 const NavContainer = styled.nav`
   position: relative;
@@ -182,7 +206,6 @@ const IconButton = styled.button`
 const MobileControls = styled.div`
   display: flex;
   align-items: center;
-  gap: ${({ theme }) => theme.space[1]};
 `;
 
 const DesktopControls = styled.div`
@@ -191,38 +214,83 @@ const DesktopControls = styled.div`
   gap: ${({ theme }) => theme.space[2]};
 `;
 
-// ── Mobile menu ───────────────────────────────────────────────────────────────
+// ── Bottom tab bar (mobile) ───────────────────────────────────────────────────
 
-const MobileMenu = styled(motion.nav)`
-  position: absolute;
-  top: 100%;
+const BottomNav = styled.nav`
+  position: fixed;
+  bottom: 0;
   left: 0;
   right: 0;
-  background: ${({ theme }) => theme.color.surface.subtle};
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  padding: ${({ theme }) => theme.space[3]} ${({ theme }) => theme.space[4]};
-  border-bottom: 1px solid ${({ theme }) => theme.color.surface.muted};
+  z-index: ${({ theme }) => theme.zIndex.sticky};
+  background: ${({ theme }) => theme.color.surface.base}f2;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid ${({ theme }) => theme.color.surface.border};
+  padding-bottom: env(safe-area-inset-bottom, 0px);
   display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.space[1]};
-  z-index: ${({ theme }) => theme.zIndex.dropdown};
 `;
 
-const MobileNavLink = styled(Link)`
-  display: block;
-  padding: ${({ theme }) => `${theme.space[3]} ${theme.space[4]}`};
-  color: ${({ theme }) => theme.color.text.primary};
+const TabItem = styled(Link)<{ $active: boolean }>`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: ${({ theme }) => `${theme.space[2]} 0 ${theme.space[3]}`};
   text-decoration: none;
-  font-size: ${({ theme }) => theme.typography.size.md};
-  font-weight: ${({ theme }) => theme.typography.weight.medium};
+  color: ${({ $active, theme }) =>
+    $active ? theme.color.frost.blue : theme.color.text.secondary};
+  font-size: ${({ theme }) => theme.typography.size.xs};
+  font-weight: ${({ $active, theme }) =>
+    $active ? theme.typography.weight.semibold : theme.typography.weight.medium};
+  font-family: inherit;
+  transition: color 150ms ease;
+  -webkit-tap-highlight-color: transparent;
+`;
+
+const TabIconWrap = styled.div`
+  position: relative;
+  width: 2.5rem;
+  height: 1.875rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const ActivePill = styled(motion.div)`
+  position: absolute;
+  inset: 0;
   border-radius: ${({ theme }) => theme.radius.md};
-  transition: background-color ${({ theme }) => theme.transition.fast},
-    color ${({ theme }) => theme.transition.fast};
+  background: ${({ theme }) => `${theme.color.frost.blue}1c`};
+`;
+
+// ── Read-only banner ─────────────────────────────────────────────────────────
+
+const ReadOnlyBanner = styled(motion.div)`
+  background: ${({ theme }) => `${theme.color.aurora.orange}18`};
+  border-bottom: 1px solid ${({ theme }) => `${theme.color.aurora.orange}35`};
+  color: ${({ theme }) => theme.color.aurora.orange};
+  font-size: ${({ theme }) => theme.typography.size.xs};
+  font-weight: ${({ theme }) => theme.typography.weight.medium};
+  text-align: center;
+  padding: ${({ theme }) => `${theme.space[1]} ${theme.space[4]}`};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: ${({ theme }) => theme.space[2]};
+  letter-spacing: 0.01em;
+`;
+
+const LockIconBtn = styled(IconButton)<{ $locked: boolean }>`
+  color: ${({ $locked, theme }) =>
+    $locked ? theme.color.aurora.orange : theme.color.text.secondary};
 
   &:hover {
-    background: ${({ theme }) => theme.color.text.primaryHover};
-    color: ${({ theme }) => theme.color.frost.blue};
+    color: ${({ $locked, theme }) =>
+      $locked ? theme.color.aurora.orange : theme.color.text.primary};
+    background: ${({ $locked, theme }) =>
+      $locked ? `${theme.color.aurora.orange}18` : theme.color.text.primaryHover};
   }
 `;
 
@@ -261,10 +329,10 @@ function ThemeIcon({ isDark }: { isDark: boolean }) {
 // ── Nav data ──────────────────────────────────────────────────────────────────
 
 const navLinks = [
-  { to: '/gallery', label: 'Collection' },
-  { to: '/sets', label: 'Sets' },
-  { to: '/studio', label: 'Studio' },
-  { to: '/overview', label: 'Overview' },
+  { to: '/gallery',  label: 'Collection', icon: IconCards    },
+  { to: '/sets',     label: 'Sets',       icon: IconPackage  },
+  { to: '/studio',   label: 'Studio',     icon: IconPencil   },
+  { to: '/overview', label: 'Stats',      icon: IconChartBar },
 ];
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -272,128 +340,127 @@ const navLinks = [
 export function NavigationBar() {
   const isMobile = useIsMobile();
   const { pathname } = useLocation();
-  const [menuOpen, setMenuOpen] = useState(false);
   const { isDark, toggle } = useThemeMode();
-
-  useEffect(() => {
-    setMenuOpen(false);
-  }, [pathname]);
+  const { isReadOnly, toggle: toggleReadOnly } = useReadOnly();
 
   return (
-    <RootContainer>
-      <NavigationContainer>
-        <NavigationWrapper>
-          <NavigationHeader>
-            <StyledLogoLink to='/' style={{ display: 'flex' }}>
-              <LogoTitle>POLARDEX</LogoTitle>
-              <ImageWrapper>
-                <DragoniteImage
-                  src='https://img.pokemondb.net/sprites/home/normal/dragonite.png'
-                  initial={{ y: 80, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ type: 'spring', stiffness: 180, damping: 14, delay: 0.2 }}
-                />
-              </ImageWrapper>
-            </StyledLogoLink>
-
-            {isMobile ? (
-              <MobileControls>
-                <IconButton
-                  onClick={toggle}
-                  aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-                >
-                  <ThemeIcon isDark={isDark} />
-                </IconButton>
-                <IconButton
-                  onClick={() => setMenuOpen((o) => !o)}
-                  aria-label='Toggle menu'
-                >
-                  <AnimatePresence mode='wait' initial={false}>
-                    {menuOpen ? (
-                      <motion.span
-                        key='close'
-                        initial={{ rotate: -90, opacity: 0 }}
-                        animate={{ rotate: 0, opacity: 1 }}
-                        exit={{ rotate: 90, opacity: 0 }}
-                        transition={{ duration: 0.15 }}
-                        style={{ display: 'flex' }}
-                      >
-                        <IconX stroke={2} size={20} />
-                      </motion.span>
-                    ) : (
-                      <motion.span
-                        key='open'
-                        initial={{ rotate: 90, opacity: 0 }}
-                        animate={{ rotate: 0, opacity: 1 }}
-                        exit={{ rotate: -90, opacity: 0 }}
-                        transition={{ duration: 0.15 }}
-                        style={{ display: 'flex' }}
-                      >
-                        <IconMenu2 stroke={2} size={20} />
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-                </IconButton>
-              </MobileControls>
-            ) : (
-              <DesktopControls>
-                <LayoutGroup>
-                  <NavContainer>
-                    <NavList>
-                      {navLinks.map(({ to, label }) => (
-                        <List key={to}>
-                          <StyledLink to={to}>
-                            <NavButton
-                              whileHover={{ y: -1 }}
-                              whileTap={{ scale: 0.97 }}
-                              transition={{ duration: 0.15, ease: 'easeOut' }}
-                            >
-                              {label}
-                            </NavButton>
-                          </StyledLink>
-                          {pathname === to && (
-                            <ActiveIndicator layoutId='nav-underline' />
-                          )}
-                        </List>
-                      ))}
-                    </NavList>
-                  </NavContainer>
-                </LayoutGroup>
-                <IconButton
-                  onClick={toggle}
-                  aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-                >
-                  <ThemeIcon isDark={isDark} />
-                </IconButton>
-              </DesktopControls>
-            )}
-          </NavigationHeader>
-        </NavigationWrapper>
-      </NavigationContainer>
-
+    <>
       <AnimatePresence>
-        {isMobile && menuOpen && (
-          <MobileMenu
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.15 }}
+        {isReadOnly && (
+          <ReadOnlyBanner
+            key='readonly-banner'
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
           >
-            {navLinks.map(({ to, label }, i) => (
-              <motion.div
-                key={to}
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.06 }}
-              >
-                <MobileNavLink to={to} onClick={() => setMenuOpen(false)}>
-                  {label}
-                </MobileNavLink>
-              </motion.div>
-            ))}
-          </MobileMenu>
+            <IconLock size={12} stroke={2} />
+            View-only mode — changes are disabled
+          </ReadOnlyBanner>
         )}
       </AnimatePresence>
-    </RootContainer>
+      <RootContainer>
+        <NavigationContainer>
+          <NavigationWrapper>
+            <NavigationHeader>
+              <StyledLogoLink to='/' style={{ display: 'flex' }}>
+                <LogoTitle>POLARDEX</LogoTitle>
+                <ImageWrapper>
+                  <DragoniteImage
+                    src='https://img.pokemondb.net/sprites/home/normal/dragonite.png'
+                    initial={{ y: 80, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ type: 'spring', stiffness: 180, damping: 14, delay: 0.2 }}
+                  />
+                </ImageWrapper>
+              </StyledLogoLink>
+
+              {isMobile ? (
+                <MobileControls>
+                  <LockIconBtn
+                    $locked={isReadOnly}
+                    onClick={toggleReadOnly}
+                    aria-label={isReadOnly ? 'Disable view-only mode' : 'Enable view-only mode'}
+                    title={isReadOnly ? 'View-only ON — tap to unlock (⌘⇧L)' : 'Enable view-only mode (⌘⇧L)'}
+                  >
+                    {isReadOnly ? <IconLock size={18} stroke={2} /> : <IconLockOpen size={18} stroke={1.75} />}
+                  </LockIconBtn>
+                  <IconButton
+                    onClick={toggle}
+                    aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+                  >
+                    <ThemeIcon isDark={isDark} />
+                  </IconButton>
+                </MobileControls>
+              ) : (
+                <DesktopControls>
+                  <LayoutGroup>
+                    <NavContainer>
+                      <NavList>
+                        {navLinks.map(({ to, label }) => (
+                          <List key={to}>
+                            <StyledLink to={to}>
+                              <NavButton
+                                whileHover={{ y: -1 }}
+                                whileTap={{ scale: 0.97 }}
+                                transition={{ duration: 0.15, ease: 'easeOut' }}
+                              >
+                                {label}
+                              </NavButton>
+                            </StyledLink>
+                            {pathname === to && (
+                              <ActiveIndicator layoutId='nav-underline' />
+                            )}
+                          </List>
+                        ))}
+                      </NavList>
+                    </NavContainer>
+                  </LayoutGroup>
+                  <LockIconBtn
+                    $locked={isReadOnly}
+                    onClick={toggleReadOnly}
+                    aria-label={isReadOnly ? 'Disable view-only mode' : 'Enable view-only mode'}
+                    title={isReadOnly ? 'View-only ON — click to unlock (⌘⇧L)' : 'Enable view-only mode (⌘⇧L)'}
+                  >
+                    {isReadOnly ? <IconLock size={18} stroke={2} /> : <IconLockOpen size={18} stroke={1.75} />}
+                  </LockIconBtn>
+                  <IconButton
+                    onClick={toggle}
+                    aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+                  >
+                    <ThemeIcon isDark={isDark} />
+                  </IconButton>
+                </DesktopControls>
+              )}
+            </NavigationHeader>
+          </NavigationWrapper>
+        </NavigationContainer>
+      </RootContainer>
+
+      {/* ── Bottom tab bar (mobile only) ── */}
+      {isMobile && (
+        <LayoutGroup id='bottom-nav'>
+          <BottomNav aria-label='Main navigation'>
+            {navLinks.map(({ to, label, icon: Icon }) => {
+              const active = pathname === to;
+              return (
+                <TabItem key={to} to={to} $active={active} aria-current={active ? 'page' : undefined}>
+                  <TabIconWrap>
+                    {active && (
+                      <ActivePill
+                        layoutId='bottom-pill'
+                        transition={{ type: 'spring', stiffness: 400, damping: 32 }}
+                      />
+                    )}
+                    <Icon size={20} stroke={active ? 2.5 : 1.75} />
+                  </TabIconWrap>
+                  {label}
+                </TabItem>
+              );
+            })}
+          </BottomNav>
+        </LayoutGroup>
+      )}
+    </>
   );
 }

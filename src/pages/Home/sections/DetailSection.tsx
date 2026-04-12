@@ -176,7 +176,7 @@ export function DetailSection() {
   const stats: Stat[] = [
     { number: '11,000+', label: 'Unique cards', color: theme.color.frost.blue },
     { number: '150+', label: 'TCG sets', color: theme.color.frost.teal },
-    { number: '25+', label: 'Years of history', color: theme.color.aurora.purple },
+    { number: '30', label: 'Years of history', color: theme.color.aurora.purple },
     { number: '∞', label: 'Possibilities', color: theme.color.aurora.green },
   ];
 

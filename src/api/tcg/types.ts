@@ -11,6 +11,14 @@ export interface TcgSet {
   };
 }
 
+export interface TcgPriceEntry {
+  low: number | null;
+  mid: number | null;
+  high: number | null;
+  market: number | null;
+  directLow: number | null;
+}
+
 export interface TcgCard {
   id: string;
   name: string;
@@ -25,6 +33,17 @@ export interface TcgCard {
     id: string;
     name: string;
     total: number;
+  };
+  tcgplayer?: {
+    url?: string;
+    updatedAt?: string;
+    prices?: {
+      normal?: TcgPriceEntry;
+      holofoil?: TcgPriceEntry;
+      reverseHolofoil?: TcgPriceEntry;
+      '1stEditionHolofoil'?: TcgPriceEntry;
+      '1stEditionNormal'?: TcgPriceEntry;
+    };
   };
 }
 

@@ -26,6 +26,8 @@ export interface CardDraft {
   quantity: number;
   tcgId: string;
   tcgImageUrl: string;
+  hasNormal: boolean;
+  hasReverseHolo: boolean;
 }
 
 export interface AttributeDraft {
@@ -39,6 +41,7 @@ export const emptyCardDraft: CardDraft = {
   set: '', cardType: '', rarity: '', condition: '',
   year: '', setNumber: '', grading: '', quantity: 1,
   tcgId: '', tcgImageUrl: '',
+  hasNormal: true, hasReverseHolo: false,
 };
 
 export const emptyAttributeDraft: AttributeDraft = { name: '', year: '', totalCards: '' };
@@ -60,6 +63,7 @@ function draftToCard(draft: CardDraft, existing?: CardModel): CardModel {
       isGraded: !!draft.grading,
       tcgId: draft.tcgId || existing?.attributes?.tcgId || '',
       tcgImageUrl: draft.tcgImageUrl || existing?.attributes?.tcgImageUrl || '',
+      variants: { normal: draft.hasNormal, alternate: draft.hasReverseHolo },
     },
     pokemonData: {
       name: draft.name,
@@ -89,6 +93,8 @@ export function cardToDraft(card: CardModel): CardDraft {
     quantity: card.quantity ?? 1,
     tcgId: card.attributes.tcgId ?? '',
     tcgImageUrl: card.attributes.tcgImageUrl ?? '',
+    hasNormal: card.attributes.variants?.normal ?? true,
+    hasReverseHolo: card.attributes.variants?.reverseHolo ?? false,
   };
 }
 
